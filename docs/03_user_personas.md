@@ -20,9 +20,10 @@ Sarah is a retired teacher living in Jerusalem. She actively participates in com
 - Difficulty finding up-to-date information.
 - Prefers simple and accessible websites.
 - Dislikes complicated registration processes and having to fill in the same details repeatedly.
+- Does not want to manage a password or create an account by herself.
 
 ### Usage Scenario
-Sarah visits the website weekly, browses the activities catalog, filters activities by category, reads announcements, and registers for a yoga class. On her first registration she fills in her identity number, full name, phone number and email. After registering, she navigates to the personal area, enters her full name and phone number, and views her upcoming registered activities in a calendar. From the personal area she also registers for a painting class with a single confirmation click — her details are already stored and she does not need to fill them in again.
+Sarah visits the website weekly, browses the activities catalog, and reads announcements. Her profile (identity number, full name, phone number and email) was created in the system by the center's administrator when she first joined. Sarah navigates to the personal area, enters her full name and phone number, and views her upcoming registered activities in a calendar. From the personal area she registers for a painting class with a single confirmation click — her details are already stored and she does not need to fill them in again.
 
 ---
 
@@ -48,7 +49,7 @@ David is the son of a senior citizen who participates in Beit Hoffman activities
 - Wants to help his mother see her upcoming registered activities and register for new ones without requiring her to remember a password or fill in the same information multiple times.
 
 ### Usage Scenario
-David searches the website for cultural activities, reviews event details with his mother, and completes the first-time registration form including his mother's identity number, full name, phone number and email. He then helps his mother navigate to the personal area, enters her name and phone number, and together they review her upcoming activity calendar. From the personal area, he helps her register for a second activity — the system uses her stored details automatically and only asks her to confirm the activity information before finalizing.
+David searches the website for cultural activities and reviews event details with his mother. His mother's profile (identity number, full name, phone number and email) was created in the system by the center's administrator. David helps his mother navigate to the personal area, enters her name and phone number, and together they review her upcoming activity calendar. From the personal area, he helps her register for an additional activity — the system uses her stored details automatically and only asks her to confirm the activity information before finalizing.
 
 ---
 
@@ -58,10 +59,11 @@ David searches the website for cultural activities, reviews event details with h
 55
 
 ### Background
-Miriam is a coordinator and administrator at Beit Hoffman. She is responsible for managing activities, registrations, announcements, and website content.
+Miriam is a coordinator and administrator at Beit Hoffman. She is responsible for managing activities, registrations, announcements, user profiles and website content.
 
 ### Goals
 - Publish new activities and events.
+- Create and manage user profiles for new participants, including their identity number, full name, phone number and email.
 - Manage participant registrations efficiently, including viewing participant identity numbers.
 - Update announcements and center information.
 - Reduce manual administrative work.
@@ -70,6 +72,7 @@ Miriam is a coordinator and administrator at Beit Hoffman. She is responsible fo
 - Manual registration management is time-consuming.
 - Updating information across multiple channels creates extra work.
 - Needs a simple and reliable administration interface.
+- Needs control over which users are added to the system.
 
 ### Usage Scenario
-Miriam logs into the administration panel, creates a new activity, publishes an announcement, updates the center's opening hours, and reviews participant registrations. The registrations list includes each participant's identity number alongside their name, phone number and registered activity, which she uses when exporting data to CSV.
+Miriam logs into the administration panel, creates a new user profile for a new participant by entering their identity number, full name, phone number and email, creates a new activity, publishes an announcement, updates the center's opening hours, and reviews participant registrations. The registrations list includes each participant's identity number alongside their name, phone number and registered activity, which she uses when exporting data to CSV.
