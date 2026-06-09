@@ -41,7 +41,7 @@ The center does not maintain an organized digital presence, and potential users 
 
 ## 4.2 Administrators
 
-- Center staff responsible for managing content, events and registrations
+- Center staff responsible for managing content, events, registrations and user profiles
 - Administrators who publish announcements and ongoing updates
 
 ---
@@ -50,11 +50,11 @@ The center does not maintain an organized digital presence, and potential users 
 
 - Development of an accessible and user-friendly website for senior citizens, third-age individuals and their family members.
 - Providing centralized and convenient access to information about the center, its activities and events
-- Providing the option for online registration for activities and events
-- Providing a personal area where any user who has registered for an activity can view a calendar of their upcoming registered activities and register for additional activities without re-entering personal details, accessible by entering their full name and phone number
+- Providing the option for online registration for activities and events from within the personal area, for users whose profile has already been created by an administrator
+- Providing a personal area where any user whose profile has been created by an administrator can view a calendar of their upcoming registered activities and register for additional activities without re-entering personal details, accessible by entering their full name and phone number
 - Providing access to the existing external payment system through payment links
 - Establishing a platform for publishing announcements and updates in real time
-- Offering a convenient management interface for center staff to manage content, events and registrations
+- Offering a convenient management interface for center staff to manage content, events, registrations and user profiles
 
 ---
 
@@ -64,8 +64,8 @@ The center does not maintain an organized digital presence, and potential users 
 
 - Home page presenting upcoming events, up-to-date announcements, and a photo gallery
 - Activities catalog – with search and filtering by category, day and time
-- Registration form for activities and events – first-time registration collects identity number, full name, phone number and email; personal details are saved for future use
 - Personal area – accessible by entering full name and phone number; displays a calendar of all upcoming activities the user is registered for, and allows the user to register for additional activities without re-entering personal details
+- New user registration (creation of a user profile including identity number, full name, phone number and email) is performed exclusively by administrators through the administration panel; visitors cannot self-register
 - Links to an existing external payment system
 - Publication of ongoing announcements and updates
 - Information page about the center: address, opening hours and contact details
@@ -75,6 +75,7 @@ The center does not maintain an organized digital presence, and potential users 
 ## 6.2 Administrator Side – Management Interface
 
 - Activity and event management system – adding, updating and deleting
+- User profile management – creating new user profiles (identity number, full name, phone number, email) for new participants; viewing, editing and deleting existing profiles
 - Participant registration management – viewing (including identity number), editing and canceling registrations
 - Publishing, editing and deleting announcements and updates
 - Editing information page content – descriptions, opening hours, contact details
@@ -92,19 +93,20 @@ The following items are not included in the current project scope:
 - Messaging or chat system between users
 - Full integration with external systems (such as CRM, accounting systems)
 - Translation of the website into additional languages
+- Public self-registration for new users
 
 ---
 
 # 8. Success Criteria
 
 - The website meets accepted accessibility requirements (WCAG 2.1 Level AA) and is adapted for third-age visitors
-- Visitors succeed in locating an activity and registering for it without needing assistance
-- Returning users can access the personal area and register for additional activities without re-entering personal details
-- Administrators are able to update content, publish events and manage registrations independently and efficiently
+- Visitors succeed in locating activity information without needing assistance
+- Returning users can access the personal area and register for additional activities without re-entering personal details, once their profile has been created by an administrator
+- Administrators are able to create user profiles, update content, publish events and manage registrations independently and efficiently
 - The website functions correctly on desktop computers, tablet devices and mobile phones
 - Page load time does not exceed 3 seconds on a regular internet connection
 - Activity registrations are saved securely and accurately
-- A user who has registered for activities can access a personal calendar displaying their upcoming registered activities by entering their full name and phone number, and can register for further activities from the personal area
+- A user whose profile has been created by an administrator can access a personal calendar displaying their upcoming registered activities by entering their full name and phone number, and can register for further activities from the personal area
 
 ---
 
@@ -113,9 +115,9 @@ The following items are not included in the current project scope:
 ## 9.1 For Senior Citizens
 
 - Convenient and free access to up-to-date information about all center activities
-- Saving time and effort involved in making a telephone call to register
+- Saving time and effort involved in making a telephone call to register for additional activities once enrolled in the system
 - Receiving ongoing updates about changes, special events and center news
-- Viewing all personal upcoming registered activities in one organized calendar without needing to create an account or remember a password
+- Viewing all personal upcoming registered activities in one organized calendar without needing to create an account or remember a password, once their profile has been created by an administrator
 - Registering for additional activities from the personal area without having to re-enter personal details
 
 ## 9.2 For Center Management
@@ -123,6 +125,7 @@ The following items are not included in the current project scope:
 - Reduction of the workload involved in managing registrations manually
 - Improvement of the effectiveness of communication with participants
 - Centralized and accurate information on the status of activity registrations, including participant identity numbers
+- Controlled creation of new user profiles by authorized administrators only
 - Professional and up-to-date digital representation of the center
 
 ---
