@@ -39,18 +39,19 @@ The user shall be able to filter activities by category.
 The user shall be able to filter activities by day of the week.
 
 **FR-07**
-The user shall be able to register for an activity through a registration button.
+Registered users whose profile already exists in the system shall be able to register for an activity through a registration button available in the personal area.
 
 **FR-08**
-The first-time registration form shall collect:
+New user profiles shall be created exclusively by authenticated administrators through the administration panel. The administrator shall provide the following fields when creating a new user profile:
 - Identity number (required)
 - Full name (required)
 - Phone number (required)
 - Email (required)
-- Selected activity (required)
+
+Visitors cannot self-register or create their own user profile through any public-facing form.
 
 **FR-09**
-After successful registration submission, the system shall display a confirmation message in Hebrew.
+After successful registration submission from the personal area, the system shall display a confirmation message in Hebrew.
 
 Acceptance Criteria:
 A confirmation message appears within 2 seconds after successful submission.
@@ -72,28 +73,28 @@ Searching for "Yoga" displays only activities containing the keyword in the titl
 
 ---
 
-### User Profile – Returning Registrant
+### User Profile – Administrator-Created Participant
 
 **FR-39**
-When a visitor submits a first-time registration, the system shall save their personal details — identity number, full name, phone number, and email — as a user profile record linked to their phone number.
+User profiles shall be created exclusively by authenticated administrators through the administration panel. When an administrator creates a new user profile, the system shall save the participant's personal details — identity number, full name, phone number, and email — as a user profile record linked to their phone number.
 
 Acceptance Criteria:
-After a successful first registration, the user's personal details are stored and retrievable by phone number.
+After an administrator successfully creates a user profile, the participant's personal details are stored and retrievable by phone number. No public-facing form exists for users to self-register.
 
 **FR-40**
-On subsequent visits, when a returning user accesses the personal area using their full name and phone number, the system shall recognize them as an existing registrant by looking up their stored profile.
+On subsequent visits, when a returning user accesses the personal area using their full name and phone number, the system shall recognize them as an existing participant by looking up their stored user profile.
 
 Acceptance Criteria:
-A user whose full name and phone number match an existing profile record is granted access to the personal area and their personal details are loaded automatically.
+A user whose full name and phone number match an existing administrator-created profile record is granted access to the personal area and their personal details are loaded automatically.
 
 **FR-41**
-When a returning user registers for an additional activity from within the personal area, the system shall use their stored personal details (identity number, full name, phone number, email) automatically. The user shall not be required to re-enter any personal information.
+When a returning user registers for an activity from within the personal area, the system shall use their stored personal details (identity number, full name, phone number, email) automatically. The user shall not be required to re-enter any personal information.
 
 Acceptance Criteria:
-Clicking the registration button for a new activity from within the personal area creates a new registration record using the stored profile data, without presenting the user with a personal details form.
+Clicking the registration button for an activity from within the personal area creates a new registration record using the stored profile data, without presenting the user with a personal details form.
 
 **FR-42**
-Before completing a quick registration from the personal area, the system shall display a confirmation screen showing the activity details:
+Before completing a registration from the personal area, the system shall display a confirmation screen showing the activity details:
 - Activity title
 - Category
 - Date
@@ -108,10 +109,10 @@ Acceptance Criteria:
 The confirmation screen appears after the user clicks the registration button and before the registration is saved. All seven detail fields are displayed. A payment link is shown when applicable.
 
 **FR-43**
-After a successful quick registration from the personal area, the newly registered activity shall appear immediately in the user's personal activity calendar within the personal area.
+After a successful registration from the personal area, the newly registered activity shall appear immediately in the user's personal activity calendar within the personal area.
 
 Acceptance Criteria:
-The personal calendar is refreshed after quick registration and includes the newly added activity.
+The personal calendar is refreshed after registration and includes the newly added activity.
 
 ---
 
@@ -184,6 +185,31 @@ Authenticated administrators shall be able to export registrations to CSV format
 
 ---
 
+### Administration – User Profiles
+
+**FR-46**
+Authenticated administrators shall be able to create new user profiles by entering the participant's identity number, full name, phone number, and email. This is the only way a new user profile can be created in the system.
+
+Acceptance Criteria:
+After an administrator creates a user profile, the participant can immediately access the personal area using their full name and phone number.
+
+**FR-47**
+Authenticated administrators shall be able to view all existing user profiles, including identity number, full name, phone number, and email.
+
+**FR-48**
+Authenticated administrators shall be able to edit an existing user profile, for example to update an email address or correct a name.
+
+Acceptance Criteria:
+After saving edits, the updated details are reflected in the personal area and in any subsequent registrations from the personal area.
+
+**FR-49**
+Authenticated administrators shall be able to delete a user profile.
+
+Acceptance Criteria:
+After deletion, the participant can no longer access the personal area using their full name and phone number. Existing registration records linked to that profile are retained for historical purposes.
+
+---
+
 ### Administration – Announcements
 
 **FR-26**
@@ -233,19 +259,19 @@ Administrator sessions shall expire after 60 minutes of inactivity.
 
 ---
 
-### Personal Area – Activity Calendar and Quick Registration
+### Personal Area – Activity Calendar and Registration
 
 **FR-34**
-The system shall provide a personal area page where any visitor can enter their full name and phone number to access their personal area.
+The system shall provide a personal area page where any visitor can enter their full name and phone number to access their personal area, provided their profile has been created by an administrator.
 
 Acceptance Criteria:
-A visitor who enters a full name and phone number that match an existing registration record is granted access to the personal area.
+A visitor who enters a full name and phone number that match an existing administrator-created user profile record is granted access to the personal area.
 
 **FR-35**
-When a visitor submits the personal area access form, the system shall look up all registration records and the stored user profile matching the provided full name and phone number combination.
+When a visitor submits the personal area access form, the system shall first look up the stored user profile matching the provided full name and phone number combination. If a matching profile exists, the system shall load the user's registration records.
 
 Acceptance Criteria:
-Only registrations where both the full name and phone number match exactly are returned.
+Only a user profile where both the full name and phone number match exactly grants access. If no matching profile exists, the system displays an informative message in Hebrew.
 
 **FR-36**
 The personal area shall display a calendar containing all future activities the user is registered for, sorted by activity date in ascending order. Past activities shall not be displayed.
@@ -260,10 +286,7 @@ Acceptance Criteria:
 Each calendar entry displays all five fields: title, category, date, day, and time.
 
 **FR-38**
-If no registrations are found for the entered full name and phone number combination, the system shall display an informative message in Hebrew indicating that no registered activities were found.
-
-Acceptance Criteria:
-Entering a name and phone number with no matching registrations displays a Hebrew message and does not display a calendar.
+If no user profile is found for the entered full name and phone number combination, the system shall display an informative message in Hebrew indicating that no profile was found. The message shall suggest that the user contact the center to be registered in the system.
 
 **FR-44**
 The personal area shall display the list of available activities, allowing the recognized returning user to browse and register for additional activities without navigating away from the personal area.
@@ -272,10 +295,10 @@ Acceptance Criteria:
 A list of active activities with available spots is visible within the personal area alongside the personal calendar.
 
 **FR-45**
-When a user initiates registration for an additional activity from within the personal area, the system shall use the stored profile data to complete the registration automatically, without requiring the user to re-enter their personal details. The system shall still enforce duplicate registration prevention (FR-10) and capacity limits (FR-11).
+When a user initiates registration for an activity from within the personal area, the system shall use the stored profile data to complete the registration automatically, without requiring the user to re-enter their personal details. The system shall still enforce duplicate registration prevention (FR-10) and capacity limits (FR-11).
 
 Acceptance Criteria:
-A user already in the personal area can register for a new activity by clicking a registration button, confirming the activity details (FR-42), and confirming without filling in any personal fields.
+A user already in the personal area can register for an activity by clicking a registration button, confirming the activity details (FR-42), and confirming without filling in any personal fields.
 
 ---
 
@@ -287,7 +310,7 @@ A user already in the personal area can register for a new activity by clicking 
 Public pages shall load within 3 seconds under normal internet conditions.
 
 **NFR-02**
-Registration form submission shall respond within 2 seconds.
+Registration submission from the personal area shall respond within 2 seconds.
 
 **NFR-03**
 The activities catalog shall display up to 200 activities within 1.5 seconds.
@@ -310,7 +333,7 @@ Text contrast ratios shall meet WCAG AA standards.
 ### Usability
 
 **NFR-07**
-A first-time user shall be able to locate and register for an activity within 5 minutes.
+A user whose profile has been created by an administrator shall be able to locate and register for an activity from the personal area within 5 minutes.
 
 **NFR-08**
 All validation messages shall be written in clear and simple Hebrew.
@@ -376,13 +399,13 @@ The system shall support at least 50 concurrent users without significant degrad
 ### Privacy
 
 **NFR-21**
-Personal information collected through forms shall not be shared with third parties without authorization.
+Personal information collected and managed by the system shall not be shared with third parties without authorization.
 
 Acceptance Criteria:
 User data remains stored only within the system database unless explicitly required for system functionality.
 
 **NFR-22**
-The personal area lookup shall return only the registrations and stored profile belonging to the exact full name and phone number combination provided. No session or persistent login is created.
+The personal area lookup shall return only the stored profile and registrations belonging to the exact full name and phone number combination provided. No public account creation, password, session, or persistent login is created for participants.
 
 **NFR-23**
 The personal activity calendar shall load and display results within 2 seconds of form submission under normal internet conditions.
