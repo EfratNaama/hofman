@@ -67,7 +67,12 @@ export function AuthProvider({ children }) {
   const [authLoading, setAuthLoading] = useState(true);
   const normalizedRole = String(currentUser?.role || userProfile?.role || '').trim().toLowerCase();
   const normalizedUserType = String(currentUser?.userType || userProfile?.userType || '').trim().toLowerCase();
-  const isAdmin = normalizedRole === 'admin' || normalizedRole === 'manager' || normalizedUserType === 'admin' || normalizedUserType === 'manager';
+  const isAdmin =
+    normalizedRole === 'admin' ||
+    normalizedRole === 'manager' ||
+    normalizedRole === 'מנהל' ||
+    normalizedUserType === 'admin' ||
+    normalizedUserType === 'manager';
 
   const signInEmail = async (email, password) => {
     console.log('signInEmail: starting login for', email);
