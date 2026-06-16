@@ -8,21 +8,21 @@ function Users() {
   const [error, setError] = useState('');
   const [deletingUserId, setDeletingUserId] = useState('');
 
-  async function loadUsers() {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const usersData = await getUsers();
-      setUsers(usersData);
-    } catch (err) {
-      setError('Could not load users. Please check Firebase permissions and try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   useEffect(() => {
+    async function loadUsers() {
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const usersData = await getUsers();
+        setUsers(usersData);
+      } catch (err) {
+        setError('Could not load users. Please check Firebase permissions and try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     loadUsers();
   }, []);
 

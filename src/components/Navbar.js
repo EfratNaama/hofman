@@ -1,6 +1,9 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
+  const { authLoading, currentUser, signOutUser } = useAuth();
+
   const navLinkStyle = ({ isActive }) => ({
     display: 'inline-flex',
     alignItems: 'center',
@@ -16,6 +19,25 @@ function Navbar() {
     border: `1px solid ${isActive ? '#0f2240' : '#e5e7eb'}`,
     transition: 'background-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
   });
+
+  const authButtonStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '48px',
+    padding: '0.75rem 1.25rem',
+    borderRadius: '999px',
+    border: '1px solid #0f2240',
+    backgroundColor: '#0f2240',
+    color: '#ffffff',
+    fontSize: '1.125rem',
+    fontWeight: 800,
+    cursor: 'pointer',
+  };
+
+  const handleLogout = async () => {
+    await signOutUser();
+  };
 
   return (
     <nav
@@ -60,9 +82,16 @@ function Navbar() {
           <NavLink to="/users" style={navLinkStyle}>
             משתמשים
           </NavLink>
-          <NavLink to="/login" style={navLinkStyle}>
-            כניסה
-          </NavLink>
+          {!authLoading && !currentUser && (
+            <NavLink to="/login" style={navLinkStyle}>
+              כניסה
+            </NavLink>
+          )}
+          {!authLoading && currentUser && (
+            <button type="button" style={authButtonStyle} onClick={handleLogout}>
+              התנתקות
+            </button>
+          )}
         </div>
       </div>
     </nav>
