@@ -1,10 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Link } from 'react-router-dom';
 import './App.css';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Users from './components/Users';
+import Home from './pages/Home.jsx';import Users from './components/Users';
 import NewUser from './components/NewUser';
 import UserDetails from './components/UserDetails';
 import EditUser from './components/EditUser';
@@ -22,20 +21,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
-            <Route path="users" element={<Users />} />
-            <Route path="users/new" element={<NewUser />} />
-            <Route path="users/:id" element={<UserDetails />} />
-            <Route path="users/:id/edit" element={<EditUser />} />
-            <Route path="events" element={<Events />} />
-            <Route path="gallery" element={<Gallery />} />
-            <Route
-              path="admin/gallery"
-              element={(
-                <ProtectedRoute>
-                  <AdminGallery />
-                </ProtectedRoute>
-              )}
-            />
+            <Route path="users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+            <Route path="users/new" element={<ProtectedRoute><NewUser /></ProtectedRoute>} />
+            <Route path="users/:id" element={<ProtectedRoute><UserDetails /></ProtectedRoute>} />
+            <Route path="users/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
+            <Route path="events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+            <Route path="gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="login" element={<Login />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
@@ -46,9 +37,11 @@ function App() {
 }
 
 function Layout() {
+  const { currentUser } = useAuth();
+
   return (
     <div dir="rtl" className="min-h-screen bg-[#f8f5f0] text-slate-800 font-sans">
-      <Navbar />
+      {currentUser && <Navbar />}
       <main className="w-full">
         <Outlet />
       </main>
