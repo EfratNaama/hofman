@@ -95,7 +95,6 @@ export async function updateUser(userId, userData) {
     fullName: userData.fullName?.trim() || '',
     email: userData.email?.trim() || '',
     phone: userData.phone?.trim() || '',
-    role: userData.role || 'resident',
     status: userData.status || 'active',
     updatedAt: serverTimestamp(),
   });
