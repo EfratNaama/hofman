@@ -1,24 +1,28 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { createActivity } from '../services/activitiesService';
 import ActivityForm from './ActivityForm';
 
 function NewActivity() {
-  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [resetKey, setResetKey] = useState(0);
 
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     setError('');
+    setSuccessMessage('');
 
     try {
-      const activityId = await createActivity(formData, currentUser.uid);
-      navigate(`/activities/${activityId}`);
+      await createActivity(formData, currentUser?.uid || currentUser?.email || '');
+      setSuccessMessage('הפעילות נשמרה בהצלחה.');
+      setResetKey((currentKey) => currentKey + 1);
     } catch (err) {
+      console.error('Failed to create activity', err);
       setError('לא ניתן ליצור את הפעילות. בדקו את הפרטים ונסו שוב.');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -37,7 +41,18 @@ function NewActivity() {
           </div>
         )}
 
-        <ActivityForm isSubmitting={isSubmitting} submitLabel="יצירת פעילות" onSubmit={handleSubmit} />
+        {successMessage && (
+          <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-lg font-semibold text-green-700">
+            {successMessage}
+          </div>
+        )}
+
+        <ActivityForm
+          isSubmitting={isSubmitting}
+          resetKey={resetKey}
+          submitLabel="יצירת פעילות"
+          onSubmit={handleSubmit}
+        />
       </div>
     </section>
   );

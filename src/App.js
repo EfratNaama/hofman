@@ -3,13 +3,13 @@ import { BrowserRouter, Routes, Route, Outlet, Link } from 'react-router-dom';
 import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
-import Home from './pages/Home.jsx';import Users from './components/Users';
+import Home from './pages/Home.jsx';
+import Users from './components/Users';
 import NewUser from './components/NewUser';
 import UserDetails from './components/UserDetails';
 import EditUser from './components/EditUser';
 import Events from './components/Events';
 import Gallery from './pages/Gallery';
-import AdminGallery from './pages/AdminGallery';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import AccessibilityWidget from './components/AccessibilityWidget';
@@ -17,6 +17,7 @@ import Activities from './components/Activities';
 import NewActivity from './components/NewActivity';
 import ActivityDetails from './components/ActivityDetails';
 import EditActivity from './components/EditActivity';
+import MyActivities from './components/MyActivities';
 
 function App() {
   return (
@@ -30,9 +31,10 @@ function App() {
             <Route path="users/:id" element={<ProtectedRoute><UserDetails /></ProtectedRoute>} />
             <Route path="users/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
             <Route path="activities" element={<ProtectedRoute><Activities /></ProtectedRoute>} />
-            <Route path="activities/new" element={<ProtectedRoute><NewActivity /></ProtectedRoute>} />
+            <Route path="activities/new" element={<ProtectedRoute requireAdmin><NewActivity /></ProtectedRoute>} />
             <Route path="activities/:id" element={<ProtectedRoute><ActivityDetails /></ProtectedRoute>} />
-            <Route path="activities/:id/edit" element={<ProtectedRoute><EditActivity /></ProtectedRoute>} />
+            <Route path="activities/:id/edit" element={<ProtectedRoute requireAdmin><EditActivity /></ProtectedRoute>} />
+            <Route path="my-activities" element={<ProtectedRoute><MyActivities /></ProtectedRoute>} />
             <Route path="events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="login" element={<Login />} />

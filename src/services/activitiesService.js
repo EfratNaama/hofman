@@ -49,8 +49,11 @@ const buildActivityPayload = (activityData, options = {}) => {
   return {
     title: activityData.title.trim(),
     description: activityData.description.trim(),
+    location: activityData.location.trim(),
+    imageUrl: activityData.imageUrl?.trim() || '',
     category: activityData.category,
     dayOfWeek: activityData.dayOfWeek,
+    date: activityData.activityDate,
     activityDate: toFirestoreDate(activityData.activityDate),
     time: activityData.time,
     maxParticipants,
