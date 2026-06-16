@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Link } from 'react-router-dom';
 import './App.css';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Users from './components/Users';
@@ -36,9 +36,11 @@ function App() {
 }
 
 function Layout() {
+  const { currentUser } = useAuth();
+
   return (
     <div dir="rtl" className="min-h-screen bg-[#f8f5f0] text-slate-800 font-sans">
-      <Navbar />
+      {currentUser && <Navbar />}
       <main className="w-full">
         <Outlet />
       </main>
