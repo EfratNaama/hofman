@@ -13,6 +13,10 @@ import AdminGallery from './pages/AdminGallery';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import AccessibilityWidget from './components/AccessibilityWidget';
+import Activities from './components/Activities';
+import NewActivity from './components/NewActivity';
+import ActivityDetails from './components/ActivityDetails';
+import EditActivity from './components/EditActivity';
 
 function App() {
   return (
@@ -25,6 +29,10 @@ function App() {
             <Route path="users/new" element={<ProtectedRoute><NewUser /></ProtectedRoute>} />
             <Route path="users/:id" element={<ProtectedRoute><UserDetails /></ProtectedRoute>} />
             <Route path="users/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
+            <Route path="activities" element={<ProtectedRoute><Activities /></ProtectedRoute>} />
+            <Route path="activities/new" element={<ProtectedRoute><NewActivity /></ProtectedRoute>} />
+            <Route path="activities/:id" element={<ProtectedRoute><ActivityDetails /></ProtectedRoute>} />
+            <Route path="activities/:id/edit" element={<ProtectedRoute><EditActivity /></ProtectedRoute>} />
             <Route path="events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="login" element={<Login />} />

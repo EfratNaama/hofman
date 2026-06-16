@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const navigate = useNavigate();
-  const { authLoading, currentUser, signOutUser } = useAuth();
+  const { authLoading, currentUser, role: authRole, signOutUser } = useAuth() || {};
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
+  const role = authRole ?? currentUser?.role ?? '';
+  const canManageActivities = Boolean(currentUser) && (role === 'admin' || role === 'manager');
 
   useEffect(() => {
     setIsLoggedIn(Boolean(currentUser));
@@ -43,7 +45,7 @@ function Navbar() {
   };
 
   const handleLogout = async () => {
-    await signOutUser();
+    await signOutUser?.();
     setIsLoggedIn(false);
     navigate('/');
   };
@@ -84,8 +86,8 @@ function Navbar() {
           </NavLink>
 
           {!authLoading && isLoggedIn && (
-            <>
-              <NavLink to="/events" style={navLinkStyle}>
+            <>           
+              <NavLink to="/activities" style={navLinkStyle}>
                 פעילויות
               </NavLink>
               <NavLink to="/gallery" style={navLinkStyle}>
