@@ -1,6 +1,16 @@
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
+  const navigate = useNavigate();
+  const { authLoading, currentUser, signOutUser } = useAuth();
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
+
+  useEffect(() => {
+    setIsLoggedIn(Boolean(currentUser));
+  }, [currentUser]);
+
   const navLinkStyle = ({ isActive }) => ({
     display: 'inline-flex',
     alignItems: 'center',
@@ -16,6 +26,27 @@ function Navbar() {
     border: `1px solid ${isActive ? '#0f2240' : '#e5e7eb'}`,
     transition: 'background-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
   });
+
+  const authButtonStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '48px',
+    padding: '0.75rem 1.25rem',
+    borderRadius: '999px',
+    border: '1px solid #0f2240',
+    backgroundColor: '#0f2240',
+    color: '#ffffff',
+    fontSize: '1.125rem',
+    fontWeight: 800,
+    cursor: 'pointer',
+  };
+
+  const handleLogout = async () => {
+    await signOutUser();
+    setIsLoggedIn(false);
+    navigate('/');
+  };
 
   return (
     <nav
@@ -51,18 +82,29 @@ function Navbar() {
           <NavLink end to="/" style={navLinkStyle}>
             בית
           </NavLink>
-          <NavLink to="/events" style={navLinkStyle}>
-            פעילויות
-          </NavLink>
-          <NavLink to="/gallery" style={navLinkStyle}>
-            גלריה
-          </NavLink>
-          <NavLink to="/users" style={navLinkStyle}>
-            משתמשים
-          </NavLink>
-          <NavLink to="/login" style={navLinkStyle}>
-            כניסה
-          </NavLink>
+
+          {!authLoading && isLoggedIn && (
+            <>
+              <NavLink to="/events" style={navLinkStyle}>
+                פעילויות
+              </NavLink>
+              <NavLink to="/gallery" style={navLinkStyle}>
+                גלריה
+              </NavLink>
+              <NavLink to="/users" style={navLinkStyle}>
+                משתמשים
+              </NavLink>
+              <button type="button" style={authButtonStyle} onClick={handleLogout}>
+                התנתקות
+              </button>
+            </>
+          )}
+
+          {!authLoading && !isLoggedIn && (
+            <NavLink to="/login" style={navLinkStyle}>
+              כניסה
+            </NavLink>
+          )}
         </div>
       </div>
     </nav>

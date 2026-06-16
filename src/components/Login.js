@@ -132,10 +132,7 @@ function Login() {
       }
 
       if (firestoreResult && !firestoreResult.success) {
-        const message = getFriendlyErrorMessage(firestoreResult.error);
-        setError(message);
-        alert(`Login error: ${message}`);
-        return;
+        console.warn('Login: Firestore user profile write failed, continuing login', firestoreResult.error);
       }
       
       console.log('Login: success, navigating to home');
@@ -175,10 +172,7 @@ function Login() {
       }
 
       if (firestoreResult && !firestoreResult.success) {
-        const message = getFriendlyErrorMessage(firestoreResult.error);
-        setError(message);
-        alert(`Login error: ${message}`);
-        return;
+        console.warn('Login: Firestore user profile write failed, continuing login', firestoreResult.error);
       }
       
       console.log('Login: success, navigating to home');

@@ -92,11 +92,9 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        try {
-          await createFirestoreUser(user);
-        } catch (error) {
+        createFirestoreUser(user).catch((error) => {
           console.warn('Failed to create Firestore user record:', error);
-        }
+        });
       }
       setAuthLoading(false);
     });
