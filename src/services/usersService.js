@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  addDoc,
   orderBy,
   query,
   serverTimestamp,
@@ -31,6 +32,8 @@ const toFirestoreDate = (value) => {
   return Timestamp.fromDate(parsedDate);
 };
 
+
+
 const normalizeUser = (docSnapshot) => ({
   id: docSnapshot.id,
   ...docSnapshot.data(),
@@ -54,6 +57,7 @@ export async function getUserById(userId) {
 }
 
 export async function createUser(userData) {
+  
   const email = userData.email.trim();
   let authUser = null;
 
@@ -89,12 +93,11 @@ export async function updateUser(userId, userData) {
   const userRef = doc(db, USERS_COLLECTION, userId);
 
   await updateDoc(userRef, {
-    fullName: userData.fullName.trim(),
-    email: userData.email.trim(),
-    phone: userData.phone.trim(),
-    role: userData.role,
-    status: userData.status,
-    createdAt: toFirestoreDate(userData.createdAt),
+    fullName: userData.fullName?.trim() || '',
+    email: userData.email?.trim() || '',
+    phone: userData.phone?.trim() || '',
+    role: userData.role || 'resident',
+    status: userData.status || 'active',
     updatedAt: serverTimestamp(),
   });
 }

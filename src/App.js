@@ -3,15 +3,16 @@ import { BrowserRouter, Routes, Route, Outlet, Link } from 'react-router-dom';
 import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Users from './components/Users';
+import Home from './pages/Home.jsx';import Users from './components/Users';
 import NewUser from './components/NewUser';
 import UserDetails from './components/UserDetails';
 import EditUser from './components/EditUser';
 import Events from './components/Events';
-import Gallery from './components/Gallery';
+import Gallery from './pages/Gallery';
+import AdminGallery from './pages/AdminGallery';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
+import AccessibilityWidget from './components/AccessibilityWidget';
 import Activities from './components/Activities';
 import NewActivity from './components/NewActivity';
 import ActivityDetails from './components/ActivityDetails';
@@ -52,6 +53,7 @@ function Layout() {
       <main className="w-full">
         <Outlet />
       </main>
+      <AccessibilityWidget />
     </div>
   );
 }

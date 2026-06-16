@@ -10,12 +10,12 @@ const sectionStyle = {
 };
 
 const demoImages = [
-  { id: 'demo-gallery-1', url: 'https://picsum.photos/seed/hofman-activity-1/700/520', altText: 'פעילות קהילתית בבית הופמן' },
-  { id: 'demo-gallery-2', url: 'https://picsum.photos/seed/hofman-activity-2/700/520', altText: 'סדנה יצירתית במרכז' },
-  { id: 'demo-gallery-3', url: 'https://picsum.photos/seed/hofman-activity-3/700/520', altText: 'מפגש חברתי' },
-  { id: 'demo-gallery-4', url: 'https://picsum.photos/seed/hofman-activity-4/700/520', altText: 'הרצאה לקהילה' },
-  { id: 'demo-gallery-5', url: 'https://picsum.photos/seed/hofman-activity-5/700/520', altText: 'פעילות תרבות' },
-  { id: 'demo-gallery-6', url: 'https://picsum.photos/seed/hofman-activity-6/700/520', altText: 'רגעים מהמרכז' },
+  { id: 'demo-gallery-1', imageBase64: 'https://picsum.photos/seed/hofman-activity-1/700/520', caption: 'פעילות קהילתית בבית הופמן' },
+  { id: 'demo-gallery-2', imageBase64: 'https://picsum.photos/seed/hofman-activity-2/700/520', caption: 'סדנה יצירתית במרכז' },
+  { id: 'demo-gallery-3', imageBase64: 'https://picsum.photos/seed/hofman-activity-3/700/520', caption: 'מפגש חברתי' },
+  { id: 'demo-gallery-4', imageBase64: 'https://picsum.photos/seed/hofman-activity-4/700/520', caption: 'הרצאה לקהילה' },
+  { id: 'demo-gallery-5', imageBase64: 'https://picsum.photos/seed/hofman-activity-5/700/520', caption: 'פעילות תרבות' },
+  { id: 'demo-gallery-6', imageBase64: 'https://picsum.photos/seed/hofman-activity-6/700/520', caption: 'רגעים מהמרכז' },
 ];
 
 function GalleryPreview({ images = [], loading }) {
@@ -52,8 +52,8 @@ function GalleryPreview({ images = [], loading }) {
         <div className="home-gallery-grid">
           {visibleImages.map((image) => (
             <figure className="home-gallery-item home-card-hover" key={image.id}>
-              <img src={image.url} alt={image.altText || 'תמונה מהגלריה'} />
-              <figcaption>{image.altText || 'תמונה מהגלריה'}</figcaption>
+              <img src={image.imageBase64} alt={image.caption || 'תמונה מהגלריה'} />
+              <figcaption>{image.caption || 'תמונה מהגלריה'}</figcaption>
             </figure>
           ))}
         </div>

@@ -38,7 +38,7 @@ export async function getLatestAnnouncements() {
 export async function getLatestGalleryImages() {
   const galleryQuery = query(
     galleryCollection,
-    orderBy('uploadedAt', 'desc'),
+    orderBy('createdAt', 'desc'),
     limit(6)
   );
   const snapshot = await getDocs(galleryQuery);
