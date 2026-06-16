@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -50,4 +51,22 @@ export async function registerForActivity(activity, user) {
   });
 
   return { alreadyRegistered: false };
+}
+
+export async function cancelActivityRegistration(activityId, userId) {
+  const registrationRef = doc(db, REGISTRATIONS_COLLECTION, getRegistrationId(userId, activityId));
+  const registrationSnapshot = await getDoc(registrationRef);
+
+  if (!registrationSnapshot.exists()) {
+    return { alreadyCanceled: true };
+  }
+
+  const registration = registrationSnapshot.data();
+
+  if (registration.userId !== userId) {
+    throw new Error('Cannot cancel a registration that belongs to another user.');
+  }
+
+  await deleteDoc(registrationRef);
+  return { alreadyCanceled: false };
 }

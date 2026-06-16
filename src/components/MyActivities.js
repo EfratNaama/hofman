@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getUserActivityRegistrations } from '../services/activityRegistrationsService';
+import { cancelActivityRegistration, getUserActivityRegistrations } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 
 function MyActivities() {
@@ -9,6 +9,8 @@ function MyActivities() {
   const [registrations, setRegistrations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [cancelingActivityId, setCancelingActivityId] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -22,6 +24,7 @@ function MyActivities() {
 
       setIsLoading(true);
       setError('');
+      setSuccessMessage('');
 
       try {
         const registrationsData = await getUserActivityRegistrations(currentUser.uid);
@@ -47,6 +50,31 @@ function MyActivities() {
     };
   }, [currentUser]);
 
+  const handleCancelRegistration = async (registration) => {
+    const confirmed = window.confirm('האם את/ה בטוח/ה שברצונך לבטל את ההרשמה לפעילות?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError('');
+    setSuccessMessage('');
+    setCancelingActivityId(registration.activityId);
+
+    try {
+      await cancelActivityRegistration(registration.activityId, currentUser.uid);
+      setRegistrations((currentRegistrations) => (
+        currentRegistrations.filter((currentRegistration) => currentRegistration.id !== registration.id)
+      ));
+      setSuccessMessage('ההרשמה בוטלה בהצלחה');
+    } catch (err) {
+      console.error('Failed to cancel activity registration', err);
+      setError('לא ניתן לבטל את ההרשמה כרגע. נסו שוב מאוחר יותר.');
+    } finally {
+      setCancelingActivityId('');
+    }
+  };
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 text-right" dir="rtl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -62,6 +90,12 @@ function MyActivities() {
       {error && (
         <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-lg font-semibold text-green-700">
+          {successMessage}
         </div>
       )}
 
@@ -94,9 +128,19 @@ function MyActivities() {
               {registration.description && (
                 <p className="mt-5 text-lg leading-8 text-slate-700">{registration.description}</p>
               )}
-              <Link className="mt-6 inline-block rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200" to={`/activities/${registration.activityId}`}>
-                פרטי הפעילות
-              </Link>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link className="inline-block rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200" to={`/activities/${registration.activityId}`}>
+                  פרטי הפעילות
+                </Link>
+                <button
+                  className="rounded-lg bg-red-50 px-5 py-3 text-lg font-bold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                  type="button"
+                  disabled={cancelingActivityId === registration.activityId}
+                  onClick={() => handleCancelRegistration(registration)}
+                >
+                  {cancelingActivityId === registration.activityId ? 'מבטל...' : 'ביטול הרשמה'}
+                </button>
+              </div>
             </article>
           ))}
         </div>
