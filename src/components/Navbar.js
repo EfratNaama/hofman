@@ -6,7 +6,7 @@ function Navbar() {
   const navigate = useNavigate();
   const { authLoading, currentUser, role: authRole, signOutUser } = useAuth() || {};
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
-  const role = authRole ?? currentUser?.role ?? '';
+  const role = (authRole ?? currentUser?.role ?? '').toLowerCase();
   const canManageActivities = Boolean(currentUser) && (role === 'admin' || role === 'manager');
 
   useEffect(() => {
@@ -90,6 +90,11 @@ function Navbar() {
               <NavLink to="/activities" style={navLinkStyle}>
                 פעילויות
               </NavLink>
+              {canManageActivities && (
+                <NavLink to="/activities/new" style={navLinkStyle}>
+                  הוספת פעילות
+                </NavLink>
+              )}
               <NavLink to="/gallery" style={navLinkStyle}>
                 גלריה
               </NavLink>

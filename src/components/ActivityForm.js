@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const categoryOptions = ['ספורט', 'אמנות', 'הרצאה', 'מוזיקה', 'חברה', 'בריאות', 'אחר'];
@@ -7,6 +7,8 @@ const dayOptions = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמי�
 const initialFormState = {
   title: '',
   description: '',
+  location: '',
+  imageUrl: '',
   category: '',
   dayOfWeek: '',
   activityDate: '',
@@ -18,12 +20,20 @@ const initialFormState = {
   paymentLink: '',
 };
 
-function ActivityForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
+function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSubmit }) {
   const [formData, setFormData] = useState({
     ...initialFormState,
     ...initialValues,
   });
   const [validationError, setValidationError] = useState('');
+
+  useEffect(() => {
+    setFormData({
+      ...initialFormState,
+      ...initialValues,
+    });
+    setValidationError('');
+  }, [initialValues, resetKey]);
 
   const availableSpots = useMemo(() => {
     const maxParticipants = Number(formData.maxParticipants || 0);
@@ -41,6 +51,8 @@ function ActivityForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
 
   const validateForm = () => {
     if (!formData.title.trim()) return 'יש להזין שם פעילות.';
+    if (!formData.description.trim()) return 'יש להזין תיאור פעילות.';
+    if (!formData.location.trim()) return 'יש להזין מיקום פעילות.';
     if (!formData.category) return 'יש לבחור קטגוריה.';
     if (!formData.dayOfWeek) return 'יש לבחור יום בשבוע.';
     if (!formData.activityDate) return 'יש לבחור תאריך פעילות.';
@@ -128,6 +140,28 @@ function ActivityForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
             className="min-h-36 w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
             name="description"
             value={formData.description}
+            onChange={handleChange}
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-lg font-bold text-slate-800">מיקום</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            name="location"
+            type="text"
+            value={formData.location}
+            onChange={handleChange}
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-lg font-bold text-slate-800">קישור לתמונה (אופציונלי)</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            name="imageUrl"
+            type="url"
+            value={formData.imageUrl}
             onChange={handleChange}
           />
         </label>

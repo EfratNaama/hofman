@@ -1,12 +1,18 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db, googleProvider } from '../firebase';
 import { signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const AuthContext = createContext(null);
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+
+  return context;
 }
 
 async function createFirestoreUser(user) {
@@ -46,6 +52,7 @@ async function createFirestoreUser(user) {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   const signInEmail = async (email, password) => {
@@ -91,11 +98,31 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      setUserProfile(null);
+
       if (user) {
-        createFirestoreUser(user).catch((error) => {
-          console.warn('Failed to create Firestore user record:', error);
-        });
+        try {
+          await createFirestoreUser(user);
+          const userSnapshot = await getDoc(doc(db, 'users', user.uid));
+
+          if (userSnapshot.exists()) {
+            setUserProfile({
+              uid: user.uid,
+              ...userSnapshot.data(),
+            });
+          } else {
+            setUserProfile({
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || '',
+              role: '',
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to load authenticated user profile:', error);
+        }
       }
+
       setAuthLoading(false);
     });
 
@@ -104,6 +131,9 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    userProfile,
+    role: userProfile?.role || '',
+    loading: authLoading,
     authLoading,
     signInEmail,
     signInGoogle,

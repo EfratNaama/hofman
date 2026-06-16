@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { deleteActivity, getActivityById } from '../services/activitiesService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 
 function ActivityDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const normalizedRole = (role || '').toLowerCase();
+  const canManageActivity = normalizedRole === 'admin' || normalizedRole === 'manager';
   const [activity, setActivity] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -80,19 +84,31 @@ function ActivityDetails() {
             <Link className="rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-700 hover:bg-slate-200" to="/activities">
               חזרה
             </Link>
-            <Link className="rounded-lg bg-sky-800 px-5 py-3 text-lg font-bold text-white hover:bg-sky-900" to={`/activities/${id}/edit`}>
-              עריכה
-            </Link>
-            <button
-              className="rounded-lg bg-red-600 px-5 py-3 text-lg font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-              type="button"
-              disabled={isDeleting}
-              onClick={handleDelete}
-            >
-              {isDeleting ? 'מוחק...' : 'מחיקה'}
-            </button>
+            {canManageActivity && (
+              <>
+                <Link className="rounded-lg bg-sky-800 px-5 py-3 text-lg font-bold text-white hover:bg-sky-900" to={`/activities/${id}/edit`}>
+                  עריכה
+                </Link>
+                <button
+                  className="rounded-lg bg-red-600 px-5 py-3 text-lg font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={handleDelete}
+                >
+                  {isDeleting ? 'מוחק...' : 'מחיקה'}
+                </button>
+              </>
+            )}
           </div>
         </div>
+
+        {activity.imageUrl && (
+          <img
+            alt={activity.title}
+            className="mb-6 h-72 w-full rounded-lg object-cover"
+            src={activity.imageUrl}
+          />
+        )}
 
         {error && (
           <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700">
@@ -104,6 +120,7 @@ function ActivityDetails() {
 
         <dl className="grid gap-4 md:grid-cols-2">
           <DetailItem label="קטגוריה" value={activity.category} />
+          <DetailItem label="מיקום" value={activity.location} />
           <DetailItem label="יום בשבוע" value={activity.dayOfWeek} />
           <DetailItem label="תאריך" value={formatActivityDate(activity.activityDate)} />
           <DetailItem label="שעה" value={activity.time} />

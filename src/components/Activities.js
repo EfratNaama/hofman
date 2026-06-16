@@ -42,6 +42,13 @@ function Activities() {
         <div className="grid gap-5 lg:grid-cols-2">
           {activities.map((activity) => (
             <article key={activity.id} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+              {activity.imageUrl && (
+                <img
+                  alt={activity.title}
+                  className="mb-5 h-56 w-full rounded-lg object-cover"
+                  src={activity.imageUrl}
+                />
+              )}
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="text-2xl font-black text-slate-900">{activity.title}</h2>
@@ -58,6 +65,7 @@ function Activities() {
 
               <dl className="mt-5 grid gap-3 sm:grid-cols-3">
                 <Info label="קטגוריה" value={activity.category} />
+                <Info label="מיקום" value={activity.location} />
                 <Info label="מכסה" value={activity.maxParticipants} />
                 <Info label="פנויים" value={activity.availableSpots} />
               </dl>
@@ -66,9 +74,11 @@ function Activities() {
                 <Link className="rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200" to={`/activities/${activity.id}`}>
                   צפייה
                 </Link>
-                <Link className="rounded-lg bg-sky-100 px-5 py-3 text-lg font-bold text-sky-800 hover:bg-sky-200" to={`/activities/${activity.id}/edit`}>
-                  עריכה
-                </Link>
+                {canCreateActivity && (
+                  <Link className="rounded-lg bg-sky-100 px-5 py-3 text-lg font-bold text-sky-800 hover:bg-sky-200" to={`/activities/${activity.id}/edit`}>
+                    עריכה
+                  </Link>
+                )}
               </div>
             </article>
           ))}
