@@ -11,6 +11,9 @@
 # production
 /build
 
+#dev docs
+/kehila2026-main
+
 # misc
 .DS_Store
 .env
