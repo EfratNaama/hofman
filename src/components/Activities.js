@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../hooks/useActivities';
-import { getUserActivityRegistrations, registerForActivity } from '../services/activityRegistrationsService';
+import { getActivityRegistrations, getUserActivityRegistrations, registerForActivity } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 
 function Activities() {
@@ -16,6 +16,9 @@ function Activities() {
   const [registrationError, setRegistrationError] = useState('');
   const [registrationMessage, setRegistrationMessage] = useState('');
   const [registeringActivityId, setRegisteringActivityId] = useState('');
+  const [adminRegistrationsByActivity, setAdminRegistrationsByActivity] = useState({});
+  const [expandedRegistrationActivityId, setExpandedRegistrationActivityId] = useState('');
+  const [loadingRegistrationActivityId, setLoadingRegistrationActivityId] = useState('');
 
   const registeredActivityIdSet = useMemo(
     () => new Set(registeredActivityIds),
@@ -78,6 +81,42 @@ function Activities() {
       setRegistrationError('לא ניתן להשלים את ההרשמה. נסו שוב מאוחר יותר.');
     } finally {
       setRegisteringActivityId('');
+    }
+  };
+
+  const handleViewRegistrations = async (activityId) => {
+    setRegistrationError('');
+    setRegistrationMessage('');
+
+    if (!canCreateActivity) {
+      setRegistrationError('אין לך הרשאה לצפות ברשימת הנרשמים.');
+      return;
+    }
+
+    if (expandedRegistrationActivityId === activityId) {
+      setExpandedRegistrationActivityId('');
+      return;
+    }
+
+    setExpandedRegistrationActivityId(activityId);
+
+    if (adminRegistrationsByActivity[activityId]) {
+      return;
+    }
+
+    setLoadingRegistrationActivityId(activityId);
+
+    try {
+      const registrations = await getActivityRegistrations(activityId);
+      setAdminRegistrationsByActivity((currentRegistrations) => ({
+        ...currentRegistrations,
+        [activityId]: registrations,
+      }));
+    } catch (err) {
+      console.error('Failed to load activity registrations for admin view', err);
+      setRegistrationError('לא ניתן לטעון את רשימת הנרשמים לפעילות זו.');
+    } finally {
+      setLoadingRegistrationActivityId('');
     }
   };
 
@@ -173,11 +212,55 @@ function Activities() {
                   </button>
                 )}
                 {canCreateActivity && (
-                  <Link className="rounded-lg bg-sky-100 px-5 py-3 text-lg font-bold text-sky-800 hover:bg-sky-200" to={`/activities/${activity.id}/edit`}>
-                    עריכה
-                  </Link>
+                  <>
+                    <Link className="rounded-lg bg-sky-100 px-5 py-3 text-lg font-bold text-sky-800 hover:bg-sky-200" to={`/activities/${activity.id}/edit`}>
+                      עריכה
+                    </Link>
+                    <button
+                      className="rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      type="button"
+                      disabled={loadingRegistrationActivityId === activity.id}
+                      onClick={() => handleViewRegistrations(activity.id)}
+                    >
+                      {loadingRegistrationActivityId === activity.id ? 'טוען נרשמים...' : 'צפייה בנרשמים'}
+                    </button>
+                  </>
                 )}
               </div>
+
+              {canCreateActivity && expandedRegistrationActivityId === activity.id && (
+                <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5">
+                  <h3 className="text-xl font-black text-slate-900">נרשמים לפעילות</h3>
+                  {loadingRegistrationActivityId === activity.id && (
+                    <p className="mt-3 text-lg font-semibold text-slate-700">טוען נרשמים...</p>
+                  )}
+                  {loadingRegistrationActivityId !== activity.id && (adminRegistrationsByActivity[activity.id]?.length || 0) === 0 && (
+                    <p className="mt-3 text-lg font-semibold text-slate-700">אין עדיין נרשמים לפעילות זו</p>
+                  )}
+                  {loadingRegistrationActivityId !== activity.id && (adminRegistrationsByActivity[activity.id]?.length || 0) > 0 && (
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="min-w-full border-collapse text-right">
+                        <thead>
+                          <tr className="border-b border-slate-200 text-base text-slate-500">
+                            <th className="px-4 py-3 font-bold">אימייל</th>
+                            <th className="px-4 py-3 font-bold">מזהה משתמש</th>
+                            <th className="px-4 py-3 font-bold">תאריך הרשמה</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {adminRegistrationsByActivity[activity.id].map((registration) => (
+                            <tr key={registration.id} className="border-b border-slate-200">
+                              <td className="px-4 py-3 text-base font-semibold text-slate-900">{registration.userEmail || '-'}</td>
+                              <td className="px-4 py-3 text-base text-slate-700">{registration.userId || '-'}</td>
+                              <td className="px-4 py-3 text-base text-slate-700">{formatActivityDate(registration.registeredAt)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </article>
           ))}
         </div>

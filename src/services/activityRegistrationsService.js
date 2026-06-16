@@ -29,6 +29,15 @@ export async function getUserActivityRegistrations(userId) {
   return snapshot.docs.map(normalizeRegistration);
 }
 
+export async function getActivityRegistrations(activityId) {
+  const registrationsQuery = query(
+    collection(db, REGISTRATIONS_COLLECTION),
+    where('activityId', '==', activityId)
+  );
+  const snapshot = await getDocs(registrationsQuery);
+  return snapshot.docs.map(normalizeRegistration);
+}
+
 export async function registerForActivity(activity, user) {
   const registrationRef = doc(db, REGISTRATIONS_COLLECTION, getRegistrationId(user.uid, activity.id));
   const existingRegistration = await getDoc(registrationRef);
