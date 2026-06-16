@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Link } from 'react-router-dom';
 import './App.css';
+import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Users from './components/Users';
@@ -10,6 +11,7 @@ import EditUser from './components/EditUser';
 import Events from './components/Events';
 import Gallery from './components/Gallery';
 import Login from './components/Login';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (

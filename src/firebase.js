@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -11,9 +11,18 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+let adminApp;
+try {
+  adminApp = getApp('admin');
+} catch (error) {
+  adminApp = initializeApp(firebaseConfig, 'admin');
+}
+
 const auth = getAuth(app);
+const adminAuth = getAuth(adminApp);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { app, auth, db, googleProvider };
+export { app, auth, adminAuth, db, googleProvider };
