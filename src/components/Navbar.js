@@ -82,15 +82,16 @@ function Navbar() {
           <NavLink to="/users" style={navLinkStyle}>
             משתמשים
           </NavLink>
-          {!authLoading && !currentUser && (
+              <button type="button" style={authButtonStyle} onClick={handleLogout}>
+                התנתקות
+              </button>
+            </>
+          )}
+
+          {!authLoading && !isLoggedIn && (
             <NavLink to="/login" style={navLinkStyle}>
               כניסה
             </NavLink>
-          )}
-          {!authLoading && currentUser && (
-            <button type="button" style={authButtonStyle} onClick={handleLogout}>
-              התנתקות
-            </button>
           )}
         </div>
       </div>
