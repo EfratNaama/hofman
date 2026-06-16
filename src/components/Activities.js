@@ -3,7 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../hooks/useActivities';
 import { getActivityRegistrations, getUserActivityRegistrations, registerForActivity } from '../services/activityRegistrationsService';
-import { formatActivityDate } from '../utils/activityDateUtils';
+import { formatActivityDate, toDate } from '../utils/activityDateUtils';
+
+const getActivityType = (activity) => activity.type || 'קבוע';
+const getActivityTypeBadge = (activity) => (
+  getActivityType(activity) === 'חד פעמי' ? 'אירוע חד פעמי' : 'פעילות קבועה'
+);
+const scheduleDays = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי'];
+const noDayLabel = 'ללא יום מוגדר';
+const dateDayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+
+const normalizeDayName = (value) => {
+  if (!value) return '';
+  const dayName = String(value).trim();
+  return scheduleDays.find((day) => dayName.includes(day)) || '';
+};
+
+const getScheduleDay = (activity) => {
+  const explicitDay = normalizeDayName(activity.dayOfWeek);
+  if (explicitDay) return explicitDay;
+
+  const activityDate = toDate(activity.activityDate || activity.date);
+  if (!activityDate) return noDayLabel;
+
+  const dateDayName = dateDayNames[activityDate.getDay()];
+  return scheduleDays.includes(dateDayName) ? dateDayName : noDayLabel;
+};
 
 function Activities() {
   const navigate = useNavigate();
@@ -19,11 +44,21 @@ function Activities() {
   const [adminRegistrationsByActivity, setAdminRegistrationsByActivity] = useState({});
   const [expandedRegistrationActivityId, setExpandedRegistrationActivityId] = useState('');
   const [loadingRegistrationActivityId, setLoadingRegistrationActivityId] = useState('');
+  const [activitiesView, setActivitiesView] = useState('cards');
 
   const registeredActivityIdSet = useMemo(
     () => new Set(registeredActivityIds),
     [registeredActivityIds]
   );
+  const activitiesByScheduleDay = useMemo(() => (
+    activities.reduce((groupedActivities, activity) => {
+      const day = getScheduleDay(activity);
+      return {
+        ...groupedActivities,
+        [day]: [...(groupedActivities[day] || []), activity],
+      };
+    }, {})
+  ), [activities]);
 
   useEffect(() => {
     let isMounted = true;
@@ -134,6 +169,23 @@ function Activities() {
         )}
       </div>
 
+      <div className="mb-6 inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm" role="group" aria-label="תצוגת פעילויות">
+        <button
+          className={activitiesView === 'cards' ? 'rounded-md bg-sky-800 px-6 py-3 text-lg font-bold text-white' : 'rounded-md px-6 py-3 text-lg font-bold text-slate-700 hover:bg-slate-100'}
+          type="button"
+          onClick={() => setActivitiesView('cards')}
+        >
+          פעילויות
+        </button>
+        <button
+          className={activitiesView === 'schedule' ? 'rounded-md bg-sky-800 px-6 py-3 text-lg font-bold text-white' : 'rounded-md px-6 py-3 text-lg font-bold text-slate-700 hover:bg-slate-100'}
+          type="button"
+          onClick={() => setActivitiesView('schedule')}
+        >
+          מערכת שבועית
+        </button>
+      </div>
+
       {error && (
         <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700">
           {error}
@@ -161,7 +213,7 @@ function Activities() {
         </div>
       )}
 
-      {!isLoading && activities.length > 0 && (
+      {!isLoading && activitiesView === 'cards' && activities.length > 0 && (
         <div className="grid gap-5 lg:grid-cols-2">
           {activities.map((activity) => (
             <article key={activity.id} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -185,6 +237,10 @@ function Activities() {
               </div>
 
               <p className="mt-4 line-clamp-3 text-lg leading-8 text-slate-700">{activity.description || 'אין תיאור לפעילות זו.'}</p>
+
+              <span className="mt-4 inline-flex rounded-full bg-amber-100 px-4 py-2 text-base font-bold text-amber-800">
+                {getActivityTypeBadge(activity)}
+              </span>
 
               <dl className="mt-5 grid gap-3 sm:grid-cols-3">
                 <Info label="קטגוריה" value={activity.category} />
@@ -265,7 +321,56 @@ function Activities() {
           ))}
         </div>
       )}
+      {!isLoading && activitiesView === 'schedule' && activities.length > 0 && (
+        <WeeklySchedule activitiesByScheduleDay={activitiesByScheduleDay} />
+      )}
     </section>
+  );
+}
+
+function WeeklySchedule({ activitiesByScheduleDay }) {
+  const visibleDays = [...scheduleDays, noDayLabel].filter((day) => (
+    day !== noDayLabel || (activitiesByScheduleDay[day]?.length || 0) > 0
+  ));
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-5">
+      {visibleDays.map((day) => {
+        const dayActivities = activitiesByScheduleDay[day] || [];
+
+        return (
+          <section key={day} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 className="border-b border-slate-100 pb-3 text-2xl font-black text-slate-900">{day}</h2>
+
+            {dayActivities.length === 0 && (
+              <p className="mt-4 rounded-lg bg-slate-50 p-4 text-lg font-semibold text-slate-500">
+                אין פעילויות ליום זה
+              </p>
+            )}
+
+            <div className="mt-4 space-y-3">
+              {dayActivities.map((activity) => (
+                <article key={activity.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xl font-black text-slate-900">{activity.title}</p>
+                  <p className="mt-2 text-lg font-bold text-slate-700">{activity.time || '-'}</p>
+                  {activity.activityDate || activity.date ? (
+                    <p className="mt-1 text-base font-semibold text-slate-500">
+                      {formatActivityDate(activity.activityDate || activity.date)}
+                    </p>
+                  ) : null}
+                  {activity.location && (
+                    <p className="mt-3 text-base font-semibold text-slate-600">{activity.location}</p>
+                  )}
+                  <span className="mt-3 inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-800">
+                    {getActivityTypeBadge(activity)}
+                  </span>
+                </article>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
   );
 }
 

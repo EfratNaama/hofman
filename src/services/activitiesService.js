@@ -37,10 +37,14 @@ const toFirestoreDate = (value) => {
 
 const normalizeActivity = (docSnapshot) => ({
   id: docSnapshot.id,
+  type: 'קבוע',
   ...docSnapshot.data(),
 });
 
 const buildActivityPayload = (activityData, options = {}) => {
+  const type = activityData.type || 'קבוע';
+  const isOneTime = type === 'חד פעמי';
+  const date = isOneTime ? (activityData.date || activityData.activityDate || '') : '';
   const maxParticipants = Number(activityData.maxParticipants);
   const currentParticipants = options.isCreate
     ? 0
@@ -49,12 +53,13 @@ const buildActivityPayload = (activityData, options = {}) => {
   return {
     title: activityData.title.trim(),
     description: activityData.description.trim(),
+    type,
     location: activityData.location.trim(),
     imageUrl: activityData.imageUrl?.trim() || '',
     category: activityData.category,
-    dayOfWeek: activityData.dayOfWeek,
-    date: activityData.activityDate,
-    activityDate: toFirestoreDate(activityData.activityDate),
+    dayOfWeek: isOneTime ? '' : activityData.dayOfWeek,
+    date,
+    activityDate: toFirestoreDate(date),
     time: activityData.time,
     maxParticipants,
     currentParticipants,

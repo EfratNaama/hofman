@@ -3,14 +3,17 @@ import { Link } from 'react-router-dom';
 
 const categoryOptions = ['ספורט', 'אמנות', 'הרצאה', 'מוזיקה', 'חברה', 'בריאות', 'אחר'];
 const dayOptions = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+const typeOptions = ['קבוע', 'חד פעמי'];
 
 const initialFormState = {
   title: '',
   description: '',
+  type: 'קבוע',
   location: '',
   imageUrl: '',
   category: '',
   dayOfWeek: '',
+  date: '',
   activityDate: '',
   time: '',
   maxParticipants: '',
@@ -20,18 +23,27 @@ const initialFormState = {
   paymentLink: '',
 };
 
-function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSubmit }) {
-  const [formData, setFormData] = useState({
+function buildFormState(initialValues) {
+  const type = initialValues?.type || 'קבוע';
+  const date = initialValues?.date || initialValues?.activityDate || '';
+
+  return {
     ...initialFormState,
     ...initialValues,
-  });
+    type,
+    date: type === 'חד פעמי' ? date : '',
+    activityDate: type === 'חד פעמי' ? date : '',
+    dayOfWeek: type === 'קבוע' ? (initialValues?.dayOfWeek || '') : '',
+  };
+}
+
+function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSubmit }) {
+  const [formData, setFormData] = useState(buildFormState(initialValues));
   const [validationError, setValidationError] = useState('');
+  const isOneTime = formData.type === 'חד פעמי';
 
   useEffect(() => {
-    setFormData({
-      ...initialFormState,
-      ...initialValues,
-    });
+    setFormData(buildFormState(initialValues));
     setValidationError('');
   }, [initialValues, resetKey]);
 
@@ -43,19 +55,41 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
 
   const handleChange = (event) => {
     const { checked, name, type, value } = event.target;
-    setFormData((currentData) => ({
-      ...currentData,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+
+    setFormData((currentData) => {
+      const nextData = {
+        ...currentData,
+        [name]: type === 'checkbox' ? checked : value,
+      };
+
+      if (name === 'type') {
+        return {
+          ...nextData,
+          dayOfWeek: value === 'קבוע' ? nextData.dayOfWeek : '',
+          date: value === 'חד פעמי' ? nextData.date : '',
+          activityDate: value === 'חד פעמי' ? nextData.date : '',
+        };
+      }
+
+      if (name === 'date') {
+        return {
+          ...nextData,
+          activityDate: value,
+        };
+      }
+
+      return nextData;
+    });
   };
 
   const validateForm = () => {
     if (!formData.title.trim()) return 'יש להזין שם פעילות.';
     if (!formData.description.trim()) return 'יש להזין תיאור פעילות.';
-    if (!formData.location.trim()) return 'יש להזין מיקום פעילות.';
+    if (!formData.location.trim()) return 'יש להזין מקום פעילות.';
     if (!formData.category) return 'יש לבחור קטגוריה.';
-    if (!formData.dayOfWeek) return 'יש לבחור יום בשבוע.';
-    if (!formData.activityDate) return 'יש לבחור תאריך פעילות.';
+    if (!formData.type) return 'יש לבחור סוג פעילות.';
+    if (formData.type === 'קבוע' && !formData.dayOfWeek) return 'יש לבחור יום בשבוע.';
+    if (formData.type === 'חד פעמי' && !formData.date) return 'יש לבחור תאריך לאירוע.';
     if (!formData.time) return 'יש להזין שעת פעילות.';
 
     const maxParticipants = Number(formData.maxParticipants);
@@ -91,6 +125,10 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
 
     onSubmit({
       ...formData,
+      type: formData.type || 'קבוע',
+      dayOfWeek: isOneTime ? '' : formData.dayOfWeek,
+      date: isOneTime ? formData.date : '',
+      activityDate: isOneTime ? formData.date : '',
       maxParticipants: Number(formData.maxParticipants),
       currentParticipants: Number(formData.currentParticipants || 0),
       availableSpots,
@@ -134,23 +172,39 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
           </select>
         </label>
 
+        <label className="block">
+          <span className="mb-2 block text-lg font-bold text-slate-800">סוג פעילות</span>
+          <select
+            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+          >
+            {typeOptions.map((typeOption) => (
+              <option key={typeOption} value={typeOption}>
+                {typeOption}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-lg font-bold text-slate-800">מקום</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            name="location"
+            type="text"
+            value={formData.location}
+            onChange={handleChange}
+          />
+        </label>
+
         <label className="block lg:col-span-2">
           <span className="mb-2 block text-lg font-bold text-slate-800">תיאור</span>
           <textarea
             className="min-h-36 w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
             name="description"
             value={formData.description}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">מיקום</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="location"
-            type="text"
-            value={formData.location}
             onChange={handleChange}
           />
         </label>
@@ -166,33 +220,37 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
           />
         </label>
 
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">יום בשבוע</span>
-          <select
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="dayOfWeek"
-            value={formData.dayOfWeek}
-            onChange={handleChange}
-          >
-            <option value="">בחרו יום</option>
-            {dayOptions.map((day) => (
-              <option key={day} value={day}>
-                {day}
-              </option>
-            ))}
-          </select>
-        </label>
+        {!isOneTime && (
+          <label className="block">
+            <span className="mb-2 block text-lg font-bold text-slate-800">יום בשבוע</span>
+            <select
+              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              name="dayOfWeek"
+              value={formData.dayOfWeek}
+              onChange={handleChange}
+            >
+              <option value="">בחרו יום</option>
+              {dayOptions.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">תאריך</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="activityDate"
-            type="date"
-            value={formData.activityDate}
-            onChange={handleChange}
-          />
-        </label>
+        {isOneTime && (
+          <label className="block">
+            <span className="mb-2 block text-lg font-bold text-slate-800">תאריך</span>
+            <input
+              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              name="date"
+              type="date"
+              value={formData.date}
+              onChange={handleChange}
+            />
+          </label>
+        )}
 
         <label className="block">
           <span className="mb-2 block text-lg font-bold text-slate-800">שעה</span>

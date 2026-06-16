@@ -1,12 +1,6 @@
 import { Link } from 'react-router-dom';
-
-const events = [
-  { id: 1, date: '10 ביולי', title: 'סדנת יצירה', time: '10:00', description: 'פעילות אמנותית נעימה לגיל השלישי' },
-  { id: 2, date: '12 ביולי', title: 'ריקודי שבט', time: '11:30', description: 'מפגש ריקוד קל וחברותי' },
-  { id: 3, date: '14 ביולי', title: 'הרצאת בריאות', time: '09:30', description: 'שיחה על תזונה ושינה טובה' },
-  { id: 4, date: '16 ביולי', title: 'קבוצת קריאה', time: '14:00', description: 'דיון על ספרים ושיתוף חוויות' },
-  { id: 5, date: '18 ביולי', title: 'שעת סיפור', time: '15:30', description: 'מפגש סיפורים עם קפה ועוגה' },
-];
+import { useActivities } from '../hooks/useActivities';
+import { formatActivityDate } from '../utils/activityDateUtils';
 
 const sectionStyle = {
   background: '#ffffff',
@@ -28,20 +22,43 @@ const buttonStyle = {
 };
 
 function Events() {
+  const { activities, isLoading, error } = useActivities();
+  const events = activities.filter((activity) => activity.type === 'חד פעמי');
+
   return (
-    <section style={sectionStyle}>
+    <section style={sectionStyle} dir="rtl">
       <h2 style={{ fontSize: '1.8rem', marginBottom: '12px' }}>אירועים</h2>
-      <p style={{ fontSize: '1rem', lineHeight: 1.8, color: '#4c5663' }}>כאן תוצג רשימת כל האירועים והפעילויות.</p>
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: '18px' }}>
-        {events.map((event) => (
-          <li key={event.id} style={{ marginBottom: '14px', padding: '14px', background: '#f8f6f1', borderRadius: '14px' }}>
-            <strong style={{ fontSize: '1.05rem' }}>{event.date} – {event.title}</strong>
-            <p style={{ margin: '8px 0 0', fontSize: '1rem', lineHeight: 1.7 }}>{event.description}</p>
-            <span style={{ color: '#5d6d7b', fontSize: '0.97rem' }}>שעה: {event.time}</span>
-          </li>
-        ))}
-      </ul>
-      <Link to="/" style={buttonStyle}>חזרה לדף הבית</Link>
+      <p style={{ fontSize: '1rem', lineHeight: 1.8, color: '#4c5663' }}>
+        כאן תוצג רשימת האירועים החד פעמיים.
+      </p>
+
+      {isLoading && (
+        <p style={{ marginTop: '18px', fontSize: '1rem', color: '#4c5663' }}>טוען אירועים...</p>
+      )}
+
+      {error && (
+        <p style={{ marginTop: '18px', fontSize: '1rem', color: '#b91c1c' }}>{error}</p>
+      )}
+
+      {!isLoading && !error && events.length === 0 && (
+        <p style={{ marginTop: '18px', fontSize: '1rem', color: '#4c5663' }}>אין אירועים להצגה כרגע.</p>
+      )}
+
+      {!isLoading && !error && events.length > 0 && (
+        <ul style={{ listStyle: 'none', padding: 0, marginTop: '18px' }}>
+          {events.map((event) => (
+            <li key={event.id} style={{ marginBottom: '14px', padding: '14px', background: '#f8f6f1', borderRadius: '14px' }}>
+              <strong style={{ fontSize: '1.05rem' }}>
+                {formatActivityDate(event.activityDate || event.date)} - {event.title}
+              </strong>
+              <p style={{ margin: '8px 0 0', fontSize: '1rem', lineHeight: 1.7 }}>{event.description}</p>
+              <span style={{ color: '#5d6d7b', fontSize: '0.97rem' }}>שעה: {event.time}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Link to="/activities" style={buttonStyle}>לכל הפעילויות</Link>
     </section>
   );
 }
