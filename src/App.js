@@ -9,8 +9,11 @@ import NewUser from './components/NewUser';
 import UserDetails from './components/UserDetails';
 import EditUser from './components/EditUser';
 import Events from './components/Events';
-import Gallery from './components/Gallery';
+import Gallery from './pages/Gallery';
+import AdminGallery from './pages/AdminGallery';
 import Login from './components/Login';
+import ProtectedRoute from './components/ProtectedRoute';
+import AccessibilityWidget from './components/AccessibilityWidget';
 
 function App() {
   return (
@@ -25,6 +28,14 @@ function App() {
             <Route path="users/:id/edit" element={<EditUser />} />
             <Route path="events" element={<Events />} />
             <Route path="gallery" element={<Gallery />} />
+            <Route
+              path="admin/gallery"
+              element={(
+                <ProtectedRoute>
+                  <AdminGallery />
+                </ProtectedRoute>
+              )}
+            />
             <Route path="login" element={<Login />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
@@ -41,6 +52,7 @@ function Layout() {
       <main className="w-full">
         <Outlet />
       </main>
+      <AccessibilityWidget />
     </div>
   );
 }

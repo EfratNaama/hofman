@@ -8,7 +8,6 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  Timestamp,
   updateDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -16,19 +15,6 @@ import { db } from '../firebase';
 const USERS_COLLECTION = 'users';
 
 const usersCollectionRef = collection(db, USERS_COLLECTION);
-
-const toFirestoreDate = (value) => {
-  if (!value) {
-    return serverTimestamp();
-  }
-
-  const parsedDate = new Date(value);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return serverTimestamp();
-  }
-
-  return Timestamp.fromDate(parsedDate);
-};
 
 const normalizeUser = (docSnapshot) => ({
   id: docSnapshot.id,
@@ -54,12 +40,12 @@ export async function getUserById(userId) {
 
 export async function createUser(userData) {
   const docRef = await addDoc(usersCollectionRef, {
-    fullName: userData.fullName.trim(),
-    email: userData.email.trim(),
-    phone: userData.phone.trim(),
-    role: userData.role,
-    status: userData.status,
-    createdAt: toFirestoreDate(userData.createdAt),
+    fullName: userData.fullName?.trim() || '',
+    email: userData.email?.trim() || '',
+    phone: userData.phone?.trim() || '',
+    role: userData.role || 'resident',
+    status: userData.status || 'active',
+    createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 
@@ -70,12 +56,11 @@ export async function updateUser(userId, userData) {
   const userRef = doc(db, USERS_COLLECTION, userId);
 
   await updateDoc(userRef, {
-    fullName: userData.fullName.trim(),
-    email: userData.email.trim(),
-    phone: userData.phone.trim(),
-    role: userData.role,
-    status: userData.status,
-    createdAt: toFirestoreDate(userData.createdAt),
+    fullName: userData.fullName?.trim() || '',
+    email: userData.email?.trim() || '',
+    phone: userData.phone?.trim() || '',
+    role: userData.role || 'resident',
+    status: userData.status || 'active',
     updatedAt: serverTimestamp(),
   });
 }
