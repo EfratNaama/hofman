@@ -1,6 +1,6 @@
 import GalleryCard from './GalleryCard';
 
-function GalleryGrid({ images, loading, deletingId, onImageClick, onDelete }) {
+function GalleryGrid({ images, loading, deletingId, onImageClick, onDelete, canDelete = false }) {
   if (loading) {
     return (
       <div className="rounded-3xl bg-white p-10 text-center text-xl font-semibold text-slate-700 shadow-lg">
@@ -28,6 +28,7 @@ function GalleryGrid({ images, loading, deletingId, onImageClick, onDelete }) {
           image={image}
           onPreview={onImageClick}
           onDelete={onDelete}
+          canDelete={canDelete}
           deleting={deletingId === image.id}
         />
       ))}

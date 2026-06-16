@@ -1,4 +1,5 @@
 import GalleryUploadForm from '../components/GalleryUploadForm';
+import { useAuth } from '../context/AuthContext';
 import useGallery from '../hooks/useGallery';
 
 function formatUploadDate(createdAt) {
@@ -11,13 +12,22 @@ function formatUploadDate(createdAt) {
 }
 
 function AdminGallery() {
-  const { images, loading, uploading, deletingId, error, uploadImage, removeImage } = useGallery();
+  const { isAdmin } = useAuth();
+  const { images, loading, uploading, deletingId, error, uploadImage, removeImage } = useGallery({ canManageGallery: isAdmin });
 
   async function handleUpload({ file, caption }) {
+    if (!isAdmin) {
+      throw new Error('אין לך הרשאה לבצע פעולה זו');
+    }
+
     await uploadImage(file, caption);
   }
 
   async function handleDelete(image) {
+    if (!isAdmin) {
+      return;
+    }
+
     const confirmed = window.confirm(`Delete this gallery image?\n\n${image.caption}`);
     if (!confirmed) return;
     await removeImage(image.id);
@@ -35,7 +45,7 @@ function AdminGallery() {
         </section>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-          <GalleryUploadForm onSubmit={handleUpload} saving={uploading} />
+          {isAdmin && <GalleryUploadForm onSubmit={handleUpload} saving={uploading} />}
 
           <section className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -77,14 +87,16 @@ function AdminGallery() {
                         Uploaded: {formatUploadDate(image.createdAt)}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(image)}
-                      disabled={Boolean(deletingId)}
-                      className="min-h-12 rounded-2xl bg-red-600 px-5 py-3 text-lg font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-                    >
-                      {deletingId === image.id ? 'Deleting...' : 'Delete'}
-                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(image)}
+                        disabled={Boolean(deletingId)}
+                        className="min-h-12 rounded-2xl bg-red-600 px-5 py-3 text-lg font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                      >
+                        {deletingId === image.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    )}
                   </article>
                 ))}
               </div>

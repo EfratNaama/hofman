@@ -50,10 +50,24 @@ async function createFirestoreUser(user) {
   }
 }
 
+function buildCurrentUser(authUser, profile = {}) {
+  return {
+    email: authUser.email || profile.email || '',
+    displayName: authUser.displayName || profile.displayName || profile.fullName || '',
+    photoURL: authUser.photoURL || profile.photoURL || '',
+    providerData: authUser.providerData || [],
+    ...profile,
+    uid: authUser.uid,
+  };
+}
+
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const normalizedRole = String(currentUser?.role || userProfile?.role || '').trim().toLowerCase();
+  const normalizedUserType = String(currentUser?.userType || userProfile?.userType || '').trim().toLowerCase();
+  const isAdmin = normalizedRole === 'admin' || normalizedRole === 'manager' || normalizedUserType === 'admin' || normalizedUserType === 'manager';
 
   const signInEmail = async (email, password) => {
     console.log('signInEmail: starting login for', email);
@@ -97,29 +111,35 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
+      setAuthLoading(true);
+      setCurrentUser(null);
       setUserProfile(null);
 
       if (user) {
         try {
           await createFirestoreUser(user);
           const userSnapshot = await getDoc(doc(db, 'users', user.uid));
+          let profile;
 
           if (userSnapshot.exists()) {
-            setUserProfile({
+            profile = {
               uid: user.uid,
               ...userSnapshot.data(),
-            });
+            };
           } else {
-            setUserProfile({
+            profile = {
               uid: user.uid,
               email: user.email || '',
               displayName: user.displayName || '',
               role: '',
-            });
+            };
           }
+
+          setUserProfile(profile);
+          setCurrentUser(buildCurrentUser(user, profile));
         } catch (error) {
           console.warn('Failed to load authenticated user profile:', error);
+          setCurrentUser(buildCurrentUser(user, { role: '' }));
         }
       }
 
@@ -132,7 +152,8 @@ export function AuthProvider({ children }) {
   const value = {
     currentUser,
     userProfile,
-    role: userProfile?.role || '',
+    role: normalizedRole,
+    isAdmin,
     loading: authLoading,
     authLoading,
     signInEmail,

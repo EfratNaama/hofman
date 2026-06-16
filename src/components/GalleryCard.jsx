@@ -3,7 +3,7 @@ function formatCreatedDate(createdAt) {
   return createdAt.toDate().toLocaleDateString('he-IL');
 }
 
-function GalleryCard({ image, onPreview, onDelete, deleting }) {
+function GalleryCard({ image, onPreview, onDelete, canDelete = false, deleting }) {
   const createdDate = formatCreatedDate(image.createdAt);
 
   return (
@@ -31,14 +31,16 @@ function GalleryCard({ image, onPreview, onDelete, deleting }) {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => onDelete(image.id)}
-          disabled={deleting}
-          className="min-h-12 rounded-2xl bg-red-600 px-5 py-3 text-lg font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-        >
-          {deleting ? 'מוחק...' : 'מחיקה'}
-        </button>
+        {canDelete && onDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(image.id)}
+            disabled={deleting}
+            className="min-h-12 rounded-2xl bg-red-600 px-5 py-3 text-lg font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          >
+            {deleting ? 'מוחק...' : 'מחיקה'}
+          </button>
+        )}
       </div>
     </article>
   );

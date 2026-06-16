@@ -5,7 +5,7 @@ import {
   uploadGalleryImage,
 } from '../services/galleryService';
 
-export default function useGallery() {
+export default function useGallery({ canManageGallery = false } = {}) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -31,6 +31,12 @@ export default function useGallery() {
   }, [refresh]);
 
   const uploadImage = useCallback(async (file, caption) => {
+    if (!canManageGallery) {
+      const permissionError = new Error('אין לך הרשאה לבצע פעולה זו');
+      setError(permissionError.message);
+      throw permissionError;
+    }
+
     setUploading(true);
     setError('');
 
@@ -43,9 +49,15 @@ export default function useGallery() {
     } finally {
       setUploading(false);
     }
-  }, [refresh]);
+  }, [canManageGallery, refresh]);
 
   const removeImage = useCallback(async (imageId) => {
+    if (!canManageGallery) {
+      const permissionError = new Error('אין לך הרשאה לבצע פעולה זו');
+      setError(permissionError.message);
+      throw permissionError;
+    }
+
     setDeletingId(imageId);
     setError('');
 
@@ -58,7 +70,7 @@ export default function useGallery() {
     } finally {
       setDeletingId(null);
     }
-  }, [refresh]);
+  }, [canManageGallery, refresh]);
 
   return {
     images,
