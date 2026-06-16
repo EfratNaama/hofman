@@ -1,13 +1,85 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../hooks/useActivities';
+import { getUserActivityRegistrations, registerForActivity } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 
 function Activities() {
+  const navigate = useNavigate();
   const { activities, isLoading, error } = useActivities();
-  const { currentUser, role: authRole } = useAuth() || {};
+  const { currentUser, role: authRole } = useAuth();
   const role = (authRole ?? currentUser?.role ?? '').toLowerCase();
   const canCreateActivity = Boolean(currentUser) && (role === 'admin' || role === 'manager');
+  const canRegister = Boolean(currentUser) && !canCreateActivity;
+  const [registeredActivityIds, setRegisteredActivityIds] = useState([]);
+  const [registrationError, setRegistrationError] = useState('');
+  const [registrationMessage, setRegistrationMessage] = useState('');
+  const [registeringActivityId, setRegisteringActivityId] = useState('');
+
+  const registeredActivityIdSet = useMemo(
+    () => new Set(registeredActivityIds),
+    [registeredActivityIds]
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadRegistrations() {
+      if (!currentUser) {
+        setRegisteredActivityIds([]);
+        return;
+      }
+
+      try {
+        const registrations = await getUserActivityRegistrations(currentUser.uid);
+        if (isMounted) {
+          setRegisteredActivityIds(registrations.map((registration) => registration.activityId));
+        }
+      } catch (err) {
+        console.error('Failed to load activity registrations', err);
+        if (isMounted) {
+          setRegistrationError('לא ניתן לטעון את ההרשמות שלך כרגע.');
+        }
+      }
+    }
+
+    loadRegistrations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser]);
+
+  const handleRegister = async (activity) => {
+    setRegistrationError('');
+    setRegistrationMessage('');
+
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    if (!canRegister) {
+      setRegistrationError('רק משתמשים רגילים יכולים להירשם לפעילויות.');
+      return;
+    }
+
+    setRegisteringActivityId(activity.id);
+
+    try {
+      const result = await registerForActivity(activity, currentUser);
+      setRegisteredActivityIds((currentIds) => (
+        currentIds.includes(activity.id) ? currentIds : [...currentIds, activity.id]
+      ));
+      setRegistrationMessage(result.alreadyRegistered ? 'כבר נרשמת לפעילות זו.' : 'נרשמת לפעילות בהצלחה.');
+    } catch (err) {
+      console.error('Failed to register for activity', err);
+      setRegistrationError('לא ניתן להשלים את ההרשמה. נסו שוב מאוחר יותר.');
+    } finally {
+      setRegisteringActivityId('');
+    }
+  };
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 text-right" dir="rtl">
@@ -26,6 +98,18 @@ function Activities() {
       {error && (
         <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700">
           {error}
+        </div>
+      )}
+
+      {registrationError && (
+        <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700">
+          {registrationError}
+        </div>
+      )}
+
+      {registrationMessage && (
+        <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-lg font-semibold text-green-700">
+          {registrationMessage}
         </div>
       )}
 
@@ -74,6 +158,20 @@ function Activities() {
                 <Link className="rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200" to={`/activities/${activity.id}`}>
                   צפייה
                 </Link>
+                {canRegister && (
+                  <button
+                    className="rounded-lg bg-[#d4a373] px-5 py-3 text-lg font-bold text-[#0f2240] hover:bg-[#c38a5a] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                    type="button"
+                    disabled={registeredActivityIdSet.has(activity.id) || registeringActivityId === activity.id}
+                    onClick={() => handleRegister(activity)}
+                  >
+                    {registeredActivityIdSet.has(activity.id)
+                      ? 'נרשמת'
+                      : registeringActivityId === activity.id
+                        ? 'נרשם...'
+                        : 'הרשמה לפעילות'}
+                  </button>
+                )}
                 {canCreateActivity && (
                   <Link className="rounded-lg bg-sky-100 px-5 py-3 text-lg font-bold text-sky-800 hover:bg-sky-200" to={`/activities/${activity.id}/edit`}>
                     עריכה

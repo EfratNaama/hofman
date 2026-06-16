@@ -90,6 +90,9 @@ function Navbar() {
               <NavLink to="/activities" style={navLinkStyle}>
                 פעילויות
               </NavLink>
+              <NavLink to="/my-activities" style={navLinkStyle}>
+                הפעילויות שלי
+              </NavLink>
               {canManageActivities && (
                 <NavLink to="/activities/new" style={navLinkStyle}>
                   הוספת פעילות
