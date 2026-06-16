@@ -11,25 +11,26 @@ import EditUser from './components/EditUser';
 import Events from './components/Events';
 import Gallery from './components/Gallery';
 import Login from './components/Login';
-import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="users" element={<Users />} />
-          <Route path="users/new" element={<NewUser />} />
-          <Route path="users/:id" element={<UserDetails />} />
-          <Route path="users/:id/edit" element={<EditUser />} />
-          <Route path="events" element={<Events />} />
-          <Route path="gallery" element={<Gallery />} />
-          <Route path="login" element={<Login />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="users" element={<Users />} />
+            <Route path="users/new" element={<NewUser />} />
+            <Route path="users/:id" element={<UserDetails />} />
+            <Route path="users/:id/edit" element={<EditUser />} />
+            <Route path="events" element={<Events />} />
+            <Route path="gallery" element={<Gallery />} />
+            <Route path="login" element={<Login />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
@@ -52,7 +53,10 @@ function NotFoundPage() {
         <p className="text-lg text-slate-600 mb-6">
           הקישור אינו תקין. לחצו כדי לחזור לעמוד הבית.
         </p>
-        <Link to="/" className="inline-block rounded-2xl bg-[#d4a373] px-6 py-3 text-lg font-semibold text-white hover:bg-[#c38a5a] transition">
+        <Link
+          to="/"
+          className="inline-block rounded-2xl bg-[#d4a373] px-6 py-3 text-lg font-semibold text-white hover:bg-[#c38a5a] transition"
+        >
           לעמוד הבית
         </Link>
       </div>
