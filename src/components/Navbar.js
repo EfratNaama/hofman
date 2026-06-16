@@ -1,8 +1,15 @@
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
+  const navigate = useNavigate();
   const { authLoading, currentUser, signOutUser } = useAuth();
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
+
+  useEffect(() => {
+    setIsLoggedIn(Boolean(currentUser));
+  }, [currentUser]);
 
   const navLinkStyle = ({ isActive }) => ({
     display: 'inline-flex',
@@ -37,6 +44,8 @@ function Navbar() {
 
   const handleLogout = async () => {
     await signOutUser();
+    setIsLoggedIn(false);
+    navigate('/');
   };
 
   return (
@@ -73,15 +82,18 @@ function Navbar() {
           <NavLink end to="/" style={navLinkStyle}>
             בית
           </NavLink>
-          <NavLink to="/events" style={navLinkStyle}>
-            פעילויות
-          </NavLink>
-          <NavLink to="/gallery" style={navLinkStyle}>
-            גלריה
-          </NavLink>
-          <NavLink to="/users" style={navLinkStyle}>
-            משתמשים
-          </NavLink>
+
+          {!authLoading && isLoggedIn && (
+            <>
+              <NavLink to="/events" style={navLinkStyle}>
+                פעילויות
+              </NavLink>
+              <NavLink to="/gallery" style={navLinkStyle}>
+                גלריה
+              </NavLink>
+              <NavLink to="/users" style={navLinkStyle}>
+                משתמשים
+              </NavLink>
               <button type="button" style={authButtonStyle} onClick={handleLogout}>
                 התנתקות
               </button>

@@ -11,6 +11,7 @@ import EditUser from './components/EditUser';
 import Events from './components/Events';
 import Gallery from './components/Gallery';
 import Login from './components/Login';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -19,12 +20,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
-            <Route path="users" element={<Users />} />
-            <Route path="users/new" element={<NewUser />} />
-            <Route path="users/:id" element={<UserDetails />} />
-            <Route path="users/:id/edit" element={<EditUser />} />
-            <Route path="events" element={<Events />} />
-            <Route path="gallery" element={<Gallery />} />
+            <Route path="users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
+            <Route path="users/new" element={<ProtectedRoute><NewUser /></ProtectedRoute>} />
+            <Route path="users/:id" element={<ProtectedRoute><UserDetails /></ProtectedRoute>} />
+            <Route path="users/:id/edit" element={<ProtectedRoute><EditUser /></ProtectedRoute>} />
+            <Route path="events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+            <Route path="gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="login" element={<Login />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
