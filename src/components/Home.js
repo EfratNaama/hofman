@@ -1,4 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const events = [
   { id: 1, date: '10 ביולי', title: 'סדנת יצירה', time: '10:00', description: 'פעילות אמנותית נעימה לגיל השלישי' },
@@ -40,8 +44,57 @@ const buttonStyle = {
 };
 
 function Home() {
+  const { currentUser } = useAuth();
+  const [profileName, setProfileName] = useState('');
+  const [profileRole, setProfileRole] = useState('');
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!currentUser) {
+        setProfileName('');
+        setProfileRole('');
+        return;
+      }
+
+      try {
+        const profilesQuery = query(
+          collection(db, 'user_profiles'),
+          where('authUid', '==', currentUser.uid)
+        );
+        const snapshot = await getDocs(profilesQuery);
+
+        if (!snapshot.empty) {
+          const profile = snapshot.docs[0].data();
+          setProfileName(profile.fullName || currentUser.displayName || currentUser.email || 'משתמש');
+          setProfileRole(profile.role || 'member');
+        } else {
+          setProfileName(currentUser.displayName || currentUser.email || 'משתמש');
+          setProfileRole('member');
+        }
+      } catch (err) {
+        console.error('Failed to load profile for home page', err);
+        setProfileName(currentUser.displayName || currentUser.email || 'משתמש');
+        setProfileRole('member');
+      }
+    }
+
+    loadProfile();
+  }, [currentUser]);
+
   return (
     <section>
+      {currentUser && (
+        <article style={{ ...sectionStyle, background: '#eef5ff' }}>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '12px' }}>שלום {profileName}</h2>
+          <p style={{ margin: '0 0 12px', fontSize: '1rem', color: '#1f2933' }}>
+            תפקיד: <strong>{profileRole}</strong>
+          </p>
+          <p style={{ margin: 0, fontSize: '0.95rem', color: '#475569' }}>
+            ברוכים הבאים לחלק ניהול ומידע. העלו מודעות, אירועים ופרופילים לפי הרשאותיכם.
+          </p>
+        </article>
+      )}
+
       <article style={sectionStyle}>
         <h2 style={{ fontSize: '1.8rem', marginBottom: '12px' }}>אירועים קרובים</h2>
         <p style={{ margin: '0 0 18px', fontSize: '1rem', color: '#4c5663' }}>חמישה אירועים קרובים, מסודרים לפי תאריך.</p>
