@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdminOrManager() {
+      return signedIn()
+        && (
+          userProfile().role in ['admin', 'manager', 'מנהל']
+          || userProfile().userType in ['admin', 'manager']
+        );
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if (signedIn() && resource.data.isActive == true) || isAdminOrManager();
+      allow create, update, delete: if isAdminOrManager();
+    }
+  }
+}

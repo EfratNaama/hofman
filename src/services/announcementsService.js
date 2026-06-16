@@ -21,24 +21,60 @@ const normalizeAnnouncement = (docSnapshot) => ({
   ...docSnapshot.data(),
 });
 
-export async function getActiveAnnouncements(maxResults = 3) {
-  const announcementsQuery = query(
-    announcementsCollectionRef,
-    where('isActive', '==', true),
-    orderBy('createdAt', 'desc'),
-    limit(maxResults)
+function getCreatedAtMillis(announcement) {
+  if (announcement.createdAt?.toMillis) {
+    return announcement.createdAt.toMillis();
+  }
+
+  if (announcement.createdAt?.toDate) {
+    return announcement.createdAt.toDate().getTime();
+  }
+
+  return 0;
+}
+
+function sortNewestFirst(announcements) {
+  return [...announcements].sort((firstAnnouncement, secondAnnouncement) =>
+    getCreatedAtMillis(secondAnnouncement) - getCreatedAtMillis(firstAnnouncement)
   );
-  const snapshot = await getDocs(announcementsQuery);
-  return snapshot.docs.map(normalizeAnnouncement);
+}
+
+export async function getActiveAnnouncements(maxResults = 3) {
+  try {
+    const announcementsQuery = query(
+      announcementsCollectionRef,
+      where('isActive', '==', true),
+      orderBy('createdAt', 'desc'),
+      limit(maxResults)
+    );
+    const snapshot = await getDocs(announcementsQuery);
+    return snapshot.docs.map(normalizeAnnouncement);
+  } catch (error) {
+    console.error('Failed to load announcements with createdAt ordering:', error);
+
+    const fallbackQuery = query(
+      announcementsCollectionRef,
+      where('isActive', '==', true)
+    );
+    const fallbackSnapshot = await getDocs(fallbackQuery);
+    return sortNewestFirst(fallbackSnapshot.docs.map(normalizeAnnouncement)).slice(0, maxResults);
+  }
 }
 
 export async function getAllAnnouncements() {
-  const announcementsQuery = query(
-    announcementsCollectionRef,
-    orderBy('createdAt', 'desc')
-  );
-  const snapshot = await getDocs(announcementsQuery);
-  return snapshot.docs.map(normalizeAnnouncement);
+  try {
+    const announcementsQuery = query(
+      announcementsCollectionRef,
+      orderBy('createdAt', 'desc')
+    );
+    const snapshot = await getDocs(announcementsQuery);
+    return snapshot.docs.map(normalizeAnnouncement);
+  } catch (error) {
+    console.error('Failed to load all announcements with createdAt ordering:', error);
+
+    const fallbackSnapshot = await getDocs(announcementsCollectionRef);
+    return sortNewestFirst(fallbackSnapshot.docs.map(normalizeAnnouncement));
+  }
 }
 
 export async function createAnnouncement(announcementData, createdBy) {

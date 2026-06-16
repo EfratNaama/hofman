@@ -34,7 +34,7 @@ function AdminAnnouncements() {
       const announcementsData = await getAllAnnouncements();
       setAnnouncements(announcementsData);
     } catch (err) {
-      console.error('Failed to load announcements', err);
+      console.error('Failed to load announcements:', err);
       setError('לא ניתן לטעון את ההודעות כרגע.');
     } finally {
       setIsLoading(false);

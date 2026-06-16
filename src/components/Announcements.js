@@ -28,7 +28,7 @@ function Announcements() {
           setAnnouncements(announcementsData);
         }
       } catch (err) {
-        console.error('Failed to load active announcements', err);
+        console.error('Failed to load announcements:', err);
 
         if (isMounted) {
           setError('לא ניתן לטעון את ההודעות כרגע.');
