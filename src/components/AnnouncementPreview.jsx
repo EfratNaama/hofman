@@ -1,5 +1,3 @@
-import React from 'react';
-
 const sectionStyle = {
   backgroundColor: '#ffffff',
   borderRadius: '28px',
@@ -8,26 +6,10 @@ const sectionStyle = {
   border: '1px solid #e5e7eb',
 };
 
-const demoAnnouncements = [
-  {
-    id: 'demo-hours',
-    title: 'עדכון שעות פעילות',
-    body: 'במהלך השבוע הקרוב המרכז יפעל בשעות מעודכנות. צוות הקבלה זמין לכל שאלה וסיוע.',
-  },
-  {
-    id: 'demo-summer-trip',
-    title: 'טיול קיץ לירושלים העתיקה',
-    body: 'נפתחה הרשמה לטיול מודרך בירושלים העתיקה, כולל הסעה, ליווי וארוחת צהריים קלה.',
-  },
-  {
-    id: 'demo-health-lecture',
-    title: 'הרצאה מיוחדת בנושא בריאות',
-    body: 'הרצאה חדשה תעסוק בהרגלי בריאות, תזונה ותנועה יומיומית בגיל השלישי.',
-  },
-];
-
 function AnnouncementPreview({ announcements = [], loading }) {
-  const visibleAnnouncements = announcements.length > 0 ? announcements : demoAnnouncements;
+  if (!loading && announcements.length === 0) {
+    return null;
+  }
 
   return (
     <section dir="rtl" style={sectionStyle} aria-labelledby="announcements-title">
@@ -44,15 +26,15 @@ function AnnouncementPreview({ announcements = [], loading }) {
         <div className="home-state-card">טוען הודעות...</div>
       ) : (
         <div className="home-grid home-grid-announcements">
-          {visibleAnnouncements.map((announcement) => (
+          {announcements.map((announcement) => (
             <article className="home-card home-card-hover" key={announcement.id}>
               <p className="home-card-label">
-                {announcement.publishedAt?.toDate
-                  ? announcement.publishedAt.toDate().toLocaleDateString('he-IL')
-                  : 'עדכון מהמרכז'}
+                {announcement.createdAt?.toDate
+                  ? announcement.createdAt.toDate().toLocaleDateString('he-IL')
+                  : 'הודעה חשובה'}
               </p>
               <h3 className="home-card-title">{announcement.title}</h3>
-              <p className="home-card-text">{announcement.body}</p>
+              <p className="home-card-text">{announcement.message}</p>
             </article>
           ))}
         </div>

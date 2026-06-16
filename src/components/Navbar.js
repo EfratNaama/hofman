@@ -4,10 +4,9 @@ import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const navigate = useNavigate();
-  const { authLoading, currentUser, role: authRole, signOutUser } = useAuth() || {};
+  const { authLoading, currentUser, isAdmin, signOutUser } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
-  const role = (authRole ?? currentUser?.role ?? '').toLowerCase();
-  const canManageActivities = Boolean(currentUser) && (role === 'admin' || role === 'manager');
+  const canManageActivities = Boolean(currentUser) && isAdmin;
 
   useEffect(() => {
     setIsLoggedIn(Boolean(currentUser));
@@ -86,17 +85,25 @@ function Navbar() {
           </NavLink>
 
           {!authLoading && isLoggedIn && (
-            <>           
+            <>
               <NavLink to="/activities" style={navLinkStyle}>
                 פעילויות
               </NavLink>
               <NavLink to="/my-activities" style={navLinkStyle}>
                 הפעילויות שלי
               </NavLink>
+              <NavLink to="/announcements" style={navLinkStyle}>
+                הודעות חשובות
+              </NavLink>
               {canManageActivities && (
-                <NavLink to="/activities/new" style={navLinkStyle}>
-                  הוספת פעילות
-                </NavLink>
+                <>
+                  <NavLink to="/activities/new" style={navLinkStyle}>
+                    הוספת פעילות
+                  </NavLink>
+                  <NavLink to="/admin/announcements" style={navLinkStyle}>
+                    ניהול הודעות
+                  </NavLink>
+                </>
               )}
               <NavLink to="/gallery" style={navLinkStyle}>
                 גלריה

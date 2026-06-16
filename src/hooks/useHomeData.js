@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import {
   getUpcomingActivities,
   getLatestAnnouncements,
-  getLatestGalleryImages,
   getCenterInfo,
 } from '../services/homeService';
+import { subscribeLatestGalleryImages } from '../services/galleryService';
 
 export default function useHomeData() {
   const [activities, setActivities] = useState([]);
@@ -20,17 +20,15 @@ export default function useHomeData() {
     async function loadHomeData() {
       setLoading(true);
       try {
-        const [nextActivities, latestAnnouncements, gallery, info] = await Promise.all([
+        const [nextActivities, latestAnnouncements, info] = await Promise.all([
           getUpcomingActivities(),
           getLatestAnnouncements(),
-          getLatestGalleryImages(),
           getCenterInfo(),
         ]);
 
         if (!active) return;
         setActivities(nextActivities);
         setAnnouncements(latestAnnouncements);
-        setGalleryImages(gallery);
         setCenterInfo(info);
       } catch (fetchError) {
         if (!active) return;
@@ -44,6 +42,21 @@ export default function useHomeData() {
     return () => {
       active = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeLatestGalleryImages(
+      (gallery) => {
+        setGalleryImages(gallery);
+      },
+      (galleryError) => {
+        console.error('Failed to load home gallery images', galleryError);
+        setError('לא ניתן לטעון את תוכן הבית ברגע זה. נסה שוב מאוחר יותר.');
+      },
+      4
+    );
+
+    return unsubscribe;
   }, []);
 
   return { activities, announcements, galleryImages, centerInfo, loading, error };

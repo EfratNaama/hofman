@@ -18,6 +18,8 @@ import NewActivity from './components/NewActivity';
 import ActivityDetails from './components/ActivityDetails';
 import EditActivity from './components/EditActivity';
 import MyActivities from './components/MyActivities';
+import AdminAnnouncements from './components/AdminAnnouncements';
+import Announcements from './components/Announcements';
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
             <Route path="activities/:id" element={<ProtectedRoute><ActivityDetails /></ProtectedRoute>} />
             <Route path="activities/:id/edit" element={<ProtectedRoute requireAdmin><EditActivity /></ProtectedRoute>} />
             <Route path="my-activities" element={<ProtectedRoute><MyActivities /></ProtectedRoute>} />
+            <Route path="announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
+            <Route path="admin/announcements" element={<ProtectedRoute requireAdmin><AdminAnnouncements /></ProtectedRoute>} />
             <Route path="events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="login" element={<Login />} />

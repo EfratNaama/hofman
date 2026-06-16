@@ -7,9 +7,9 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { getActiveAnnouncements } from './announcementsService';
 
 const activitiesCollection = collection(db, 'activities');
-const announcementsCollection = collection(db, 'announcements');
 const galleryCollection = collection(db, 'gallery');
 const centerInfoCollection = collection(db, 'center_info');
 
@@ -26,13 +26,7 @@ export async function getUpcomingActivities() {
 }
 
 export async function getLatestAnnouncements() {
-  const announcementsQuery = query(
-    announcementsCollection,
-    orderBy('publishedAt', 'desc'),
-    limit(3)
-  );
-  const snapshot = await getDocs(announcementsQuery);
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+  return getActiveAnnouncements(3);
 }
 
 export async function getLatestGalleryImages() {

@@ -4,6 +4,8 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  limit,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -52,6 +54,22 @@ export async function getGalleryImages() {
   const galleryQuery = query(galleryCollection, orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(galleryQuery);
   return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+}
+
+export function subscribeLatestGalleryImages(onImagesChanged, onError, imageLimit = 4) {
+  const galleryQuery = query(
+    galleryCollection,
+    orderBy('createdAt', 'desc'),
+    limit(imageLimit)
+  );
+
+  return onSnapshot(
+    galleryQuery,
+    (snapshot) => {
+      onImagesChanged(snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })));
+    },
+    onError
+  );
 }
 
 export async function deleteGalleryImage(imageId) {
