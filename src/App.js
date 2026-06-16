@@ -4,6 +4,9 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Users from './components/Users';
+import NewUser from './components/NewUser';
+import UserDetails from './components/UserDetails';
+import EditUser from './components/EditUser';
 import Events from './components/Events';
 import Gallery from './components/Gallery';
 import Login from './components/Login';
@@ -15,6 +18,9 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="users" element={<Users />} />
+          <Route path="users/new" element={<NewUser />} />
+          <Route path="users/:id" element={<UserDetails />} />
+          <Route path="users/:id/edit" element={<EditUser />} />
           <Route path="events" element={<Events />} />
           <Route path="gallery" element={<Gallery />} />
           <Route path="login" element={<Login />} />
