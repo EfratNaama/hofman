@@ -5,6 +5,9 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Users from './components/Users';
+import NewUser from './components/NewUser';
+import UserDetails from './components/UserDetails';
+import EditUser from './components/EditUser';
 import Events from './components/Events';
 import Gallery from './components/Gallery';
 import Login from './components/Login';
@@ -31,20 +34,21 @@ const buttonStyle = {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-            <Route path="events" element={<Events />} />
-            <Route path="gallery" element={<Gallery />} />
-            <Route path="login" element={<Login />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="users" element={<Users />} />
+          <Route path="users/new" element={<NewUser />} />
+          <Route path="users/:id" element={<UserDetails />} />
+          <Route path="users/:id/edit" element={<EditUser />} />
+          <Route path="events" element={<Events />} />
+          <Route path="gallery" element={<Gallery />} />
+          <Route path="login" element={<Login />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
