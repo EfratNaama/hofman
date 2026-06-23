@@ -42,7 +42,7 @@ function App() {
             <Route path="activities/:id/edit" element={<ProtectedRoute requireAdmin><EditActivity /></ProtectedRoute>} />
             <Route path="my-activities" element={<ProtectedRoute><Navigate to="/personal-area" replace /></ProtectedRoute>} />
             <Route path="personal-area" element={<ProtectedRoute><PersonalArea /></ProtectedRoute>} />
-            <Route path="announcements" element={<Announcements />} />
+            <Route path="announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
             <Route path="admin/announcements" element={<ProtectedRoute requireAdmin><AdminAnnouncements /></ProtectedRoute>} />
             <Route path="admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="admin/activities" element={<ProtectedRoute requireAdmin><ActivityManagementHub /></ProtectedRoute>} />

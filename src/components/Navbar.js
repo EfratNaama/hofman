@@ -43,9 +43,13 @@ function Navbar() {
   };
 
   const handleLogout = async () => {
-    await signOutUser?.();
-    setIsLoggedIn(false);
-    navigate('/');
+    try {
+      await signOutUser?.();
+      setIsLoggedIn(false);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -127,9 +131,6 @@ function Navbar() {
 
           {!authLoading && !isLoggedIn && (
             <>
-              <NavLink to="/announcements" style={navLinkStyle}>
-                הודעות
-              </NavLink>
               <NavLink to="/login" style={navLinkStyle}>
                 כניסה
               </NavLink>
