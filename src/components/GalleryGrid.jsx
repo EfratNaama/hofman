@@ -3,7 +3,7 @@ import GalleryCard from './GalleryCard';
 function GalleryGrid({ images, loading, deletingId, onImageClick, onDelete, canDelete = false }) {
   if (loading) {
     return (
-      <div className="rounded-3xl bg-white p-10 text-center text-xl font-semibold text-slate-700 shadow-lg">
+      <div className="gallery-state-card">
         טוען תמונות...
       </div>
     );
@@ -11,9 +11,9 @@ function GalleryGrid({ images, loading, deletingId, onImageClick, onDelete, canD
 
   if (!images.length) {
     return (
-      <div className="rounded-3xl bg-white p-10 text-center shadow-lg">
-        <h2 className="text-3xl font-black text-[#0f2240]">אין תמונות בגלריה עדיין</h2>
-        <p className="mt-3 text-xl leading-9 text-slate-700">
+      <div className="gallery-state-card">
+        <h2>אין תמונות בגלריה עדיין</h2>
+        <p>
           העלו תמונה חדשה כדי להציג אותה כאן.
         </p>
       </div>
@@ -21,7 +21,7 @@ function GalleryGrid({ images, loading, deletingId, onImageClick, onDelete, canD
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <div className="gallery-grid">
       {images.map((image) => (
         <GalleryCard
           key={image.id}

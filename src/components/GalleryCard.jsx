@@ -7,25 +7,25 @@ function GalleryCard({ image, onPreview, onDelete, canDelete = false, deleting }
   const createdDate = formatCreatedDate(image.createdAt);
 
   return (
-    <article className="overflow-hidden rounded-3xl bg-white text-right shadow-lg ring-1 ring-slate-200 transition duration-200 hover:-translate-y-1 hover:shadow-2xl">
+    <article className="gallery-card">
       <button
         type="button"
         onClick={() => onPreview(image)}
-        className="block w-full bg-slate-100 focus:outline-none focus:ring-4 focus:ring-[#d4a373]/50"
+        className="gallery-card__preview"
         aria-label={`פתח תמונה: ${image.caption}`}
       >
         <img
           src={image.imageBase64}
           alt={image.caption}
-          className="h-64 w-full object-cover"
+          className="gallery-card__image"
         />
       </button>
 
-      <div className="grid gap-4 p-5">
+      <div className="gallery-card__body">
         <div>
-          <h3 className="text-xl font-black leading-8 text-[#0f2240]">{image.caption}</h3>
+          <h3 className="gallery-card__title">{image.caption}</h3>
           {createdDate && (
-            <p className="mt-2 text-base font-semibold text-slate-600">
+            <p className="gallery-card__date">
               הועלה בתאריך: {createdDate}
             </p>
           )}
@@ -36,7 +36,7 @@ function GalleryCard({ image, onPreview, onDelete, canDelete = false, deleting }
             type="button"
             onClick={() => onDelete(image.id)}
             disabled={deleting}
-            className="min-h-12 rounded-2xl bg-red-600 px-5 py-3 text-lg font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="gallery-card__delete"
           >
             {deleting ? 'מוחק...' : 'מחיקה'}
           </button>
