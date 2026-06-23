@@ -538,13 +538,22 @@ button {
   color: #111111;
   font-weight: 800;
   text-align: right;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .accessibility-action:hover,
-.accessibility-action:focus-visible,
+.accessibility-action:focus,
+.accessibility-action:focus-visible {
+  background-color: #eef5ff;
+  outline: 4px solid #ffcc00 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35) !important;
+  transform: scale(1.03);
+  font-weight: 900;
+}
+
 .accessibility-action[aria-pressed="true"] {
   background-color: #eef5ff;
-  outline: none;
 }
 
 .accessibility-action-icon {
@@ -694,6 +703,138 @@ body.accessibility-contrast-white button {
   background-color: #000000 !important;
   color: #ffffff !important;
   border: 2px solid #000000 !important;
+}
+
+body.accessibility-contrast-black a *,
+body.accessibility-contrast-black button * {
+  color: #000000 !important;
+}
+
+body.accessibility-contrast-white a *,
+body.accessibility-contrast-white button * {
+  color: #ffffff !important;
+}
+
+body.accessibility-contrast-black .accessibility-panel {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border-color: #ffff00 !important;
+}
+
+body.accessibility-contrast-black .accessibility-panel-header,
+body.accessibility-contrast-black .accessibility-panel-header *,
+body.accessibility-contrast-black .accessibility-panel-title,
+body.accessibility-contrast-black .accessibility-panel > *:not(.accessibility-actions),
+body.accessibility-contrast-black .accessibility-shortcuts,
+body.accessibility-contrast-black .accessibility-shortcuts *,
+body.accessibility-contrast-black .accessibility-message {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border-color: #ffff00 !important;
+}
+
+body.accessibility-contrast-black .accessibility-action {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+body.accessibility-contrast-black .accessibility-action *,
+body.accessibility-contrast-black .accessibility-action-icon {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+}
+
+body.accessibility-contrast-black .accessibility-action:hover,
+body.accessibility-contrast-black .accessibility-action:focus,
+body.accessibility-contrast-black .accessibility-action:focus-visible,
+body.accessibility-contrast-black .accessibility-action[aria-pressed="true"] {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+body.accessibility-contrast-black .accessibility-action:hover,
+body.accessibility-contrast-black .accessibility-action:focus,
+body.accessibility-contrast-black .accessibility-action:focus-visible {
+  outline: 4px solid #ffffff !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px #000000 !important;
+  transform: scale(1.03);
+  font-weight: 900;
+}
+
+body.accessibility-contrast-black .accessibility-action:hover *,
+body.accessibility-contrast-black .accessibility-action:focus *,
+body.accessibility-contrast-black .accessibility-action:focus-visible *,
+body.accessibility-contrast-black .accessibility-action[aria-pressed="true"] *,
+body.accessibility-contrast-black .accessibility-action:hover .accessibility-action-icon,
+body.accessibility-contrast-black .accessibility-action:focus .accessibility-action-icon,
+body.accessibility-contrast-black .accessibility-action:focus-visible .accessibility-action-icon,
+body.accessibility-contrast-black .accessibility-action[aria-pressed="true"] .accessibility-action-icon {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+}
+
+body.accessibility-contrast-white .accessibility-panel {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+body.accessibility-contrast-white .accessibility-panel-header,
+body.accessibility-contrast-white .accessibility-panel-header *,
+body.accessibility-contrast-white .accessibility-panel-title,
+body.accessibility-contrast-white .accessibility-panel > *:not(.accessibility-actions),
+body.accessibility-contrast-white .accessibility-shortcuts,
+body.accessibility-contrast-white .accessibility-shortcuts *,
+body.accessibility-contrast-white .accessibility-message {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+body.accessibility-contrast-white .accessibility-action {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+body.accessibility-contrast-white .accessibility-action *,
+body.accessibility-contrast-white .accessibility-action-icon {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.accessibility-contrast-white .accessibility-action:hover,
+body.accessibility-contrast-white .accessibility-action:focus,
+body.accessibility-contrast-white .accessibility-action:focus-visible,
+body.accessibility-contrast-white .accessibility-action[aria-pressed="true"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+body.accessibility-contrast-white .accessibility-action:hover,
+body.accessibility-contrast-white .accessibility-action:focus,
+body.accessibility-contrast-white .accessibility-action:focus-visible {
+  outline: 4px solid #000000 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px #ffffff !important;
+  transform: scale(1.03);
+  font-weight: 900;
+}
+
+body.accessibility-contrast-white .accessibility-action:hover *,
+body.accessibility-contrast-white .accessibility-action:focus *,
+body.accessibility-contrast-white .accessibility-action:focus-visible *,
+body.accessibility-contrast-white .accessibility-action[aria-pressed="true"] *,
+body.accessibility-contrast-white .accessibility-action:hover .accessibility-action-icon,
+body.accessibility-contrast-white .accessibility-action:focus .accessibility-action-icon,
+body.accessibility-contrast-white .accessibility-action:focus-visible .accessibility-action-icon,
+body.accessibility-contrast-white .accessibility-action[aria-pressed="true"] .accessibility-action-icon {
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 @media (max-width: 520px) {
