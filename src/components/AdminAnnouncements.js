@@ -6,6 +6,7 @@ import {
   getAnnouncements,
   updateAnnouncement,
 } from '../services/announcementService';
+import './AdminAnnouncements.css';
 
 const emptyForm = {
   title: '',
@@ -163,29 +164,29 @@ function AdminAnnouncements() {
   };
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 text-right" dir="rtl">
-      <div className="mb-6">
-        <p className="text-lg font-bold text-slate-500">ניהול אתר</p>
-        <h1 className="mt-2 text-4xl font-black text-slate-900">הודעות חשובות</h1>
+    <section className="admin-announcements-page" dir="rtl">
+      <div className="admin-announcements-header">
+        <p>ניהול אתר</p>
+        <h1>הודעות חשובות</h1>
       </div>
 
       {(error || message) && (
-        <div className={error ? 'mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700' : 'mb-5 rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-lg font-semibold text-green-700'}>
+        <div className={error ? 'admin-announcements-alert admin-announcements-alert--error' : 'admin-announcements-alert admin-announcements-alert--success'}>
           {error || message}
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <form className="rounded-lg bg-white p-6 shadow-sm" onSubmit={handleSubmit}>
-          <h2 className="text-2xl font-black text-slate-900">
+      <div className="admin-announcements-layout">
+        <form className="admin-announcements-form" onSubmit={handleSubmit}>
+          <h2>
             {editingId ? 'עריכת הודעה' : 'הודעה חדשה'}
           </h2>
 
-          <div className="mt-5 grid gap-5">
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">כותרת</span>
+          <div className="admin-announcements-form__fields">
+            <label className="admin-announcements-field">
+              <span>כותרת</span>
               <input
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                className="admin-announcements-input"
                 name="title"
                 type="text"
                 value={formData.title}
@@ -193,19 +194,19 @@ function AdminAnnouncements() {
               />
             </label>
 
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">תוכן ההודעה</span>
+            <label className="admin-announcements-field">
+              <span>תוכן ההודעה</span>
               <textarea
-                className="min-h-36 w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                className="admin-announcements-textarea"
                 name="content"
                 value={formData.content}
                 onChange={handleChange}
               />
             </label>
 
-            <label className="flex items-center gap-3 text-lg font-bold text-slate-800">
+            <label className="admin-announcements-checkbox">
               <input
-                className="h-6 w-6 rounded border-slate-300 text-sky-800 focus:ring-sky-700"
+                className="admin-announcements-checkbox__input"
                 checked={formData.isActive}
                 name="isActive"
                 type="checkbox"
@@ -215,9 +216,9 @@ function AdminAnnouncements() {
             </label>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="admin-announcements-actions">
             <button
-              className="rounded-lg bg-sky-800 px-7 py-4 text-lg font-bold text-white shadow-sm hover:bg-sky-900 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="admin-announcements-button admin-announcements-button--primary"
               type="submit"
               disabled={isSaving}
             >
@@ -225,7 +226,7 @@ function AdminAnnouncements() {
             </button>
             {editingId && (
               <button
-                className="rounded-lg bg-slate-100 px-7 py-4 text-lg font-bold text-slate-700 hover:bg-slate-200"
+                className="admin-announcements-button admin-announcements-button--secondary"
                 type="button"
                 onClick={resetForm}
               >
@@ -235,49 +236,49 @@ function AdminAnnouncements() {
           </div>
         </form>
 
-        <section className="rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-black text-slate-900">כל ההודעות</h2>
+        <section className="admin-announcements-list-panel">
+          <h2>כל ההודעות</h2>
 
-          {isLoading && <p className="mt-5 text-lg font-semibold text-slate-700">טוען הודעות...</p>}
+          {isLoading && <p className="admin-announcements-state">טוען הודעות...</p>}
 
           {!isLoading && announcements.length === 0 && (
-            <p className="mt-5 rounded-lg bg-slate-50 p-5 text-lg font-semibold text-slate-700">
+            <p className="admin-announcements-empty">
               אין הודעות עדיין.
             </p>
           )}
 
           {!isLoading && announcements.length > 0 && (
-            <div className="mt-5 grid gap-4">
+            <div className="admin-announcements-list">
               {announcements.map((announcement) => (
-                <article key={announcement.id} className="rounded-lg border border-slate-200 bg-slate-50 p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                <article key={announcement.id} className="admin-announcements-card">
+                  <div className="admin-announcements-card__header">
                     <div>
-                      <p className="text-base font-bold text-slate-500">
+                      <p className="admin-announcements-card__date">
                         {announcement.createdAt?.toDate
                           ? announcement.createdAt.toDate().toLocaleDateString('he-IL')
                           : 'תאריך לא זמין'}
                       </p>
-                      <h3 className="mt-1 text-xl font-black text-slate-900">{announcement.title}</h3>
+                      <h3>{announcement.title}</h3>
                     </div>
-                    <span className={announcement.isActive ? 'rounded-full bg-green-100 px-4 py-2 text-base font-bold text-green-700' : 'rounded-full bg-slate-100 px-4 py-2 text-base font-bold text-slate-600'}>
+                    <span className={announcement.isActive ? 'admin-announcements-status admin-announcements-status--active' : 'admin-announcements-status admin-announcements-status--inactive'}>
                       {announcement.isActive ? 'פעילה' : 'לא פעילה'}
                     </span>
                   </div>
 
-                  <p className="mt-4 text-lg leading-8 text-slate-700">
+                  <p className="admin-announcements-card__content">
                     {announcement.content || announcement.message || ''}
                   </p>
 
-                  <div className="mt-5 flex flex-wrap gap-3">
+                  <div className="admin-announcements-card__actions">
                     <button
-                      className="rounded-lg bg-sky-100 px-5 py-3 text-lg font-bold text-sky-800 hover:bg-sky-200"
+                      className="admin-announcements-action admin-announcements-action--edit"
                       type="button"
                       onClick={() => handleEdit(announcement)}
                     >
                       עריכה
                     </button>
                     <button
-                      className="rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="admin-announcements-action admin-announcements-action--toggle"
                       type="button"
                       disabled={actionId === announcement.id}
                       onClick={() => handleToggleActive(announcement)}
@@ -285,7 +286,7 @@ function AdminAnnouncements() {
                       {announcement.isActive ? 'השבתה' : 'הפעלה'}
                     </button>
                     <button
-                      className="rounded-lg bg-red-50 px-5 py-3 text-lg font-bold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="admin-announcements-action admin-announcements-action--delete"
                       type="button"
                       disabled={actionId === announcement.id}
                       onClick={() => handleDelete(announcement)}

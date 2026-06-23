@@ -1,0 +1,331 @@
+.admin-announcements-page {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+  color: #3f342f;
+  text-align: right;
+}
+
+.admin-announcements-page * {
+  box-sizing: border-box;
+}
+
+.admin-announcements-header {
+  margin-bottom: 22px;
+}
+
+.admin-announcements-header p {
+  margin: 0;
+  color: #977665;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-announcements-header h1 {
+  margin: 8px 0 0;
+  color: #3f342f;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.admin-announcements-alert {
+  margin-bottom: 20px;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.admin-announcements-alert--error {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.admin-announcements-alert--success {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.admin-announcements-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.admin-announcements-form,
+.admin-announcements-list-panel {
+  border: 1px solid rgba(130, 77, 63, 0.16);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(63, 52, 47, 0.08);
+}
+
+.admin-announcements-form {
+  width: 100%;
+  max-width: 420px;
+  padding: 22px 24px;
+}
+
+.admin-announcements-form h2,
+.admin-announcements-list-panel h2 {
+  margin: 0;
+  color: #3f342f;
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.admin-announcements-form__fields {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.admin-announcements-field {
+  display: grid;
+  gap: 8px;
+  color: #3f342f;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-announcements-input,
+.admin-announcements-textarea {
+  width: 100%;
+  border: 1px solid #d8c8ba;
+  border-radius: 14px;
+  background: #fffdfb;
+  color: #3f342f;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.admin-announcements-input {
+  min-height: 50px;
+}
+
+.admin-announcements-textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.admin-announcements-input:focus,
+.admin-announcements-textarea:focus {
+  border-color: #824d3f;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(199, 171, 149, 0.32);
+}
+
+.admin-announcements-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #3f342f;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-announcements-checkbox__input {
+  width: 20px;
+  height: 20px;
+  accent-color: #824d3f;
+}
+
+.admin-announcements-actions,
+.admin-announcements-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-announcements-actions {
+  margin-top: 22px;
+}
+
+.admin-announcements-button,
+.admin-announcements-action {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 18px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.admin-announcements-button:hover:not(:disabled),
+.admin-announcements-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.admin-announcements-button:disabled,
+.admin-announcements-action:disabled {
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.62;
+}
+
+.admin-announcements-button--primary {
+  background: #824d3f;
+  color: #ffffff;
+}
+
+.admin-announcements-button--primary:hover:not(:disabled) {
+  background: #6f4035;
+}
+
+.admin-announcements-button--secondary {
+  background: #f3eee8;
+  color: #3f342f;
+}
+
+.admin-announcements-list-panel {
+  min-width: 0;
+  padding: 22px 24px;
+}
+
+.admin-announcements-state,
+.admin-announcements-empty {
+  margin: 18px 0 0;
+  color: #5f514b;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.7;
+}
+
+.admin-announcements-empty {
+  border-radius: 14px;
+  background: #f3eee8;
+  padding: 18px;
+}
+
+.admin-announcements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 18px;
+}
+
+.admin-announcements-card {
+  border: 1px solid rgba(130, 77, 63, 0.14);
+  border-radius: 16px;
+  background: #fffdfb;
+  padding: 16px 18px;
+}
+
+.admin-announcements-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-announcements-card__date {
+  margin: 0;
+  color: #977665;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.admin-announcements-card h3 {
+  margin: 5px 0 0;
+  color: #3f342f;
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.admin-announcements-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.admin-announcements-status--active {
+  background: #e8f7ed;
+  color: #15803d;
+}
+
+.admin-announcements-status--inactive {
+  background: #f3eee8;
+  color: #6b5a52;
+}
+
+.admin-announcements-card__content {
+  margin: 14px 0 0;
+  color: #51443e;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.admin-announcements-card__actions {
+  margin-top: 16px;
+}
+
+.admin-announcements-action {
+  padding: 9px 15px;
+  font-size: 0.95rem;
+}
+
+.admin-announcements-action--edit {
+  background: #f3eee8;
+  color: #824d3f;
+}
+
+.admin-announcements-action--toggle {
+  background: #eee4db;
+  color: #3f342f;
+}
+
+.admin-announcements-action--delete {
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 900px) {
+  .admin-announcements-page {
+    width: min(100%, 720px);
+    padding: 24px 14px 40px;
+  }
+
+  .admin-announcements-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .admin-announcements-form {
+    max-width: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-announcements-form,
+  .admin-announcements-list-panel {
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+
+  .admin-announcements-button,
+  .admin-announcements-action {
+    width: 100%;
+  }
+
+  .admin-announcements-card {
+    padding: 15px;
+  }
+}
