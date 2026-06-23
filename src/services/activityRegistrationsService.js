@@ -29,6 +29,52 @@ export async function getUserActivityRegistrations(userId) {
   return snapshot.docs.map(normalizeRegistration);
 }
 
+export async function getUserAllRegistrations(userId) {
+  const registrations = await getUserActivityRegistrations(userId);
+
+  return Promise.all(
+    registrations.map(async (registration) => {
+      if (!registration.activityId) {
+        return { registration, activity: null };
+      }
+
+      const activitySnapshot = await getDoc(doc(db, 'activities', registration.activityId));
+      return {
+        registration,
+        activity: activitySnapshot.exists()
+          ? { id: activitySnapshot.id, ...activitySnapshot.data() }
+          : null,
+      };
+    })
+  );
+}
+
+export async function getUserPaidRegistrations(userId) {
+  const registrationsQuery = query(
+    collection(db, REGISTRATIONS_COLLECTION),
+    where('userId', '==', userId),
+    where('paymentStatus', '==', 'paid')
+  );
+  const snapshot = await getDocs(registrationsQuery);
+  const registrations = snapshot.docs.map(normalizeRegistration);
+
+  return Promise.all(
+    registrations.map(async (registration) => {
+      if (!registration.activityId) {
+        return { registration, activity: null };
+      }
+
+      const activitySnapshot = await getDoc(doc(db, 'activities', registration.activityId));
+      return {
+        registration,
+        activity: activitySnapshot.exists()
+          ? { id: activitySnapshot.id, ...activitySnapshot.data() }
+          : null,
+      };
+    })
+  );
+}
+
 export async function getActivityRegistrations(activityId) {
   const registrationsQuery = query(
     collection(db, REGISTRATIONS_COLLECTION),
@@ -51,6 +97,7 @@ export async function registerForActivity(activity, user) {
     activityTitle: activity.title || '',
     userId: user.uid,
     userEmail: user.email || '',
+    paymentStatus: 'pending',
     registeredAt: serverTimestamp(),
     date: activity.date || '',
     activityDate: activity.activityDate || null,

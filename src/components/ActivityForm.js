@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { formatActivityDateInput } from '../utils/activityDateUtils';
 
 const categoryOptions = ['ספורט', 'אמנות', 'הרצאה', 'מוזיקה', 'חברה', 'בריאות', 'אחר'];
 const dayOptions = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -10,6 +11,7 @@ const initialFormState = {
   description: '',
   type: 'קבוע',
   location: '',
+  whatsappLink: '',
   imageUrl: '',
   category: '',
   dayOfWeek: '',
@@ -20,19 +22,25 @@ const initialFormState = {
   currentParticipants: 0,
   isActive: true,
   requiresPayment: false,
+  price: '',
   paymentLink: '',
 };
 
 function buildFormState(initialValues) {
   const type = initialValues?.type || 'קבוע';
-  const date = initialValues?.date || initialValues?.activityDate || '';
+  const date = formatActivityDateInput(initialValues?.date || initialValues?.activityDate);
+  const requiresPayment = Boolean(
+    initialValues?.paymentRequired ?? initialValues?.requiresPayment
+  );
 
   return {
     ...initialFormState,
     ...initialValues,
     type,
-    date: type === 'חד פעמי' ? date : '',
-    activityDate: type === 'חד פעמי' ? date : '',
+    date,
+    activityDate: date,
+    requiresPayment,
+    price: requiresPayment ? (initialValues?.price ?? '') : '',
     dayOfWeek: type === 'קבוע' ? (initialValues?.dayOfWeek || '') : '',
   };
 }
@@ -66,8 +74,6 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
         return {
           ...nextData,
           dayOfWeek: value === 'קבוע' ? nextData.dayOfWeek : '',
-          date: value === 'חד פעמי' ? nextData.date : '',
-          activityDate: value === 'חד פעמי' ? nextData.date : '',
         };
       }
 
@@ -75,6 +81,13 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
         return {
           ...nextData,
           activityDate: value,
+        };
+      }
+
+      if (name === 'requiresPayment' && !checked) {
+        return {
+          ...nextData,
+          price: '',
         };
       }
 
@@ -89,7 +102,7 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     if (!formData.category) return 'יש לבחור קטגוריה.';
     if (!formData.type) return 'יש לבחור סוג פעילות.';
     if (formData.type === 'קבוע' && !formData.dayOfWeek) return 'יש לבחור יום בשבוע.';
-    if (formData.type === 'חד פעמי' && !formData.date) return 'יש לבחור תאריך לאירוע.';
+    if (!formData.date) return 'יש לבחור תאריך פעילות.';
     if (!formData.time) return 'יש להזין שעת פעילות.';
 
     const maxParticipants = Number(formData.maxParticipants);
@@ -111,6 +124,15 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
       return 'כאשר הפעילות בתשלום יש להזין קישור לתשלום.';
     }
 
+    if (formData.requiresPayment) {
+      if (formData.price === '') return 'כאשר הפעילות בתשלום יש להזין מחיר.';
+
+      const price = Number(formData.price);
+      if (!Number.isFinite(price) || price < 0) {
+        return 'מחיר הפעילות חייב להיות מספר גדול או שווה לאפס.';
+      }
+    }
+
     return '';
   };
 
@@ -127,11 +149,13 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
       ...formData,
       type: formData.type || 'קבוע',
       dayOfWeek: isOneTime ? '' : formData.dayOfWeek,
-      date: isOneTime ? formData.date : '',
-      activityDate: isOneTime ? formData.date : '',
+      date: formData.date,
+      activityDate: formData.date,
       maxParticipants: Number(formData.maxParticipants),
       currentParticipants: Number(formData.currentParticipants || 0),
       availableSpots,
+      paymentRequired: Boolean(formData.requiresPayment),
+      price: formData.requiresPayment ? Number(formData.price) : 0,
     });
   };
 
@@ -199,6 +223,18 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
           />
         </label>
 
+        <label className="block">
+          <span className="mb-2 block text-lg font-bold text-slate-800">קישור לוואטסאפ (אופציונלי)</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            name="whatsappLink"
+            type="url"
+            value={formData.whatsappLink}
+            placeholder="https://chat.whatsapp.com/... או https://wa.me/..."
+            onChange={handleChange}
+          />
+        </label>
+
         <label className="block lg:col-span-2">
           <span className="mb-2 block text-lg font-bold text-slate-800">תיאור</span>
           <textarea
@@ -239,18 +275,16 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
           </label>
         )}
 
-        {isOneTime && (
-          <label className="block">
-            <span className="mb-2 block text-lg font-bold text-slate-800">תאריך</span>
-            <input
-              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-              name="date"
-              type="date"
-              value={formData.date}
-              onChange={handleChange}
-            />
-          </label>
-        )}
+        <label className="block">
+          <span className="mb-2 block text-lg font-bold text-slate-800">תאריך פעילות</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            name="date"
+            type="date"
+            value={formData.date}
+            onChange={handleChange}
+          />
+        </label>
 
         <label className="block">
           <span className="mb-2 block text-lg font-bold text-slate-800">שעה</span>
@@ -311,21 +345,38 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
               type="checkbox"
               onChange={handleChange}
             />
-            נדרש תשלום
+            נדרש תשלום? {formData.requiresPayment ? 'כן' : 'לא'}
           </label>
         </div>
 
         {formData.requiresPayment && (
-          <label className="block lg:col-span-2">
-            <span className="mb-2 block text-lg font-bold text-slate-800">קישור לתשלום</span>
-            <input
-              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-              name="paymentLink"
-              type="url"
-              value={formData.paymentLink}
-              onChange={handleChange}
-            />
-          </label>
+          <>
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-slate-800">מחיר</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                min="0"
+                name="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                placeholder="50"
+                onChange={handleChange}
+                required
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-slate-800">קישור לתשלום</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                name="paymentLink"
+                type="url"
+                value={formData.paymentLink}
+                onChange={handleChange}
+              />
+            </label>
+          </>
         )}
       </div>
 

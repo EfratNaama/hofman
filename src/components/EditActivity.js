@@ -69,7 +69,10 @@ function EditActivity() {
     activityDate: formatActivityDateInput(activity.activityDate),
     maxParticipants: activity.maxParticipants ?? '',
     currentParticipants: activity.currentParticipants ?? 0,
+    paymentRequired: activity.paymentRequired ?? activity.requiresPayment ?? false,
+    price: activity.price ?? '',
     paymentLink: activity.paymentLink || '',
+    whatsappLink: activity.whatsappLink || '',
   };
 
   return (

@@ -72,6 +72,11 @@ function ActivityDetails() {
     );
   }
 
+  const paymentRequired = Boolean(activity.paymentRequired ?? activity.requiresPayment);
+  const paymentLabel = paymentRequired
+    ? `מחיר: ₪${Number(activity.price || 0).toLocaleString('he-IL')}`
+    : 'ללא תשלום';
+
   return (
     <section className="mx-auto max-w-5xl px-4 py-8 text-right" dir="rtl">
       <div className="rounded-lg bg-white p-6 shadow-sm">
@@ -118,6 +123,18 @@ function ActivityDetails() {
 
         <p className="mb-6 text-xl leading-9 text-slate-700">{activity.description || 'אין תיאור לפעילות זו.'}</p>
 
+        {activity.whatsappLink && (
+          <a
+            className="mb-6 inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-lg font-bold text-white shadow-sm hover:bg-green-700"
+            href={activity.whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span aria-hidden="true">💬</span>
+            הצטרפות לקבוצת וואטסאפ
+          </a>
+        )}
+
         <dl className="grid gap-4 md:grid-cols-2">
           <DetailItem label="קטגוריה" value={activity.category} />
           <DetailItem label="מיקום" value={activity.location} />
@@ -128,7 +145,7 @@ function ActivityDetails() {
           <DetailItem label="משתתפים רשומים" value={activity.currentParticipants} />
           <DetailItem label="מקומות פנויים" value={activity.availableSpots} />
           <DetailItem label="סטטוס" value={activity.isActive ? 'פעילה' : 'לא פעילה'} />
-          <DetailItem label="תשלום" value={activity.requiresPayment ? 'נדרש תשלום' : 'ללא תשלום'} />
+          <DetailItem label="תשלום" value={paymentLabel} />
           <DetailItem label="קישור לתשלום" value={activity.paymentLink || '-'} />
         </dl>
       </div>

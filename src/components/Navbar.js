@@ -6,7 +6,6 @@ function Navbar() {
   const navigate = useNavigate();
   const { authLoading, currentUser, isAdmin, signOutUser } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
-  const canManageActivities = Boolean(currentUser) && isAdmin;
 
   useEffect(() => {
     setIsLoggedIn(Boolean(currentUser));
@@ -81,36 +80,45 @@ function Navbar() {
 
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px' }}>
           <NavLink end to="/" style={navLinkStyle}>
-            בית
+            דף הבית
           </NavLink>
 
           {!authLoading && isLoggedIn && (
             <>
-              <NavLink to="/activities" style={navLinkStyle}>
-                פעילויות
-              </NavLink>
-              <NavLink to="/my-activities" style={navLinkStyle}>
-                הפעילויות שלי
-              </NavLink>
-              <NavLink to="/announcements" style={navLinkStyle}>
-                הודעות חשובות
-              </NavLink>
-              {canManageActivities && (
+              {isAdmin ? (
                 <>
-                  <NavLink to="/activities/new" style={navLinkStyle}>
-                    הוספת פעילות
+                  <NavLink to="/admin-dashboard" style={navLinkStyle}>
+                    לוח בקרה
+                  </NavLink>
+                  <NavLink to="/admin/activities" style={navLinkStyle}>
+                    ניהול פעילויות
+                  </NavLink>
+                  <NavLink to="/users" style={navLinkStyle}>
+                    משתמשים
+                  </NavLink>
+                  <NavLink to="/gallery" style={navLinkStyle}>
+                    גלריה
                   </NavLink>
                   <NavLink to="/admin/announcements" style={navLinkStyle}>
                     ניהול הודעות
                   </NavLink>
                 </>
+              ) : (
+                <>
+                  <NavLink to="/activities" style={navLinkStyle}>
+                    פעילויות
+                  </NavLink>
+                  <NavLink to="/personal-area" style={navLinkStyle}>
+                    אזור אישי
+                  </NavLink>
+                  <NavLink to="/gallery" style={navLinkStyle}>
+                    גלריה
+                  </NavLink>
+                  <NavLink to="/announcements" style={navLinkStyle}>
+                    הודעות
+                  </NavLink>
+                </>
               )}
-              <NavLink to="/gallery" style={navLinkStyle}>
-                גלריה
-              </NavLink>
-              <NavLink to="/users" style={navLinkStyle}>
-                משתמשים
-              </NavLink>
               <button type="button" style={authButtonStyle} onClick={handleLogout}>
                 התנתקות
               </button>

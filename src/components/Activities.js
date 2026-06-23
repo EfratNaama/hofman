@@ -2,32 +2,92 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../hooks/useActivities';
-import { getActivityRegistrations, getUserActivityRegistrations, registerForActivity } from '../services/activityRegistrationsService';
+import {
+  getActivityRegistrations,
+  getUserActivityRegistrations,
+  registerForActivity,
+} from '../services/activityRegistrationsService';
+import { getUsers } from '../services/usersService';
 import { formatActivityDate, toDate } from '../utils/activityDateUtils';
 
-const getActivityType = (activity) => activity.type || 'קבוע';
-const getActivityTypeBadge = (activity) => (
-  getActivityType(activity) === 'חד פעמי' ? 'אירוע חד פעמי' : 'פעילות קבועה'
-);
-const scheduleDays = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי'];
-const noDayLabel = 'ללא יום מוגדר';
-const dateDayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-
-const normalizeDayName = (value) => {
-  if (!value) return '';
-  const dayName = String(value).trim();
-  return scheduleDays.find((day) => dayName.includes(day)) || '';
+const initialFilters = {
+  search: '',
+  activityType: 'all',
+  dateRange: 'all',
+  registrationStatus: 'all',
+  sortBy: 'date-asc',
 };
 
-const getScheduleDay = (activity) => {
-  const explicitDay = normalizeDayName(activity.dayOfWeek);
-  if (explicitDay) return explicitDay;
+const getActivityDate = (activity) => toDate(activity.activityDate || activity.date);
 
-  const activityDate = toDate(activity.activityDate || activity.date);
-  if (!activityDate) return noDayLabel;
+const getActivityTypes = (activity) =>
+  [activity.category, activity.type]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean);
 
-  const dateDayName = dateDayNames[activityDate.getDay()];
-  return scheduleDays.includes(dateDayName) ? dateDayName : noDayLabel;
+const getPrimaryActivityType = (activity) =>
+  activity.category || activity.type || 'פעילות';
+
+const formatPrice = (activity) => {
+  if (activity.price !== undefined && activity.price !== null && activity.price !== '') {
+    return new Intl.NumberFormat('he-IL', {
+      style: 'currency',
+      currency: 'ILS',
+      maximumFractionDigits: 2,
+    }).format(Number(activity.price) || 0);
+  }
+
+  const paymentRequired = Boolean(activity.paymentRequired ?? activity.requiresPayment);
+  return paymentRequired
+    ? `₪${Number(activity.price || 0).toLocaleString('he-IL')}`
+    : 'ללא תשלום';
+};
+
+const getRegistrationPresentation = (registration, wasJustRegistered = false) => {
+  if (!registration) {
+    return {
+      label: 'הרשמה',
+      badgeLabel: 'פתוח להרשמה',
+      color: '#006b6b',
+      backgroundColor: '#ccfbf1',
+    };
+  }
+
+  if (wasJustRegistered) {
+    return {
+      label: 'נרשמת בהצלחה',
+      badgeLabel: 'נרשמת בהצלחה',
+      color: '#15803d',
+      backgroundColor: '#dcfce7',
+    };
+  }
+
+  return {
+    label: 'כבר נרשמת',
+    badgeLabel: 'כבר נרשמת',
+    color: '#475569',
+    backgroundColor: '#e2e8f0',
+  };
+};
+
+const isInSelectedDateRange = (activity, dateRange) => {
+  if (dateRange === 'all') return true;
+
+  const activityDate = getActivityDate(activity);
+  if (!activityDate) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const activityDay = new Date(activityDate);
+  activityDay.setHours(0, 0, 0, 0);
+
+  if (dateRange === 'future') {
+    return activityDay >= today;
+  }
+
+  const rangeEnd = new Date(today);
+  rangeEnd.setDate(rangeEnd.getDate() + (dateRange === 'week' ? 7 : 30));
+  return activityDay >= today && activityDay <= rangeEnd;
 };
 
 function Activities() {
@@ -37,42 +97,102 @@ function Activities() {
   const role = (authRole ?? currentUser?.role ?? '').toLowerCase();
   const canCreateActivity = Boolean(currentUser) && (role === 'admin' || role === 'manager');
   const canRegister = Boolean(currentUser) && !canCreateActivity;
-  const [registeredActivityIds, setRegisteredActivityIds] = useState([]);
+  const [userRegistrations, setUserRegistrations] = useState([]);
+  const [filters, setFilters] = useState(initialFilters);
   const [registrationError, setRegistrationError] = useState('');
   const [registrationMessage, setRegistrationMessage] = useState('');
   const [registeringActivityId, setRegisteringActivityId] = useState('');
+  const [successfulRegistrationIds, setSuccessfulRegistrationIds] = useState([]);
+  const [adminUsers, setAdminUsers] = useState([]);
   const [adminRegistrationsByActivity, setAdminRegistrationsByActivity] = useState({});
   const [expandedRegistrationActivityId, setExpandedRegistrationActivityId] = useState('');
   const [loadingRegistrationActivityId, setLoadingRegistrationActivityId] = useState('');
-  const [activitiesView, setActivitiesView] = useState('cards');
 
-  const registeredActivityIdSet = useMemo(
-    () => new Set(registeredActivityIds),
-    [registeredActivityIds]
+  const registrationsByActivityId = useMemo(
+    () => new Map(userRegistrations.map((registration) => [registration.activityId, registration])),
+    [userRegistrations]
   );
-  const activitiesByScheduleDay = useMemo(() => (
-    activities.reduce((groupedActivities, activity) => {
-      const day = getScheduleDay(activity);
-      return {
-        ...groupedActivities,
-        [day]: [...(groupedActivities[day] || []), activity],
-      };
-    }, {})
-  ), [activities]);
+
+  const adminUsersById = useMemo(() => {
+    const usersById = new Map();
+
+    adminUsers.forEach((user) => {
+      [user.id, user.uid, user.authUid].filter(Boolean).forEach((userId) => {
+        usersById.set(userId, user);
+      });
+    });
+
+    return usersById;
+  }, [adminUsers]);
+
+  const availableActivityTypes = useMemo(
+    () => Array.from(new Set(activities.flatMap(getActivityTypes)))
+      .sort((first, second) => first.localeCompare(second, 'he')),
+    [activities]
+  );
+
+  const filteredActivities = useMemo(() => {
+    const normalizedSearch = filters.search.trim().toLocaleLowerCase('he');
+
+    return activities
+      .filter((activity) => {
+        const registration = registrationsByActivityId.get(activity.id);
+        const searchableText = [
+          activity.title,
+          activity.description,
+          activity.location,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLocaleLowerCase('he');
+
+        const matchesSearch = !normalizedSearch || searchableText.includes(normalizedSearch);
+        const matchesType =
+          filters.activityType === 'all' ||
+          getActivityTypes(activity).includes(filters.activityType);
+        const matchesDate = isInSelectedDateRange(activity, filters.dateRange);
+        const matchesRegistration =
+          filters.registrationStatus === 'all' ||
+          (filters.registrationStatus === 'registered' && Boolean(registration)) ||
+          (filters.registrationStatus === 'not-registered' && !registration);
+
+        return matchesSearch && matchesType && matchesDate && matchesRegistration;
+      })
+      .sort((first, second) => {
+        if (filters.sortBy === 'name-asc') {
+          return String(first.title || '').localeCompare(String(second.title || ''), 'he');
+        }
+
+        if (filters.sortBy === 'name-desc') {
+          return String(second.title || '').localeCompare(String(first.title || ''), 'he');
+        }
+
+        const firstDate = getActivityDate(first)?.getTime();
+        const secondDate = getActivityDate(second)?.getTime();
+
+        if (!firstDate && !secondDate) return 0;
+        if (!firstDate) return 1;
+        if (!secondDate) return -1;
+
+        return filters.sortBy === 'date-desc'
+          ? secondDate - firstDate
+          : firstDate - secondDate;
+      });
+  }, [activities, filters, registrationsByActivityId]);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadRegistrations() {
       if (!currentUser) {
-        setRegisteredActivityIds([]);
+        setUserRegistrations([]);
         return;
       }
 
       try {
         const registrations = await getUserActivityRegistrations(currentUser.uid);
         if (isMounted) {
-          setRegisteredActivityIds(registrations.map((registration) => registration.activityId));
+          setUserRegistrations(registrations);
         }
       } catch (err) {
         console.error('Failed to load activity registrations', err);
@@ -88,6 +208,44 @@ function Activities() {
       isMounted = false;
     };
   }, [currentUser]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAdminUsers() {
+      if (!canCreateActivity) {
+        setAdminUsers([]);
+        return;
+      }
+
+      try {
+        const users = await getUsers();
+        if (isMounted) {
+          setAdminUsers(users);
+        }
+      } catch (err) {
+        console.error('Failed to load users for activity registrations', err);
+        if (isMounted) {
+          setRegistrationError('לא ניתן לטעון את פרטי המשתמשים כרגע.');
+        }
+      }
+    }
+
+    loadAdminUsers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [canCreateActivity]);
+
+  const updateFilter = (name, value) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [name]: value,
+    }));
+  };
+
+  const resetFilters = () => setFilters(initialFilters);
 
   const handleRegister = async (activity) => {
     setRegistrationError('');
@@ -107,10 +265,26 @@ function Activities() {
 
     try {
       const result = await registerForActivity(activity, currentUser);
-      setRegisteredActivityIds((currentIds) => (
-        currentIds.includes(activity.id) ? currentIds : [...currentIds, activity.id]
+      setUserRegistrations((currentRegistrations) => (
+        currentRegistrations.some((registration) => registration.activityId === activity.id)
+          ? currentRegistrations
+          : [
+            ...currentRegistrations,
+            {
+              id: `${currentUser.uid}_${activity.id}`,
+              activityId: activity.id,
+              paymentStatus: result.alreadyRegistered ? '' : 'pending',
+            },
+          ]
       ));
-      setRegistrationMessage(result.alreadyRegistered ? 'כבר נרשמת לפעילות זו.' : 'נרשמת לפעילות בהצלחה.');
+      if (!result.alreadyRegistered) {
+        setSuccessfulRegistrationIds((currentIds) => (
+          currentIds.includes(activity.id) ? currentIds : [...currentIds, activity.id]
+        ));
+      }
+      setRegistrationMessage(
+        result.alreadyRegistered ? 'כבר נרשמת לפעילות זו.' : 'נרשמת בהצלחה'
+      );
     } catch (err) {
       console.error('Failed to register for activity', err);
       setRegistrationError('לא ניתן להשלים את ההרשמה. נסו שוב מאוחר יותר.');
@@ -156,33 +330,234 @@ function Activities() {
   };
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 text-right" dir="rtl">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <main className="activities-catalog" dir="rtl">
+      <style>{`
+        .activities-catalog {
+          width: 100%;
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 36px 20px 64px;
+        }
+
+        .activities-catalog__filters {
+          display: grid;
+          grid-template-columns: minmax(220px, 1.5fr) repeat(4, minmax(160px, 1fr));
+          gap: 14px;
+          padding: 20px;
+          border: 1px solid #e5e7eb;
+          border-radius: 18px;
+          background: #fff;
+          box-shadow: 0 4px 18px rgba(15, 34, 64, 0.07);
+        }
+
+        .activities-catalog__field {
+          display: grid;
+          gap: 7px;
+          min-width: 0;
+        }
+
+        .activities-catalog__field label {
+          color: #475569;
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        .activities-catalog__field input,
+        .activities-catalog__field select {
+          width: 100%;
+          min-height: 46px;
+          padding: 10px 12px;
+          border: 1px solid #cbd5e1;
+          border-radius: 11px;
+          background: #fff;
+          color: #0f2240;
+          font: inherit;
+        }
+
+        .activities-catalog__grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 22px;
+        }
+
+        .activities-catalog__card {
+          display: flex;
+          min-width: 0;
+          min-height: 100%;
+          flex-direction: column;
+          overflow: hidden;
+          border: 1px solid #e5e7eb;
+          border-radius: 18px;
+          background: #fff;
+          box-shadow: 0 4px 18px rgba(15, 34, 64, 0.07);
+        }
+
+        .activities-catalog__card-body {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          padding: 22px;
+        }
+
+        .activities-catalog__card-title {
+          overflow: hidden;
+          color: #0f2240;
+          font-size: 23px;
+          font-weight: 900;
+          line-height: 1.3;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        @media (max-width: 1050px) {
+          .activities-catalog__filters {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 650px) {
+          .activities-catalog {
+            padding: 26px 14px 48px;
+          }
+
+          .activities-catalog__filters {
+            grid-template-columns: 1fr;
+          }
+
+          .activities-catalog__grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: '18px',
+          flexWrap: 'wrap',
+          marginBottom: '24px',
+        }}
+      >
         <div>
-          <p className="text-lg font-bold text-slate-500">ניהול פעילויות</p>
-          <h1 className="mt-2 text-4xl font-black text-slate-900">פעילויות בית הופמן</h1>
+          <h1 style={{ margin: 0, color: '#0f2240', fontSize: '38px', fontWeight: 950 }}>
+            פעילויות
+          </h1>
+          <p style={{ margin: '9px 0 0', color: '#64748b', fontSize: '17px' }}>
+            צפייה והרשמה לפעילויות וחוגים
+          </p>
         </div>
         {canCreateActivity && (
-          <Link className="rounded-lg bg-sky-800 px-7 py-4 text-lg font-bold text-white shadow-sm hover:bg-sky-900" to="/activities/new">
+          <Link
+            to="/activities/new"
+            style={{
+              padding: '13px 20px',
+              borderRadius: '12px',
+              backgroundColor: '#0f2240',
+              color: '#fff',
+              fontWeight: 900,
+            }}
+          >
             פעילות חדשה
           </Link>
         )}
-      </div>
+      </header>
 
-      <div className="mb-6 inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm" role="group" aria-label="תצוגת פעילויות">
+      <section className="activities-catalog__filters" aria-label="סינון פעילויות">
+        <div className="activities-catalog__field">
+          <label htmlFor="activity-search">חיפוש חופשי</label>
+          <input
+            id="activity-search"
+            type="search"
+            value={filters.search}
+            placeholder="שם, תיאור או מיקום"
+            onChange={(event) => updateFilter('search', event.target.value)}
+          />
+        </div>
+
+        <div className="activities-catalog__field">
+          <label htmlFor="activity-type">סוג פעילות</label>
+          <select
+            id="activity-type"
+            value={filters.activityType}
+            onChange={(event) => updateFilter('activityType', event.target.value)}
+          >
+            <option value="all">כל הסוגים</option>
+            {availableActivityTypes.map((activityType) => (
+              <option key={activityType} value={activityType}>{activityType}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="activities-catalog__field">
+          <label htmlFor="activity-date">תאריך</label>
+          <select
+            id="activity-date"
+            value={filters.dateRange}
+            onChange={(event) => updateFilter('dateRange', event.target.value)}
+          >
+            <option value="all">כל התאריכים</option>
+            <option value="week">השבוע הקרוב</option>
+            <option value="month">החודש הקרוב</option>
+            <option value="future">תאריכים עתידיים בלבד</option>
+          </select>
+        </div>
+
+        <div className="activities-catalog__field">
+          <label htmlFor="registration-status">סטטוס הרשמה</label>
+          <select
+            id="registration-status"
+            value={filters.registrationStatus}
+            onChange={(event) => updateFilter('registrationStatus', event.target.value)}
+          >
+            <option value="all">כל הפעילויות</option>
+            <option value="registered">פעילויות שנרשמתי אליהן</option>
+            <option value="not-registered">פעילויות שלא נרשמתי אליהן</option>
+          </select>
+        </div>
+
+        <div className="activities-catalog__field">
+          <label htmlFor="activity-sort">מיון</label>
+          <select
+            id="activity-sort"
+            value={filters.sortBy}
+            onChange={(event) => updateFilter('sortBy', event.target.value)}
+          >
+            <option value="date-asc">תאריך קרוב ביותר</option>
+            <option value="date-desc">תאריך רחוק ביותר</option>
+            <option value="name-asc">שם א-ת</option>
+            <option value="name-desc">שם ת-א</option>
+          </select>
+        </div>
+      </section>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          flexWrap: 'wrap',
+          margin: '22px 0',
+        }}
+      >
+        <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>
+          {isLoading ? 'טוען פעילויות...' : `${filteredActivities.length} פעילויות נמצאו`}
+        </p>
         <button
-          className={activitiesView === 'cards' ? 'rounded-md bg-sky-800 px-6 py-3 text-lg font-bold text-white' : 'rounded-md px-6 py-3 text-lg font-bold text-slate-700 hover:bg-slate-100'}
           type="button"
-          onClick={() => setActivitiesView('cards')}
+          onClick={resetFilters}
+          style={{
+            padding: '9px 14px',
+            border: '1px solid #cbd5e1',
+            borderRadius: '10px',
+            backgroundColor: '#fff',
+            color: '#475569',
+            fontWeight: 800,
+          }}
         >
-          פעילויות
-        </button>
-        <button
-          className={activitiesView === 'schedule' ? 'rounded-md bg-sky-800 px-6 py-3 text-lg font-bold text-white' : 'rounded-md px-6 py-3 text-lg font-bold text-slate-700 hover:bg-slate-100'}
-          type="button"
-          onClick={() => setActivitiesView('schedule')}
-        >
-          מערכת שבועית
+          איפוס סינון
         </button>
       </div>
 
@@ -204,181 +579,328 @@ function Activities() {
         </div>
       )}
 
-      {isLoading && <p className="rounded-lg bg-white p-6 text-xl font-semibold text-slate-700 shadow-sm">טוען פעילויות...</p>}
-
-      {!isLoading && !error && activities.length === 0 && (
-        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <p className="text-2xl font-black text-slate-900">אין פעילויות להצגה.</p>
-          <p className="mt-3 text-lg text-slate-600">צרו פעילות חדשה כדי להתחיל לנהל את לוח הפעילויות.</p>
+      {isLoading && (
+        <div
+          style={{
+            padding: '28px',
+            borderRadius: '16px',
+            backgroundColor: '#fff',
+            color: '#475569',
+            fontWeight: 800,
+            textAlign: 'center',
+          }}
+        >
+          טוען פעילויות...
         </div>
       )}
 
-      {!isLoading && activitiesView === 'cards' && activities.length > 0 && (
-        <div className="grid gap-5 lg:grid-cols-2">
-          {activities.map((activity) => (
-            <article key={activity.id} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-              {activity.imageUrl && (
-                <img
-                  alt={activity.title}
-                  className="mb-5 h-56 w-full rounded-lg object-cover"
-                  src={activity.imageUrl}
-                />
-              )}
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900">{activity.title}</h2>
-                  <p className="mt-2 text-lg font-semibold text-slate-600">
-                    {activity.dayOfWeek} · {formatActivityDate(activity.activityDate)} · {activity.time}
-                  </p>
-                </div>
-                <span className={activity.isActive ? 'rounded-full bg-green-100 px-4 py-2 text-base font-bold text-green-700' : 'rounded-full bg-slate-100 px-4 py-2 text-base font-bold text-slate-600'}>
-                  {activity.isActive ? 'פעילה' : 'לא פעילה'}
-                </span>
-              </div>
+      {!isLoading && !error && filteredActivities.length === 0 && (
+        <div
+          style={{
+            padding: '42px 24px',
+            border: '1px solid #e5e7eb',
+            borderRadius: '18px',
+            backgroundColor: '#fff',
+            boxShadow: '0 4px 18px rgba(15, 34, 64, 0.07)',
+            textAlign: 'center',
+          }}
+        >
+          <p style={{ margin: 0, color: '#0f2240', fontSize: '21px', fontWeight: 900 }}>
+            לא נמצאו פעילויות התואמות לסינון שנבחר
+          </p>
+          <button
+            type="button"
+            onClick={resetFilters}
+            style={{
+              marginTop: '18px',
+              padding: '11px 18px',
+              border: 0,
+              borderRadius: '11px',
+              backgroundColor: '#008080',
+              color: '#fff',
+              fontWeight: 900,
+            }}
+          >
+            איפוס סינון
+          </button>
+        </div>
+      )}
 
-              <p className="mt-4 line-clamp-3 text-lg leading-8 text-slate-700">{activity.description || 'אין תיאור לפעילות זו.'}</p>
+      {!isLoading && filteredActivities.length > 0 && (
+        <div className="activities-catalog__grid">
+          {filteredActivities.map((activity) => {
+            const registration = registrationsByActivityId.get(activity.id);
+            const registrationPresentation = getRegistrationPresentation(
+              registration,
+              successfulRegistrationIds.includes(activity.id)
+            );
+            const activityDate = getActivityDate(activity);
 
-              <span className="mt-4 inline-flex rounded-full bg-amber-100 px-4 py-2 text-base font-bold text-amber-800">
-                {getActivityTypeBadge(activity)}
-              </span>
+            return (
+              <article key={activity.id} className="activities-catalog__card">
+                {activity.imageUrl && (
+                  <img
+                    alt={activity.title}
+                    src={activity.imageUrl}
+                    style={{ width: '100%', height: '190px', objectFit: 'cover' }}
+                  />
+                )}
 
-              <dl className="mt-5 grid gap-3 sm:grid-cols-3">
-                <Info label="קטגוריה" value={activity.category} />
-                <Info label="מיקום" value={activity.location} />
-                <Info label="מכסה" value={activity.maxParticipants} />
-                <Info label="פנויים" value={activity.availableSpots} />
-              </dl>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link className="rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200" to={`/activities/${activity.id}`}>
-                  צפייה
-                </Link>
-                {canRegister && (
-                  <button
-                    className="rounded-lg bg-[#d4a373] px-5 py-3 text-lg font-bold text-[#0f2240] hover:bg-[#c38a5a] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-                    type="button"
-                    disabled={registeredActivityIdSet.has(activity.id) || registeringActivityId === activity.id}
-                    onClick={() => handleRegister(activity)}
+                <div className="activities-catalog__card-body">
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                    }}
                   >
-                    {registeredActivityIdSet.has(activity.id)
-                      ? 'נרשמת'
-                      : registeringActivityId === activity.id
-                        ? 'נרשם...'
-                        : 'הרשמה לפעילות'}
-                  </button>
-                )}
-                {canCreateActivity && (
-                  <>
-                    <Link className="rounded-lg bg-sky-100 px-5 py-3 text-lg font-bold text-sky-800 hover:bg-sky-200" to={`/activities/${activity.id}/edit`}>
-                      עריכה
-                    </Link>
-                    <button
-                      className="rounded-lg bg-slate-100 px-5 py-3 text-lg font-bold text-slate-800 hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-                      type="button"
-                      disabled={loadingRegistrationActivityId === activity.id}
-                      onClick={() => handleViewRegistrations(activity.id)}
-                    >
-                      {loadingRegistrationActivityId === activity.id ? 'טוען נרשמים...' : 'צפייה בנרשמים'}
-                    </button>
-                  </>
-                )}
-              </div>
+                    <div style={{ minWidth: 0 }}>
+                      <h2 className="activities-catalog__card-title" title={activity.title}>
+                        {activity.title || 'פעילות ללא כותרת'}
+                      </h2>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          marginTop: '9px',
+                          padding: '5px 10px',
+                          borderRadius: '999px',
+                          backgroundColor: '#eef2ff',
+                          color: '#4338ca',
+                          fontSize: '13px',
+                          fontWeight: 800,
+                        }}
+                      >
+                        {getPrimaryActivityType(activity)}
+                      </span>
+                    </div>
+                    {canRegister && (
+                      <span
+                        style={{
+                          flexShrink: 0,
+                          padding: '5px 10px',
+                          borderRadius: '999px',
+                          backgroundColor: registrationPresentation.backgroundColor,
+                          color: registrationPresentation.color,
+                          fontSize: '12px',
+                          fontWeight: 900,
+                        }}
+                      >
+                        {registrationPresentation.badgeLabel}
+                      </span>
+                    )}
+                  </div>
 
-              {canCreateActivity && expandedRegistrationActivityId === activity.id && (
-                <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-5">
-                  <h3 className="text-xl font-black text-slate-900">נרשמים לפעילות</h3>
-                  {loadingRegistrationActivityId === activity.id && (
-                    <p className="mt-3 text-lg font-semibold text-slate-700">טוען נרשמים...</p>
-                  )}
-                  {loadingRegistrationActivityId !== activity.id && (adminRegistrationsByActivity[activity.id]?.length || 0) === 0 && (
-                    <p className="mt-3 text-lg font-semibold text-slate-700">אין עדיין נרשמים לפעילות זו</p>
-                  )}
-                  {loadingRegistrationActivityId !== activity.id && (adminRegistrationsByActivity[activity.id]?.length || 0) > 0 && (
-                    <div className="mt-4 overflow-x-auto">
-                      <table className="min-w-full border-collapse text-right">
-                        <thead>
-                          <tr className="border-b border-slate-200 text-base text-slate-500">
-                            <th className="px-4 py-3 font-bold">אימייל</th>
-                            <th className="px-4 py-3 font-bold">מזהה משתמש</th>
-                            <th className="px-4 py-3 font-bold">תאריך הרשמה</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {adminRegistrationsByActivity[activity.id].map((registration) => (
-                            <tr key={registration.id} className="border-b border-slate-200">
-                              <td className="px-4 py-3 text-base font-semibold text-slate-900">{registration.userEmail || '-'}</td>
-                              <td className="px-4 py-3 text-base text-slate-700">{registration.userId || '-'}</td>
-                              <td className="px-4 py-3 text-base text-slate-700">{formatActivityDate(registration.registeredAt)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                      gap: '10px',
+                      marginTop: '18px',
+                    }}
+                  >
+                    <Info label="תאריך" value={activityDate ? formatActivityDate(activityDate) : activity.dayOfWeek || '-'} />
+                    <Info label="שעה" value={activity.time || '-'} />
+                    <Info label="מיקום" value={activity.location || '-'} />
+                    <Info label="מחיר" value={formatPrice(activity)} />
+                  </div>
+
+                  <p
+                    style={{
+                      display: '-webkit-box',
+                      minHeight: '76px',
+                      margin: '18px 0 0',
+                      overflow: 'hidden',
+                      color: '#475569',
+                      fontSize: '15px',
+                      lineHeight: 1.7,
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: 3,
+                    }}
+                  >
+                    {activity.description || 'אין תיאור לפעילות זו.'}
+                  </p>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      flexWrap: 'wrap',
+                      marginTop: 'auto',
+                      paddingTop: '20px',
+                    }}
+                  >
+                    <Link
+                      to={`/activities/${activity.id}`}
+                      style={{
+                        padding: '10px 15px',
+                        borderRadius: '10px',
+                        backgroundColor: '#f1f5f9',
+                        color: '#334155',
+                        fontWeight: 800,
+                      }}
+                    >
+                      פרטים
+                    </Link>
+
+                    {canRegister && (
+                      <button
+                        type="button"
+                        disabled={Boolean(registration) || registeringActivityId === activity.id}
+                        onClick={() => handleRegister(activity)}
+                        style={{
+                          padding: '10px 16px',
+                          border: 0,
+                          borderRadius: '10px',
+                          backgroundColor: registration ? registrationPresentation.backgroundColor : '#008080',
+                          color: registration ? registrationPresentation.color : '#fff',
+                          cursor: registration ? 'not-allowed' : 'pointer',
+                          fontWeight: 900,
+                        }}
+                      >
+                        {registeringActivityId === activity.id
+                          ? 'נרשם...'
+                          : registrationPresentation.label}
+                      </button>
+                    )}
+
+                    {canCreateActivity && (
+                      <>
+                        <Link
+                          to={`/activities/${activity.id}/edit`}
+                          style={{
+                            padding: '10px 15px',
+                            borderRadius: '10px',
+                            backgroundColor: '#e0f2fe',
+                            color: '#075985',
+                            fontWeight: 800,
+                          }}
+                        >
+                          עריכה
+                        </Link>
+                        <button
+                          type="button"
+                          disabled={loadingRegistrationActivityId === activity.id}
+                          onClick={() => handleViewRegistrations(activity.id)}
+                          style={{
+                            padding: '10px 15px',
+                            border: 0,
+                            borderRadius: '10px',
+                            backgroundColor: '#f1f5f9',
+                            color: '#334155',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {loadingRegistrationActivityId === activity.id
+                            ? 'טוען נרשמים...'
+                            : 'צפייה בנרשמים'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {canCreateActivity && expandedRegistrationActivityId === activity.id && (
+                    <div
+                      style={{
+                        marginTop: '18px',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        backgroundColor: '#f8fafc',
+                      }}
+                    >
+                      <h3 style={{ margin: 0, color: '#0f2240', fontSize: '18px' }}>
+                        נרשמים לפעילות
+                      </h3>
+                      {loadingRegistrationActivityId === activity.id && (
+                        <p style={{ color: '#475569' }}>טוען נרשמים...</p>
+                      )}
+                      {loadingRegistrationActivityId !== activity.id &&
+                        (adminRegistrationsByActivity[activity.id]?.length || 0) === 0 && (
+                          <p style={{ color: '#475569' }}>אין עדיין נרשמים לפעילות זו</p>
+                        )}
+                      {loadingRegistrationActivityId !== activity.id &&
+                        (adminRegistrationsByActivity[activity.id]?.length || 0) > 0 && (
+                          <div style={{ marginTop: '12px', overflowX: 'auto' }}>
+                            <table className="min-w-full border-collapse text-right">
+                              <thead>
+                                <tr className="border-b border-slate-200 text-sm text-slate-500">
+                                  <th className="px-3 py-2 font-bold">שם מלא</th>
+                                  <th className="px-3 py-2 font-bold">אימייל</th>
+                                  <th className="px-3 py-2 font-bold">תאריך הרשמה</th>
+                                  <th className="px-3 py-2 font-bold">סטטוס תשלום</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {adminRegistrationsByActivity[activity.id].map((adminRegistration) => {
+                                  const registeredUser = adminUsersById.get(adminRegistration.userId);
+                                  const fullName =
+                                    registeredUser?.fullName ||
+                                    registeredUser?.displayName ||
+                                    registeredUser?.name ||
+                                    'משתמש לא נמצא';
+                                  const email =
+                                    registeredUser?.email ||
+                                    adminRegistration.userEmail ||
+                                    '-';
+                                  const paymentStatus =
+                                    adminRegistration.paymentStatus === 'paid'
+                                      ? 'שולם'
+                                      : adminRegistration.paymentStatus === 'pending'
+                                        ? 'ממתין'
+                                        : 'לא צוין';
+
+                                  return (
+                                    <tr key={adminRegistration.id} className="border-b border-slate-200">
+                                      <td className="px-3 py-2 text-sm font-semibold text-slate-900">
+                                        {fullName}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-slate-700">
+                                        {email}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-slate-700">
+                                        {formatActivityDate(adminRegistration.registeredAt)}
+                                      </td>
+                                      <td className="px-3 py-2 text-sm text-slate-700">
+                                        {paymentStatus}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                     </div>
                   )}
                 </div>
-              )}
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
-      {!isLoading && activitiesView === 'schedule' && activities.length > 0 && (
-        <WeeklySchedule activitiesByScheduleDay={activitiesByScheduleDay} />
-      )}
-    </section>
-  );
-}
-
-function WeeklySchedule({ activitiesByScheduleDay }) {
-  const visibleDays = [...scheduleDays, noDayLabel].filter((day) => (
-    day !== noDayLabel || (activitiesByScheduleDay[day]?.length || 0) > 0
-  ));
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-5">
-      {visibleDays.map((day) => {
-        const dayActivities = activitiesByScheduleDay[day] || [];
-
-        return (
-          <section key={day} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="border-b border-slate-100 pb-3 text-2xl font-black text-slate-900">{day}</h2>
-
-            {dayActivities.length === 0 && (
-              <p className="mt-4 rounded-lg bg-slate-50 p-4 text-lg font-semibold text-slate-500">
-                אין פעילויות ליום זה
-              </p>
-            )}
-
-            <div className="mt-4 space-y-3">
-              {dayActivities.map((activity) => (
-                <article key={activity.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xl font-black text-slate-900">{activity.title}</p>
-                  <p className="mt-2 text-lg font-bold text-slate-700">{activity.time || '-'}</p>
-                  {activity.activityDate || activity.date ? (
-                    <p className="mt-1 text-base font-semibold text-slate-500">
-                      {formatActivityDate(activity.activityDate || activity.date)}
-                    </p>
-                  ) : null}
-                  {activity.location && (
-                    <p className="mt-3 text-base font-semibold text-slate-600">{activity.location}</p>
-                  )}
-                  <span className="mt-3 inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-800">
-                    {getActivityTypeBadge(activity)}
-                  </span>
-                </article>
-              ))}
-            </div>
-          </section>
-        );
-      })}
-    </div>
+    </main>
   );
 }
 
 function Info({ label, value }) {
   return (
-    <div className="rounded-lg bg-slate-50 p-4">
-      <dt className="text-base font-bold text-slate-500">{label}</dt>
-      <dd className="mt-1 text-xl font-black text-slate-900">{value ?? '-'}</dd>
+    <div style={{ minWidth: 0, padding: '11px', borderRadius: '10px', backgroundColor: '#f8fafc' }}>
+      <dt style={{ color: '#64748b', fontSize: '12px', fontWeight: 800 }}>{label}</dt>
+      <dd
+        title={String(value)}
+        style={{
+          margin: '4px 0 0',
+          overflow: 'hidden',
+          color: '#0f2240',
+          fontSize: '14px',
+          fontWeight: 900,
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {value ?? '-'}
+      </dd>
     </div>
   );
 }

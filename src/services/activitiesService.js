@@ -44,17 +44,22 @@ const normalizeActivity = (docSnapshot) => ({
 const buildActivityPayload = (activityData, options = {}) => {
   const type = activityData.type || 'קבוע';
   const isOneTime = type === 'חד פעמי';
-  const date = isOneTime ? (activityData.date || activityData.activityDate || '') : '';
+  const date = activityData.date || activityData.activityDate || '';
   const maxParticipants = Number(activityData.maxParticipants);
   const currentParticipants = options.isCreate
     ? 0
     : Number(activityData.currentParticipants || 0);
+  const paymentRequired = Boolean(
+    activityData.paymentRequired ?? activityData.requiresPayment
+  );
+  const price = paymentRequired ? Number(activityData.price || 0) : 0;
 
   return {
     title: activityData.title.trim(),
     description: activityData.description.trim(),
     type,
     location: activityData.location.trim(),
+    whatsappLink: activityData.whatsappLink?.trim() || '',
     imageUrl: activityData.imageUrl?.trim() || '',
     category: activityData.category,
     dayOfWeek: isOneTime ? '' : activityData.dayOfWeek,
@@ -65,8 +70,10 @@ const buildActivityPayload = (activityData, options = {}) => {
     currentParticipants,
     availableSpots: maxParticipants - currentParticipants,
     isActive: Boolean(activityData.isActive),
-    requiresPayment: Boolean(activityData.requiresPayment),
-    paymentLink: activityData.requiresPayment ? activityData.paymentLink.trim() : '',
+    requiresPayment: paymentRequired,
+    paymentRequired,
+    price,
+    paymentLink: paymentRequired ? activityData.paymentLink.trim() : '',
     updatedAt: serverTimestamp(),
   };
 };
