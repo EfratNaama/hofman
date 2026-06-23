@@ -19,13 +19,16 @@ async function createFirestoreUser(user) {
   if (!user) return { success: false, error: new Error('Missing user object') };
 
   const userRef = doc(db, 'users', user.uid);
+  const existingSnapshot = await getDoc(userRef);
+  const existingData = existingSnapshot.exists() ? existingSnapshot.data() : {};
+  const existingPhotoURL = existingSnapshot.exists() ? (existingData.photoURL || '') : '';
   const userData = {
     uid: user.uid,
     email: user.email || '',
-    displayName: user.displayName || '',
+    displayName: user.displayName || existingData.displayName || '',
     provider: user.providerData?.[0]?.providerId || 'password',
-    photoURL: user.photoURL || '',
-    createdAt: serverTimestamp(),
+    photoURL: existingPhotoURL,
+    createdAt: existingData.createdAt || serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
 
@@ -54,7 +57,7 @@ function buildCurrentUser(authUser, profile = {}) {
   return {
     email: authUser.email || profile.email || '',
     displayName: authUser.displayName || profile.displayName || profile.fullName || '',
-    photoURL: authUser.photoURL || profile.photoURL || '',
+    photoURL: profile.photoURL || authUser.photoURL || '',
     providerData: authUser.providerData || [],
     ...profile,
     uid: authUser.uid,
