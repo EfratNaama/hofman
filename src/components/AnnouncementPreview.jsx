@@ -34,7 +34,7 @@ function AnnouncementPreview({ announcements = [], loading }) {
                   : 'הודעה חשובה'}
               </p>
               <h3 className="home-card-title">{announcement.title}</h3>
-              <p className="home-card-text">{announcement.message}</p>
+              <p className="home-card-text">{announcement.content || announcement.message || ''}</p>
             </article>
           ))}
         </div>

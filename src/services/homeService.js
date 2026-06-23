@@ -7,7 +7,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { getActiveAnnouncements } from './announcementsService';
+import { getAnnouncements } from './announcementService';
 
 const activitiesCollection = collection(db, 'activities');
 const galleryCollection = collection(db, 'gallery');
@@ -26,7 +26,10 @@ export async function getUpcomingActivities() {
 }
 
 export async function getLatestAnnouncements() {
-  return getActiveAnnouncements(3);
+  const announcements = await getAnnouncements();
+  return announcements
+    .filter((announcement) => announcement.isActive !== false)
+    .slice(0, 3);
 }
 
 export async function getLatestGalleryImages() {

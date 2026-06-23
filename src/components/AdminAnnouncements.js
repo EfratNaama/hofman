@@ -3,20 +3,18 @@ import { useAuth } from '../context/AuthContext';
 import {
   createAnnouncement,
   deleteAnnouncement,
-  getAllAnnouncements,
-  toggleAnnouncementActive,
+  getAnnouncements,
   updateAnnouncement,
-} from '../services/announcementsService';
+} from '../services/announcementService';
 
 const emptyForm = {
   title: '',
-  message: '',
+  content: '',
   isActive: true,
-  priority: 'normal',
 };
 
 function AdminAnnouncements() {
-  const { currentUser, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState('');
@@ -31,11 +29,11 @@ function AdminAnnouncements() {
     setError('');
 
     try {
-      const announcementsData = await getAllAnnouncements();
+      const announcementsData = await getAnnouncements();
       setAnnouncements(announcementsData);
     } catch (err) {
-      console.error('Failed to load announcements:', err);
-      setError('לא ניתן לטעון את ההודעות כרגע.');
+      console.error('Firestore "announcements" query failed while loading admin announcements:', err);
+      setError(`לא ניתן לטעון את ההודעות כרגע. ${err.message || ''}`.trim());
     } finally {
       setIsLoading(false);
     }
@@ -63,9 +61,8 @@ function AdminAnnouncements() {
     setEditingId(announcement.id);
     setFormData({
       title: announcement.title || '',
-      message: announcement.message || '',
+      content: announcement.content || announcement.message || '',
       isActive: Boolean(announcement.isActive),
-      priority: announcement.priority || 'normal',
     });
     setError('');
     setMessage('');
@@ -81,7 +78,7 @@ function AdminAnnouncements() {
       return;
     }
 
-    if (!formData.title.trim() || !formData.message.trim()) {
+    if (!formData.title.trim() || !formData.content.trim()) {
       setError('יש להזין כותרת ותוכן הודעה.');
       return;
     }
@@ -93,15 +90,15 @@ function AdminAnnouncements() {
         await updateAnnouncement(editingId, formData);
         setMessage('ההודעה עודכנה בהצלחה.');
       } else {
-        await createAnnouncement(formData, currentUser?.uid || currentUser?.email || '');
+        await createAnnouncement(formData);
         setMessage('ההודעה פורסמה בהצלחה.');
       }
 
       resetForm();
       await loadAnnouncements();
     } catch (err) {
-      console.error('Failed to save announcement', err);
-      setError('לא ניתן לשמור את ההודעה כרגע.');
+      console.error('Firestore "announcements" write failed while saving announcement:', err);
+      setError(`שמירת ההודעה נכשלה. ${err.message || ''}`.trim());
     } finally {
       setIsSaving(false);
     }
@@ -119,12 +116,16 @@ function AdminAnnouncements() {
     setActionId(announcement.id);
 
     try {
-      await toggleAnnouncementActive(announcement.id, !announcement.isActive);
+      await updateAnnouncement(announcement.id, {
+        title: announcement.title || '',
+        content: announcement.content || announcement.message || '',
+        isActive: !announcement.isActive,
+      });
       setMessage(!announcement.isActive ? 'ההודעה הופעלה.' : 'ההודעה הושבתה.');
       await loadAnnouncements();
     } catch (err) {
-      console.error('Failed to toggle announcement', err);
-      setError('לא ניתן לעדכן את מצב ההודעה כרגע.');
+      console.error('Firestore "announcements" write failed while changing announcement status:', err);
+      setError(`עדכון מצב ההודעה נכשל. ${err.message || ''}`.trim());
     } finally {
       setActionId('');
     }
@@ -154,8 +155,8 @@ function AdminAnnouncements() {
       }
       await loadAnnouncements();
     } catch (err) {
-      console.error('Failed to delete announcement', err);
-      setError('לא ניתן למחוק את ההודעה כרגע.');
+      console.error('Firestore "announcements" delete failed:', err);
+      setError(`מחיקת ההודעה נכשלה. ${err.message || ''}`.trim());
     } finally {
       setActionId('');
     }
@@ -196,23 +197,10 @@ function AdminAnnouncements() {
               <span className="mb-2 block text-lg font-bold text-slate-800">תוכן ההודעה</span>
               <textarea
                 className="min-h-36 w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                name="message"
-                value={formData.message}
+                name="content"
+                value={formData.content}
                 onChange={handleChange}
               />
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">עדיפות</span>
-              <select
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                name="priority"
-                value={formData.priority}
-                onChange={handleChange}
-              >
-                <option value="normal">רגילה</option>
-                <option value="high">גבוהה</option>
-              </select>
             </label>
 
             <label className="flex items-center gap-3 text-lg font-bold text-slate-800">
@@ -276,7 +264,9 @@ function AdminAnnouncements() {
                     </span>
                   </div>
 
-                  <p className="mt-4 text-lg leading-8 text-slate-700">{announcement.message}</p>
+                  <p className="mt-4 text-lg leading-8 text-slate-700">
+                    {announcement.content || announcement.message || ''}
+                  </p>
 
                   <div className="mt-5 flex flex-wrap gap-3">
                     <button

@@ -49,7 +49,7 @@ function StatsCard({ title, value, icon, color, loading }) {
           fontSize: '1.7rem',
         }}
       >
-        {icon}
+        {icon} 
       </span>
     </article>
   );

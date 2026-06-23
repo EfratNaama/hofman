@@ -126,9 +126,14 @@ function Navbar() {
           )}
 
           {!authLoading && !isLoggedIn && (
-            <NavLink to="/login" style={navLinkStyle}>
-              כניסה
-            </NavLink>
+            <>
+              <NavLink to="/announcements" style={navLinkStyle}>
+                הודעות
+              </NavLink>
+              <NavLink to="/login" style={navLinkStyle}>
+                כניסה
+              </NavLink>
+            </>
           )}
         </div>
       </div>

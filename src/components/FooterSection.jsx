@@ -29,15 +29,6 @@ function Icon({ type }) {
     );
   }
 
-  if (type === 'mail') {
-    return (
-      <svg {...commonProps}>
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="m3 7 9 6 9-6" />
-      </svg>
-    );
-  }
-
   if (type === 'clock') {
     return (
       <svg {...commonProps}>
@@ -65,22 +56,49 @@ function FooterSection({ centerInfo, loading }) {
     {
       icon: 'location',
       title: 'כתובת',
-      value: centerInfo?.address || 'רחוב הדוגמה 12, ירושלים',
+      content: (
+        <>
+          <span>אליעזר הגדול 4, ירושלים</span>
+          <br />
+          <span>Waze: בית הופמן</span>
+        </>
+      ),
     },
     {
       icon: 'phone',
-      title: 'טלפון',
-      value: centerInfo?.phone || '02-1234567',
+      title: 'טלפון ראשי',
+      content: <a href="tel:026788848" aria-label="התקשרות לבית הופמן בטלפון 02-6788848">02-6788848</a>,
     },
     {
-      icon: 'mail',
-      title: 'אימייל',
-      value: centerInfo?.email || 'info@hofman.org.il',
+      icon: 'phone',
+      title: 'אנשי קשר',
+      content: (
+        <>
+          <span>
+            שירן –{' '}
+            <a href="tel:0504483859" aria-label="התקשרות לשירן בטלפון 050-4483859">
+              050-4483859
+            </a>
+          </span>
+          <br />
+          <span>
+            סיון –{' '}
+            <a href="tel:0503082593" aria-label="התקשרות לסיון בטלפון 050-3082593">
+              050-3082593
+            </a>
+          </span>
+        </>
+      ),
     },
     {
       icon: 'clock',
       title: 'שעות פעילות',
-      value: hoursValue,
+      content: hoursValue.split('\n').map((line, index) => (
+        <React.Fragment key={`${line}-${index}`}>
+          {index > 0 && <br />}
+          {line}
+        </React.Fragment>
+      )),
     },
   ];
 
@@ -88,7 +106,7 @@ function FooterSection({ centerInfo, loading }) {
     <footer dir="rtl" style={sectionStyle} aria-labelledby="contact-title">
       <div style={{ marginBottom: '26px' }}>
         <h2 id="contact-title" className="home-section-title">
-          יצירת קשר
+          בית הופמן
         </h2>
         <p className="home-section-description">
           נשמח לעזור, לענות על שאלות ולכוון לפעילות המתאימה.
@@ -102,16 +120,7 @@ function FooterSection({ centerInfo, loading }) {
               <Icon type={card.icon} />
             </div>
             <h3>{card.title}</h3>
-            <p>
-              {loading
-                ? 'טוען...'
-                : card.value.split('\n').map((line, index) => (
-                    <React.Fragment key={`${card.title}-${index}`}>
-                      {index > 0 && <br />}
-                      {line}
-                    </React.Fragment>
-                  ))}
-            </p>
+            <p>{loading && card.title === 'שעות פעילות' ? 'טוען...' : card.content}</p>
           </article>
         ))}
       </div>

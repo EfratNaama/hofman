@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import {
   Bar,
   BarChart,
@@ -23,14 +23,14 @@ const collectionNames = {
   users: 'users',
   activities: 'activities',
   registrations: 'activityRegistrations',
-  announcements: 'announcements',
+  gallery: 'gallery',
 };
 
 const initialData = {
   users: [],
   activities: [],
   registrations: [],
-  announcements: [],
+  gallery: [],
 };
 
 const colors = {
@@ -87,26 +87,6 @@ const getRoleGroup = (user) => {
   const role = String(user.role || user.userType || '').trim().toLowerCase();
   return ['admin', 'manager', 'מנהל'].includes(role) ? 'מנהלים' : 'משתמשים רגילים';
 };
-
-function StatusBadge({ children, color, backgroundColor }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        flexShrink: 0,
-        alignItems: 'center',
-        padding: '4px 9px',
-        borderRadius: '999px',
-        backgroundColor,
-        color,
-        fontSize: '12px',
-        fontWeight: 800,
-      }}
-    >
-      {children}
-    </span>
-  );
-}
 
 function SummaryCard({ label, value, description, icon, color }) {
   return (
@@ -283,15 +263,17 @@ function LoadingDashboard() {
 }
 
 function AdminDashboard() {
-  const { authLoading, currentUser, isAdmin } = useAuth();
+  const { authLoading, currentUser } = useAuth();
   const [data, setData] = useState(initialData);
+  const [hasAdminAccess, setHasAdminAccess] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
 
-    if (!currentUser || !isAdmin) {
+    if (!currentUser) {
+      setHasAdminAccess(false);
       setLoading(false);
       return;
     }
@@ -301,6 +283,40 @@ function AdminDashboard() {
     async function loadDashboard() {
       setLoading(true);
       setError('');
+
+      let userSnapshot;
+
+      try {
+        userSnapshot = await getDoc(doc(db, collectionNames.users, currentUser.uid));
+      } catch (queryError) {
+        console.error(
+          `Admin Dashboard Firestore query failed for collection "${collectionNames.users}" while checking admin access:`,
+          queryError
+        );
+
+        if (isMounted) {
+          setHasAdminAccess(false);
+          setError('לא ניתן לאמת את הרשאת מנהל המערכת כרגע.');
+          setLoading(false);
+        }
+        return;
+      }
+
+      const userData = userSnapshot.exists() ? userSnapshot.data() : {};
+      const isActiveAdmin =
+        String(userData.role || '').trim().toLowerCase() === 'admin' &&
+        String(userData.status || '').trim().toLowerCase() === 'active';
+
+      if (!isActiveAdmin) {
+        if (isMounted) {
+          setHasAdminAccess(false);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (!isMounted) return;
+      setHasAdminAccess(true);
 
       const entries = Object.entries(collectionNames);
       const results = await Promise.allSettled(
@@ -322,12 +338,15 @@ function AdminDashboard() {
           }));
         } else {
           hasError = true;
-          console.error(`Failed to load ${collectionNames[key]}:`, result.reason);
+          console.error(
+            `Admin Dashboard Firestore query failed for collection "${collectionNames[key]}":`,
+            result.reason
+          );
         }
       });
 
       setData(nextData);
-      setError(hasError ? 'לא ניתן לטעון את נתוני לוח הבקרה כרגע.' : '');
+      setError(hasError ? 'חלק מנתוני לוח הבקרה אינם זמינים כרגע. שאר הנתונים נטענו כרגיל.' : '');
       setLoading(false);
     }
 
@@ -336,7 +355,7 @@ function AdminDashboard() {
     return () => {
       isMounted = false;
     };
-  }, [authLoading, currentUser, isAdmin]);
+  }, [authLoading, currentUser]);
 
   const dashboardData = useMemo(() => {
     const activityTitles = new Map(
@@ -371,10 +390,7 @@ function AdminDashboard() {
       .sort((first, second) => toMillis(getActivityDate(first)) - toMillis(getActivityDate(second)))
       .slice(0, 5);
 
-    const importantAnnouncements = data.announcements
-      .filter((announcement) => (
-        announcement.isImportant === true || announcement.priority === 'high'
-      ))
+    const latestGalleryItems = [...data.gallery]
       .sort((first, second) => toMillis(second.createdAt) - toMillis(first.createdAt))
       .slice(0, 5);
 
@@ -422,18 +438,18 @@ function AdminDashboard() {
       pendingPayments,
       paidPayments,
       upcomingActivities,
-      importantAnnouncements,
+      latestGalleryItems,
       registrationsByActivity,
       activitiesByMonth,
       usersByRole,
     };
   }, [data]);
 
-  if (authLoading || loading) {
+  if (authLoading || loading || hasAdminAccess === null) {
     return <LoadingDashboard />;
   }
 
-  if (!currentUser || !isAdmin) {
+  if (!currentUser || !hasAdminAccess) {
     return (
       <section className="admin-dashboard" dir="rtl">
         <style>{dashboardCss}</style>
@@ -486,7 +502,7 @@ function AdminDashboard() {
 
   const hasAttentionItems =
     dashboardData.upcomingActivities.length > 0 ||
-    dashboardData.importantAnnouncements.length > 0;
+    dashboardData.latestGalleryItems.length > 0;
 
   return (
     <main className="admin-dashboard" dir="rtl">
@@ -586,41 +602,34 @@ function AdminDashboard() {
 
             <article style={cardStyle}>
               <h3 style={{ margin: '0 0 15px', color: colors.text, fontSize: '17px' }}>
-                הודעות חשובות אחרונות
+                פריטי גלריה אחרונים
               </h3>
-              {dashboardData.importantAnnouncements.length ? (
+              {dashboardData.latestGalleryItems.length ? (
                 <div style={{ display: 'grid', gap: '10px' }}>
-                  {dashboardData.importantAnnouncements.map((announcement) => (
+                  {dashboardData.latestGalleryItems.map((galleryItem) => (
                     <div
-                      key={announcement.id}
+                      key={galleryItem.id}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '12px',
                         padding: '12px',
                         borderRadius: '10px',
-                        backgroundColor: '#fff7ed',
+                        backgroundColor: colors.background,
                       }}
                     >
-                      <div style={{ minWidth: 0 }}>
-                        <strong
-                          title={announcement.title}
-                          style={{
-                            display: 'block',
-                            overflow: 'hidden',
-                            color: colors.text,
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {announcement.title || 'הודעה ללא כותרת'}
-                        </strong>
-                        <span style={{ color: colors.muted, fontSize: '13px' }}>
-                          {formatDate(announcement.createdAt)}
-                        </span>
-                      </div>
-                      <StatusBadge color="#b45309" backgroundColor="#ffedd5">חשוב</StatusBadge>
+                      <strong
+                        title={galleryItem.title || galleryItem.caption}
+                        style={{
+                          display: 'block',
+                          overflow: 'hidden',
+                          color: colors.text,
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {galleryItem.title || galleryItem.caption || 'פריט גלריה'}
+                      </strong>
+                      <span style={{ color: colors.muted, fontSize: '13px' }}>
+                        {formatDate(galleryItem.createdAt)}
+                      </span>
                     </div>
                   ))}
                 </div>

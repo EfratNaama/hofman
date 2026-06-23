@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet, Link, Navigate } from 'react-router-dom';
 import './App.css';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home.jsx';
 import Users from './components/Users';
@@ -40,7 +40,7 @@ function App() {
             <Route path="activities/:id/edit" element={<ProtectedRoute requireAdmin><EditActivity /></ProtectedRoute>} />
             <Route path="my-activities" element={<ProtectedRoute><Navigate to="/personal-area" replace /></ProtectedRoute>} />
             <Route path="personal-area" element={<ProtectedRoute><PersonalArea /></ProtectedRoute>} />
-            <Route path="announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
+            <Route path="announcements" element={<Announcements />} />
             <Route path="admin/announcements" element={<ProtectedRoute requireAdmin><AdminAnnouncements /></ProtectedRoute>} />
             <Route path="admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="admin/activities" element={<ProtectedRoute requireAdmin><ActivityManagementHub /></ProtectedRoute>} />
@@ -56,11 +56,9 @@ function App() {
 }
 
 function Layout() {
-  const { currentUser } = useAuth();
-
   return (
     <div dir="rtl" className="min-h-screen bg-[#f8f5f0] text-slate-800 font-sans">
-      {currentUser && <Navbar />}
+      <Navbar />
       <main className="w-full">
         <Outlet />
       </main>

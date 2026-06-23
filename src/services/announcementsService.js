@@ -16,6 +16,14 @@ import { db } from '../firebase';
 const ANNOUNCEMENTS_COLLECTION = 'announcements';
 const announcementsCollectionRef = collection(db, ANNOUNCEMENTS_COLLECTION);
 
+function logAnnouncementQueryError(operation, error) {
+  console.error(
+    `Firestore "${ANNOUNCEMENTS_COLLECTION}" query failed while ${operation}:`,
+    error
+  );
+
+}
+
 const normalizeAnnouncement = (docSnapshot) => ({
   id: docSnapshot.id,
   ...docSnapshot.data(),
@@ -50,14 +58,19 @@ export async function getActiveAnnouncements(maxResults = 3) {
     const snapshot = await getDocs(announcementsQuery);
     return snapshot.docs.map(normalizeAnnouncement);
   } catch (error) {
-    console.error('Failed to load announcements with createdAt ordering:', error);
+    logAnnouncementQueryError('loading active announcements ordered by createdAt', error);
 
-    const fallbackQuery = query(
-      announcementsCollectionRef,
-      where('isActive', '==', true)
-    );
-    const fallbackSnapshot = await getDocs(fallbackQuery);
-    return sortNewestFirst(fallbackSnapshot.docs.map(normalizeAnnouncement)).slice(0, maxResults);
+    try {
+      const fallbackQuery = query(
+        announcementsCollectionRef,
+        where('isActive', '==', true)
+      );
+      const fallbackSnapshot = await getDocs(fallbackQuery);
+      return sortNewestFirst(fallbackSnapshot.docs.map(normalizeAnnouncement)).slice(0, maxResults);
+    } catch (fallbackError) {
+      logAnnouncementQueryError('loading active announcements without ordering', fallbackError);
+      throw fallbackError;
+    }
   }
 }
 
@@ -70,49 +83,75 @@ export async function getAllAnnouncements() {
     const snapshot = await getDocs(announcementsQuery);
     return snapshot.docs.map(normalizeAnnouncement);
   } catch (error) {
-    console.error('Failed to load all announcements with createdAt ordering:', error);
+    logAnnouncementQueryError('loading all announcements ordered by createdAt', error);
 
-    const fallbackSnapshot = await getDocs(announcementsCollectionRef);
-    return sortNewestFirst(fallbackSnapshot.docs.map(normalizeAnnouncement));
+    try {
+      const fallbackSnapshot = await getDocs(announcementsCollectionRef);
+      return sortNewestFirst(fallbackSnapshot.docs.map(normalizeAnnouncement));
+    } catch (fallbackError) {
+      logAnnouncementQueryError('loading all announcements without ordering', fallbackError);
+      throw fallbackError;
+    }
   }
 }
 
 export async function createAnnouncement(announcementData, createdBy) {
-  const docRef = await addDoc(announcementsCollectionRef, {
-    title: announcementData.title.trim(),
-    message: announcementData.message.trim(),
-    isActive: Boolean(announcementData.isActive),
-    priority: announcementData.priority || 'normal',
-    createdBy,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    const docRef = await addDoc(announcementsCollectionRef, {
+      title: announcementData.title.trim(),
+      message: announcementData.message.trim(),
+      isActive: Boolean(announcementData.isActive),
+      priority: announcementData.priority || 'normal',
+      createdBy,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
 
-  return docRef.id;
+    return docRef.id;
+  } catch (error) {
+    logAnnouncementQueryError('creating an announcement', error);
+    throw error;
+  }
 }
 
 export async function updateAnnouncement(announcementId, announcementData) {
   const announcementRef = doc(db, ANNOUNCEMENTS_COLLECTION, announcementId);
 
-  await updateDoc(announcementRef, {
-    title: announcementData.title.trim(),
-    message: announcementData.message.trim(),
-    isActive: Boolean(announcementData.isActive),
-    priority: announcementData.priority || 'normal',
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    await updateDoc(announcementRef, {
+      title: announcementData.title.trim(),
+      message: announcementData.message.trim(),
+      isActive: Boolean(announcementData.isActive),
+      priority: announcementData.priority || 'normal',
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    logAnnouncementQueryError(`updating announcement "${announcementId}"`, error);
+    throw error;
+  }
 }
 
 export async function toggleAnnouncementActive(announcementId, isActive) {
   const announcementRef = doc(db, ANNOUNCEMENTS_COLLECTION, announcementId);
 
-  await updateDoc(announcementRef, {
-    isActive: Boolean(isActive),
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    await updateDoc(announcementRef, {
+      isActive: Boolean(isActive),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    logAnnouncementQueryError(`changing active status for announcement "${announcementId}"`, error);
+    throw error;
+  }
 }
 
 export async function deleteAnnouncement(announcementId) {
   const announcementRef = doc(db, ANNOUNCEMENTS_COLLECTION, announcementId);
-  await deleteDoc(announcementRef);
+
+  try {
+    await deleteDoc(announcementRef);
+  } catch (error) {
+    logAnnouncementQueryError(`deleting announcement "${announcementId}"`, error);
+    throw error;
+  }
 }

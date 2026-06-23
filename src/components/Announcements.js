@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getActiveAnnouncements } from '../services/announcementsService';
+import { getAnnouncements } from '../services/announcementService';
 
 function formatAnnouncementDate(createdAt) {
   if (!createdAt?.toDate) {
@@ -22,13 +22,17 @@ function Announcements() {
       setError('');
 
       try {
-        const announcementsData = await getActiveAnnouncements(25);
+        const announcementsData = await getAnnouncements();
 
         if (isMounted) {
-          setAnnouncements(announcementsData);
+          setAnnouncements(
+            announcementsData
+              .filter((announcement) => announcement.isActive !== false)
+              .slice(0, 25)
+          );
         }
       } catch (err) {
-        console.error('Failed to load announcements:', err);
+        console.error('Firestore "announcements" query failed while loading user announcements:', err);
 
         if (isMounted) {
           setError('לא ניתן לטעון את ההודעות כרגע.');
@@ -85,7 +89,7 @@ function Announcements() {
                 )}
               </div>
               <p className="mt-4 whitespace-pre-wrap text-lg leading-8 text-slate-700">
-                {announcement.message}
+                {announcement.content || announcement.message || ''}
               </p>
             </article>
           ))}
