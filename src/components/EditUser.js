@@ -21,7 +21,7 @@ function EditUser() {
         const userData = await getUserById(id);
         setUser(userData);
       } catch (err) {
-        setError('Could not load this user.');
+        setError('לא ניתן לטעון את המשתמש.');
       } finally {
         setIsLoading(false);
       }
@@ -38,21 +38,21 @@ function EditUser() {
       await updateUser(id, formData);
       navigate(`/users/${id}`);
     } catch (err) {
-      setError('Could not update this user. Please try again.');
+      setError('לא ניתן לעדכן את המשתמש. נסו שוב.');
       setIsSubmitting(false);
     }
   };
 
   if (isLoading) {
-    return <section className="rounded-lg bg-white p-5 shadow-lg text-slate-700">Loading user...</section>;
+    return <section className="rounded-lg bg-white p-5 text-right shadow-lg text-slate-700" dir="rtl">טוען משתמש...</section>;
   }
 
   if (error && !user) {
     return (
-      <section className="rounded-lg bg-white p-5 shadow-lg">
+      <section className="rounded-lg bg-white p-5 text-right shadow-lg" dir="rtl">
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
         <Link className="mt-4 inline-block rounded-md bg-slate-100 px-5 py-3 font-semibold text-slate-700" to="/users">
-          Back to users
+          חזרה למשתמשים
         </Link>
       </section>
     );
@@ -60,10 +60,10 @@ function EditUser() {
 
   if (!user) {
     return (
-      <section className="rounded-lg bg-white p-5 shadow-lg">
-        <p className="text-slate-700">User was not found.</p>
+      <section className="rounded-lg bg-white p-5 text-right shadow-lg" dir="rtl">
+        <p className="text-slate-700">המשתמש לא נמצא.</p>
         <Link className="mt-4 inline-block rounded-md bg-slate-100 px-5 py-3 font-semibold text-slate-700" to="/users">
-          Back to users
+          חזרה למשתמשים
         </Link>
       </section>
     );
@@ -79,10 +79,10 @@ function EditUser() {
   };
 
   return (
-    <section className="rounded-lg bg-white p-5 shadow-lg">
+    <section className="rounded-lg bg-white p-5 text-right shadow-lg" dir="rtl">
       <div className="mb-6">
-        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Users</p>
-        <h2 className="mt-1 text-2xl font-bold text-slate-900">Edit user</h2>
+        <p className="text-sm font-semibold text-slate-500">משתמשים</p>
+        <h2 className="mt-1 text-2xl font-bold text-slate-900">עריכת משתמש</h2>
       </div>
 
       {error && (
@@ -91,7 +91,7 @@ function EditUser() {
         </div>
       )}
 
-      <UserForm initialValues={initialValues} isSubmitting={isSubmitting} submitLabel="Save changes" onSubmit={handleSubmit} />
+      <UserForm initialValues={initialValues} isSubmitting={isSubmitting} submitLabel="שמירת שינויים" onSubmit={handleSubmit} />
     </section>
   );
 }

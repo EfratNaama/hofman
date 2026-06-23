@@ -16,17 +16,17 @@ function NewUser() {
       const userId = await createUser(formData);
       navigate(`/users/${userId}`);
     } catch (err) {
-      setError('Could not create the user. Please try again.');
+      setError('לא ניתן ליצור את המשתמש. נסו שוב.');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <section className="rounded-lg bg-white p-5 shadow-lg">
+    <section className="rounded-lg bg-white p-5 text-right shadow-lg" dir="rtl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Users</p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-900">Create user</h2>
+          <p className="text-sm font-semibold text-slate-500">משתמשים</p>
+          <h2 className="mt-1 text-2xl font-bold text-slate-900">הוספת משתמש</h2>
         </div>
       </div>
 
@@ -36,7 +36,7 @@ function NewUser() {
         </div>
       )}
 
-      <UserForm isSubmitting={isSubmitting} submitLabel="Create user" onSubmit={handleSubmit} />
+      <UserForm isSubmitting={isSubmitting} submitLabel="יצירת משתמש" onSubmit={handleSubmit} />
     </section>
   );
 }

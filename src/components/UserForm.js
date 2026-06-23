@@ -4,6 +4,18 @@ import { Link } from 'react-router-dom';
 const roleOptions = ['admin', 'manager', 'resident', 'volunteer'];
 const statusOptions = ['active', 'inactive'];
 
+const roleLabels = {
+  admin: 'מנהל',
+  manager: 'מנהל מערכת',
+  resident: 'משתמש',
+  volunteer: 'מתנדב',
+};
+
+const statusLabels = {
+  active: 'פעיל',
+  inactive: 'לא פעיל',
+};
+
 const initialFormState = {
   fullName: '',
   email: '',
@@ -33,7 +45,7 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
     setValidationError('');
 
     if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim()) {
-      setValidationError('Full name, email, and phone are required.');
+      setValidationError('שם מלא, אימייל וטלפון הם שדות חובה.');
       return;
     }
 
@@ -50,7 +62,7 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">Full name</span>
+          <span className="mb-2 block text-sm font-semibold text-slate-700">שם מלא</span>
           <input
             className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-100"
             name="fullName"
@@ -62,7 +74,7 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">Email</span>
+          <span className="mb-2 block text-sm font-semibold text-slate-700">אימייל</span>
           <input
             className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-100"
             name="email"
@@ -74,7 +86,7 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">Phone</span>
+          <span className="mb-2 block text-sm font-semibold text-slate-700">טלפון</span>
           <input
             className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-100"
             name="phone"
@@ -86,7 +98,7 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">Created at</span>
+          <span className="mb-2 block text-sm font-semibold text-slate-700">נוצר בתאריך</span>
           <input
             className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-100"
             name="createdAt"
@@ -97,7 +109,7 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">Role</span>
+          <span className="mb-2 block text-sm font-semibold text-slate-700">תפקיד</span>
           <select
             className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-100"
             name="role"
@@ -106,14 +118,14 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
           >
             {roleOptions.map((role) => (
               <option key={role} value={role}>
-                {role}
+                {roleLabels[role]}
               </option>
             ))}
           </select>
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">Status</span>
+          <span className="mb-2 block text-sm font-semibold text-slate-700">סטטוס</span>
           <select
             className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-100"
             name="status"
@@ -122,7 +134,7 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {statusLabels[status]}
               </option>
             ))}
           </select>
@@ -135,10 +147,10 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Saving...' : submitLabel}
+          {isSubmitting ? 'שומר...' : submitLabel}
         </button>
         <Link className="rounded-md bg-slate-100 px-5 py-3 text-base font-semibold text-slate-700 hover:bg-slate-200" to="/users">
-          Cancel
+          ביטול
         </Link>
       </div>
     </form>

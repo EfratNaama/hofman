@@ -3,6 +3,21 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { deleteUser, getUserById } from '../services/usersService';
 import { formatDisplayDate } from '../utils/dateUtils';
 
+const roleLabels = {
+  admin: 'מנהל',
+  manager: 'מנהל מערכת',
+  resident: 'משתמש',
+  volunteer: 'מתנדב',
+};
+
+const statusLabels = {
+  active: 'פעיל',
+  inactive: 'לא פעיל',
+};
+
+const formatRole = (role) => roleLabels[role] || role || '-';
+const formatStatus = (status) => statusLabels[status] || status || '-';
+
 function UserDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -20,7 +35,7 @@ function UserDetails() {
         const userData = await getUserById(id);
         setUser(userData);
       } catch (err) {
-        setError('Could not load this user.');
+        setError('לא ניתן לטעון את המשתמש.');
       } finally {
         setIsLoading(false);
       }
@@ -30,7 +45,7 @@ function UserDetails() {
   }, [id]);
 
   const handleDelete = async () => {
-    const confirmed = window.confirm('Delete this user? This action cannot be undone.');
+    const confirmed = window.confirm('למחוק את המשתמש? לא ניתן לבטל פעולה זו.');
     if (!confirmed) {
       return;
     }
@@ -42,39 +57,39 @@ function UserDetails() {
       await deleteUser(id);
       navigate('/users');
     } catch (err) {
-      setError('Could not delete this user. Please try again.');
+      setError('לא ניתן למחוק את המשתמש. נסו שוב.');
       setIsDeleting(false);
     }
   };
 
   if (isLoading) {
-    return <section className="rounded-lg bg-white p-5 shadow-lg text-slate-700">Loading user...</section>;
+    return <section className="rounded-lg bg-white p-5 text-right shadow-lg text-slate-700" dir="rtl">טוען משתמש...</section>;
   }
 
   if (!user) {
     return (
-      <section className="rounded-lg bg-white p-5 shadow-lg">
-        <p className="text-slate-700">User was not found.</p>
+      <section className="rounded-lg bg-white p-5 text-right shadow-lg" dir="rtl">
+        <p className="text-slate-700">המשתמש לא נמצא.</p>
         <Link className="mt-4 inline-block rounded-md bg-slate-100 px-5 py-3 font-semibold text-slate-700" to="/users">
-          Back to users
+          חזרה למשתמשים
         </Link>
       </section>
     );
   }
 
   return (
-    <section className="rounded-lg bg-white p-5 shadow-lg">
+    <section className="rounded-lg bg-white p-5 text-right shadow-lg" dir="rtl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">User details</p>
+          <p className="text-sm font-semibold text-slate-500">פרטי משתמש</p>
           <h2 className="mt-1 text-2xl font-bold text-slate-900">{user.fullName}</h2>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link className="rounded-md bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200" to="/users">
-            Back
+            חזרה
           </Link>
           <Link className="rounded-md bg-sky-800 px-4 py-2 font-semibold text-white hover:bg-sky-900" to={`/users/${id}/edit`}>
-            Edit
+            עריכה
           </Link>
           <button
             className="rounded-md bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-400"
@@ -82,7 +97,7 @@ function UserDetails() {
             disabled={isDeleting}
             onClick={handleDelete}
           >
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            {isDeleting ? 'מוחק...' : 'מחיקה'}
           </button>
         </div>
       </div>
@@ -94,12 +109,12 @@ function UserDetails() {
       )}
 
       <dl className="grid gap-4 md:grid-cols-2">
-        <DetailItem label="Email" value={user.email} />
-        <DetailItem label="Phone" value={user.phone} />
-        <DetailItem label="Role" value={user.role} />
-        <DetailItem label="Status" value={user.status} />
-        <DetailItem label="Created at" value={formatDisplayDate(user.createdAt)} />
-        <DetailItem label="Updated at" value={formatDisplayDate(user.updatedAt)} />
+        <DetailItem label="אימייל" value={user.email} />
+        <DetailItem label="טלפון" value={user.phone} />
+        <DetailItem label="תפקיד" value={formatRole(user.role)} />
+        <DetailItem label="סטטוס" value={formatStatus(user.status)} />
+        <DetailItem label="נוצר בתאריך" value={formatDisplayDate(user.createdAt)} />
+        <DetailItem label="עודכן בתאריך" value={formatDisplayDate(user.updatedAt)} />
       </dl>
     </section>
   );
