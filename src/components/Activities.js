@@ -8,7 +8,16 @@ import {
   registerForActivity,
 } from '../services/activityRegistrationsService';
 import { getUsers } from '../services/usersService';
-import { formatActivityDate, toDate } from '../utils/activityDateUtils';
+import {
+  ACTIVITY_WEEKDAYS,
+  formatActivityDate,
+  generateActivityOccurrences,
+  getActivityDaysOfWeek,
+  getActivityType,
+  getRecurringActivityEndDate,
+  getRecurringActivityStartDate,
+  toDate,
+} from '../utils/activityDateUtils';
 
 const initialFilters = {
   search: '',
@@ -18,15 +27,64 @@ const initialFilters = {
   sortBy: 'date-asc',
 };
 
-const getActivityDate = (activity) => toDate(activity.activityDate || activity.date);
+const dayOptions = ACTIVITY_WEEKDAYS;
+const noDayLabel = 'ללא יום מוגדר';
+
+const isOneTimeActivity = (activity) => getActivityType(activity) === 'חד פעמי';
+const getRecurringDays = getActivityDaysOfWeek;
+const getRecurringStartDate = getRecurringActivityStartDate;
+const getRecurringEndDate = getRecurringActivityEndDate;
+const getActivityDate = (activity) => (
+  isOneTimeActivity(activity)
+    ? toDate(activity.date || activity.activityDate)
+    : getRecurringStartDate(activity)
+);
+
+const isOneTimeActivityExpired = (activity) => {
+  if (!isOneTimeActivity(activity)) return false;
+
+  const activityDate = toDate(activity.date || activity.activityDate);
+  if (!activityDate) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const activityDay = new Date(activityDate);
+  activityDay.setHours(0, 0, 0, 0);
+
+  return activityDay < today;
+};
+
+const getRecurringActivityStatus = (activity) => {
+  if (isOneTimeActivity(activity)) return 'active';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDate = getRecurringStartDate(activity);
+  const endDate = getRecurringEndDate(activity);
+
+  if (endDate) {
+    const endDay = new Date(endDate);
+    endDay.setHours(0, 0, 0, 0);
+    if (endDay < today) return 'ended';
+  }
+
+  if (startDate) {
+    const startDay = new Date(startDate);
+    startDay.setHours(0, 0, 0, 0);
+    if (today < startDay) return 'upcoming';
+  }
+
+  return 'active';
+};
+
+const isActivityRegistrationClosed = (activity) =>
+  isOneTimeActivityExpired(activity) || getRecurringActivityStatus(activity) === 'ended';
 
 const getActivityTypes = (activity) =>
   [activity.category, activity.type]
     .map((value) => String(value || '').trim())
     .filter(Boolean);
-
-const getPrimaryActivityType = (activity) =>
-  activity.category || activity.type || 'פעילות';
 
 const formatPrice = (activity) => {
   if (activity.price !== undefined && activity.price !== null && activity.price !== '') {
@@ -73,21 +131,26 @@ const getRegistrationPresentation = (registration, wasJustRegistered = false) =>
 const isInSelectedDateRange = (activity, dateRange) => {
   if (dateRange === 'all') return true;
 
-  const activityDate = getActivityDate(activity);
-  if (!activityDate) return false;
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const activityDay = new Date(activityDate);
-  activityDay.setHours(0, 0, 0, 0);
+  const activityStart = getActivityDate(activity);
+  const activityEnd = isOneTimeActivity(activity)
+    ? activityStart
+    : (getRecurringEndDate(activity) || activityStart);
+  if (!activityStart && !activityEnd) return false;
+
+  const startDay = activityStart ? new Date(activityStart) : null;
+  const endDay = activityEnd ? new Date(activityEnd) : null;
+  startDay?.setHours(0, 0, 0, 0);
+  endDay?.setHours(0, 0, 0, 0);
 
   if (dateRange === 'future') {
-    return activityDay >= today;
+    return (endDay || startDay) >= today;
   }
 
   const rangeEnd = new Date(today);
   rangeEnd.setDate(rangeEnd.getDate() + (dateRange === 'week' ? 7 : 30));
-  return activityDay >= today && activityDay <= rangeEnd;
+  return (endDay || startDay) >= today && (startDay || endDay) <= rangeEnd;
 };
 
 function Activities() {
@@ -99,6 +162,7 @@ function Activities() {
   const canRegister = Boolean(currentUser) && !canCreateActivity;
   const [userRegistrations, setUserRegistrations] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
+  const [activitiesView, setActivitiesView] = useState('catalog');
   const [registrationError, setRegistrationError] = useState('');
   const [registrationMessage, setRegistrationMessage] = useState('');
   const [registeringActivityId, setRegisteringActivityId] = useState('');
@@ -180,6 +244,34 @@ function Activities() {
       });
   }, [activities, filters, registrationsByActivityId]);
 
+  const activitiesByScheduleDay = useMemo(() => {
+    const grouped = Object.fromEntries(
+      [...dayOptions, noDayLabel].map((day) => [day, []])
+    );
+
+    filteredActivities.forEach((activity) => {
+      const occurrences = generateActivityOccurrences(activity);
+
+      if (!occurrences.length) {
+        grouped[noDayLabel].push({ activity, occurrenceDate: null });
+        return;
+      }
+
+      occurrences.forEach((occurrenceDate) => {
+        const day = dayOptions[occurrenceDate.getDay()] || noDayLabel;
+        grouped[day].push({ activity, occurrenceDate });
+      });
+    });
+
+    Object.values(grouped).forEach((occurrences) => {
+      occurrences.sort((first, second) => (
+        (first.occurrenceDate?.getTime() || 0) - (second.occurrenceDate?.getTime() || 0)
+      ));
+    });
+
+    return grouped;
+  }, [filteredActivities]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -258,6 +350,15 @@ function Activities() {
 
     if (!canRegister) {
       setRegistrationError('רק משתמשים רגילים יכולים להירשם לפעילויות.');
+      return;
+    }
+
+    if (isActivityRegistrationClosed(activity)) {
+      setRegistrationError(
+        isOneTimeActivity(activity)
+          ? 'ההרשמה לפעילות זו נסגרה כי התאריך עבר.'
+          : 'ההרשמה לפעילות זו נסגרה כי הפעילות הסתיימה.'
+      );
       return;
     }
 
@@ -378,6 +479,12 @@ function Activities() {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
           gap: 22px;
+        }
+
+        .activities-catalog__schedule {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 18px;
         }
 
         .activities-catalog__card {
@@ -533,6 +640,49 @@ function Activities() {
       </section>
 
       <div
+        role="group"
+        aria-label="בחירת תצוגת פעילויות"
+        style={{
+          display: 'inline-flex',
+          gap: '6px',
+          marginTop: '18px',
+          padding: '5px',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
+          backgroundColor: '#fff',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setActivitiesView('catalog')}
+          style={{
+            padding: '10px 16px',
+            border: 0,
+            borderRadius: '9px',
+            backgroundColor: activitiesView === 'catalog' ? '#008080' : 'transparent',
+            color: activitiesView === 'catalog' ? '#fff' : '#475569',
+            fontWeight: 900,
+          }}
+        >
+          קטלוג פעילויות
+        </button>
+        <button
+          type="button"
+          onClick={() => setActivitiesView('schedule')}
+          style={{
+            padding: '10px 16px',
+            border: 0,
+            borderRadius: '9px',
+            backgroundColor: activitiesView === 'schedule' ? '#008080' : 'transparent',
+            color: activitiesView === 'schedule' ? '#fff' : '#475569',
+            fontWeight: 900,
+          }}
+        >
+          מערכת שבועית
+        </button>
+      </div>
+
+      <div
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -626,10 +776,15 @@ function Activities() {
         </div>
       )}
 
-      {!isLoading && filteredActivities.length > 0 && (
+      {!isLoading && activitiesView === 'catalog' && filteredActivities.length > 0 && (
         <div className="activities-catalog__grid">
           {filteredActivities.map((activity) => {
             const registration = registrationsByActivityId.get(activity.id);
+            const recurringStatus = getRecurringActivityStatus(activity);
+            const isExpired = isOneTimeActivityExpired(activity);
+            const isEnded = recurringStatus === 'ended';
+            const isUpcoming = recurringStatus === 'upcoming';
+            const registrationClosed = isExpired || isEnded;
             const registrationPresentation = getRegistrationPresentation(
               registration,
               successfulRegistrationIds.includes(activity.id)
@@ -671,7 +826,7 @@ function Activities() {
                           fontWeight: 800,
                         }}
                       >
-                        {getPrimaryActivityType(activity)}
+                        {isOneTimeActivity(activity) ? 'פעילות חד פעמית' : 'פעילות קבועה'}
                       </span>
                     </div>
                     {canRegister && (
@@ -680,13 +835,27 @@ function Activities() {
                           flexShrink: 0,
                           padding: '5px 10px',
                           borderRadius: '999px',
-                          backgroundColor: registrationPresentation.backgroundColor,
-                          color: registrationPresentation.color,
+                          backgroundColor: registrationClosed
+                            ? '#fee2e2'
+                            : isUpcoming
+                              ? '#e0f2fe'
+                            : registrationPresentation.backgroundColor,
+                          color: registrationClosed
+                            ? '#991b1b'
+                            : isUpcoming
+                              ? '#075985'
+                            : registrationPresentation.color,
                           fontSize: '12px',
                           fontWeight: 900,
                         }}
                       >
-                        {registrationPresentation.badgeLabel}
+                        {isExpired
+                          ? 'התאריך עבר'
+                          : isEnded
+                            ? 'הפעילות הסתיימה'
+                            : isUpcoming
+                              ? 'טרם התחילה'
+                              : registrationPresentation.badgeLabel}
                       </span>
                     )}
                   </div>
@@ -699,7 +868,15 @@ function Activities() {
                       marginTop: '18px',
                     }}
                   >
-                    <Info label="תאריך" value={activityDate ? formatActivityDate(activityDate) : activity.dayOfWeek || '-'} />
+                    {isOneTimeActivity(activity) ? (
+                      <Info label="תאריך" value={activityDate ? formatActivityDate(activityDate) : '-'} />
+                    ) : (
+                      <>
+                        <Info label="מתאריך" value={getRecurringStartDate(activity) ? formatActivityDate(getRecurringStartDate(activity)) : '-'} />
+                        <Info label="עד תאריך" value={getRecurringEndDate(activity) ? formatActivityDate(getRecurringEndDate(activity)) : '-'} />
+                        <Info label="ימים" value={getRecurringDays(activity).join(', ') || noDayLabel} />
+                      </>
+                    )}
                     <Info label="שעה" value={activity.time || '-'} />
                     <Info label="מיקום" value={activity.location || '-'} />
                     <Info label="מחיר" value={formatPrice(activity)} />
@@ -747,19 +924,33 @@ function Activities() {
                     {canRegister && (
                       <button
                         type="button"
-                        disabled={Boolean(registration) || registeringActivityId === activity.id}
+                        disabled={
+                          registrationClosed ||
+                          Boolean(registration) ||
+                          registeringActivityId === activity.id
+                        }
                         onClick={() => handleRegister(activity)}
                         style={{
                           padding: '10px 16px',
                           border: 0,
                           borderRadius: '10px',
-                          backgroundColor: registration ? registrationPresentation.backgroundColor : '#008080',
-                          color: registration ? registrationPresentation.color : '#fff',
-                          cursor: registration ? 'not-allowed' : 'pointer',
+                          backgroundColor: registrationClosed
+                            ? '#e5e7eb'
+                            : registration
+                              ? registrationPresentation.backgroundColor
+                              : '#008080',
+                          color: registrationClosed
+                            ? '#6b7280'
+                            : registration
+                              ? registrationPresentation.color
+                              : '#fff',
+                          cursor: registrationClosed || registration ? 'not-allowed' : 'pointer',
                           fontWeight: 900,
                         }}
                       >
-                        {registeringActivityId === activity.id
+                        {registrationClosed
+                          ? 'ההרשמה נסגרה'
+                          : registeringActivityId === activity.id
                           ? 'נרשם...'
                           : registrationPresentation.label}
                       </button>
@@ -879,7 +1070,102 @@ function Activities() {
           })}
         </div>
       )}
+
+      {!isLoading && activitiesView === 'schedule' && filteredActivities.length > 0 && (
+        <WeeklySchedule activitiesByScheduleDay={activitiesByScheduleDay} />
+      )}
     </main>
+  );
+}
+
+function WeeklySchedule({ activitiesByScheduleDay }) {
+  const visibleDays = [...dayOptions, noDayLabel].filter(
+    (day) => day !== noDayLabel || activitiesByScheduleDay[day].length > 0
+  );
+
+  return (
+    <div className="activities-catalog__schedule">
+      {visibleDays.map((day) => (
+        <section
+          key={day}
+          style={{
+            minWidth: 0,
+            padding: '18px',
+            border: '1px solid #e5e7eb',
+            borderRadius: '16px',
+            backgroundColor: '#fff',
+            boxShadow: '0 4px 18px rgba(15, 34, 64, 0.07)',
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              paddingBottom: '12px',
+              borderBottom: '1px solid #e5e7eb',
+              color: '#0f2240',
+              fontSize: '23px',
+              fontWeight: 900,
+            }}
+          >
+            {day}
+          </h2>
+
+          {activitiesByScheduleDay[day].length ? (
+            <div style={{ display: 'grid', gap: '12px', marginTop: '14px' }}>
+              {activitiesByScheduleDay[day].map(({ activity, occurrenceDate }) => (
+                <article
+                  key={`${day}-${activity.id}-${occurrenceDate?.toISOString() || 'undefined'}`}
+                  style={{
+                    padding: '14px',
+                    borderRadius: '12px',
+                    backgroundColor: '#f8fafc',
+                  }}
+                >
+                  <strong
+                    style={{
+                      display: 'block',
+                      overflow: 'hidden',
+                      color: '#0f2240',
+                      fontSize: '17px',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {activity.title || 'פעילות ללא כותרת'}
+                  </strong>
+                  <p style={{ margin: '7px 0 0', color: '#475569', fontWeight: 800 }}>
+                    {activity.time || 'שעה לא הוגדרה'}
+                  </p>
+                  <p style={{ margin: '5px 0 0', color: '#64748b', fontSize: '14px' }}>
+                    {occurrenceDate ? formatActivityDate(occurrenceDate) : '-'}
+                  </p>
+                  {activity.location && (
+                    <p style={{ margin: '5px 0 0', color: '#64748b', fontSize: '14px' }}>
+                      {activity.location}
+                    </p>
+                  )}
+                  <Link
+                    to={`/activities/${activity.id}`}
+                    style={{
+                      display: 'inline-flex',
+                      marginTop: '10px',
+                      color: '#006b6b',
+                      fontWeight: 900,
+                    }}
+                  >
+                    פרטים
+                  </Link>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p style={{ margin: '14px 0 0', color: '#94a3b8', fontWeight: 700 }}>
+              אין פעילויות ביום זה
+            </p>
+          )}
+        </section>
+      ))}
+    </div>
   );
 }
 

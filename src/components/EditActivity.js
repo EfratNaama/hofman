@@ -67,6 +67,14 @@ function EditActivity() {
   const initialValues = {
     ...activity,
     activityDate: formatActivityDateInput(activity.activityDate),
+    startDate: formatActivityDateInput(activity.startDate || activity.activityDate),
+    endDate: formatActivityDateInput(activity.endDate),
+    daysOfWeek:
+      Array.isArray(activity.daysOfWeek) && activity.daysOfWeek.length
+        ? activity.daysOfWeek
+        : activity.dayOfWeek
+          ? [activity.dayOfWeek]
+          : [],
     maxParticipants: activity.maxParticipants ?? '',
     currentParticipants: activity.currentParticipants ?? 0,
     paymentRequired: activity.paymentRequired ?? activity.requiresPayment ?? false,

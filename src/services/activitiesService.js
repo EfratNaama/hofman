@@ -44,7 +44,18 @@ const normalizeActivity = (docSnapshot) => ({
 const buildActivityPayload = (activityData, options = {}) => {
   const type = activityData.type || 'קבוע';
   const isOneTime = type === 'חד פעמי';
-  const date = activityData.date || activityData.activityDate || '';
+  const date = isOneTime ? (activityData.date || activityData.activityDate || '') : '';
+  const startDate = isOneTime
+    ? ''
+    : (activityData.startDate || activityData.activityDate || '');
+  const endDate = isOneTime ? '' : (activityData.endDate || '');
+  const daysOfWeek = isOneTime
+    ? []
+    : Array.isArray(activityData.daysOfWeek) && activityData.daysOfWeek.length
+      ? activityData.daysOfWeek
+      : activityData.dayOfWeek
+        ? [activityData.dayOfWeek]
+        : [];
   const maxParticipants = Number(activityData.maxParticipants);
   const currentParticipants = options.isCreate
     ? 0
@@ -62,9 +73,12 @@ const buildActivityPayload = (activityData, options = {}) => {
     whatsappLink: activityData.whatsappLink?.trim() || '',
     imageUrl: activityData.imageUrl?.trim() || '',
     category: activityData.category,
-    dayOfWeek: isOneTime ? '' : activityData.dayOfWeek,
+    dayOfWeek: isOneTime ? '' : (daysOfWeek[0] || ''),
+    daysOfWeek,
     date,
-    activityDate: toFirestoreDate(date),
+    activityDate: toFirestoreDate(isOneTime ? date : startDate),
+    startDate: isOneTime ? null : toFirestoreDate(startDate),
+    endDate: isOneTime ? null : toFirestoreDate(endDate),
     time: activityData.time,
     maxParticipants,
     currentParticipants,

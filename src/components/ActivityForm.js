@@ -15,8 +15,11 @@ const initialFormState = {
   imageUrl: '',
   category: '',
   dayOfWeek: '',
+  daysOfWeek: [],
   date: '',
   activityDate: '',
+  startDate: '',
+  endDate: '',
   time: '',
   maxParticipants: '',
   currentParticipants: 0,
@@ -29,6 +32,15 @@ const initialFormState = {
 function buildFormState(initialValues) {
   const type = initialValues?.type || 'קבוע';
   const date = formatActivityDateInput(initialValues?.date || initialValues?.activityDate);
+  const startDate = formatActivityDateInput(
+    initialValues?.startDate || (type === 'קבוע' ? initialValues?.activityDate : '')
+  );
+  const endDate = formatActivityDateInput(initialValues?.endDate);
+  const daysOfWeek = Array.isArray(initialValues?.daysOfWeek) && initialValues.daysOfWeek.length
+    ? initialValues.daysOfWeek
+    : initialValues?.dayOfWeek
+      ? [initialValues.dayOfWeek]
+      : [];
   const requiresPayment = Boolean(
     initialValues?.paymentRequired ?? initialValues?.requiresPayment
   );
@@ -37,11 +49,14 @@ function buildFormState(initialValues) {
     ...initialFormState,
     ...initialValues,
     type,
-    date,
-    activityDate: date,
+    date: type === 'חד פעמי' ? date : '',
+    activityDate: type === 'חד פעמי' ? date : startDate,
+    startDate: type === 'קבוע' ? startDate : '',
+    endDate: type === 'קבוע' ? endDate : '',
+    daysOfWeek: type === 'קבוע' ? daysOfWeek : [],
     requiresPayment,
     price: requiresPayment ? (initialValues?.price ?? '') : '',
-    dayOfWeek: type === 'קבוע' ? (initialValues?.dayOfWeek || '') : '',
+    dayOfWeek: type === 'קבוע' ? (daysOfWeek[0] || '') : '',
   };
 }
 
@@ -73,11 +88,23 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
       if (name === 'type') {
         return {
           ...nextData,
-          dayOfWeek: value === 'קבוע' ? nextData.dayOfWeek : '',
+          date: value === 'חד פעמי' ? nextData.date : '',
+          activityDate: value === 'חד פעמי' ? nextData.date : nextData.startDate,
+          startDate: value === 'קבוע' ? nextData.startDate : '',
+          endDate: value === 'קבוע' ? nextData.endDate : '',
+          dayOfWeek: value === 'קבוע' ? (nextData.daysOfWeek[0] || '') : '',
+          daysOfWeek: value === 'קבוע' ? nextData.daysOfWeek : [],
         };
       }
 
       if (name === 'date') {
+        return {
+          ...nextData,
+          activityDate: value,
+        };
+      }
+
+      if (name === 'startDate') {
         return {
           ...nextData,
           activityDate: value,
@@ -95,14 +122,36 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     });
   };
 
+  const handleWeekdayChange = (day) => {
+    setFormData((currentData) => {
+      const isSelected = currentData.daysOfWeek.includes(day);
+      const daysOfWeek = isSelected
+        ? currentData.daysOfWeek.filter((selectedDay) => selectedDay !== day)
+        : [...currentData.daysOfWeek, day];
+
+      return {
+        ...currentData,
+        daysOfWeek,
+        dayOfWeek: daysOfWeek[0] || '',
+      };
+    });
+  };
+
   const validateForm = () => {
     if (!formData.title.trim()) return 'יש להזין שם פעילות.';
     if (!formData.description.trim()) return 'יש להזין תיאור פעילות.';
     if (!formData.location.trim()) return 'יש להזין מקום פעילות.';
     if (!formData.category) return 'יש לבחור קטגוריה.';
     if (!formData.type) return 'יש לבחור סוג פעילות.';
-    if (formData.type === 'קבוע' && !formData.dayOfWeek) return 'יש לבחור יום בשבוע.';
-    if (!formData.date) return 'יש לבחור תאריך פעילות.';
+    if (formData.type === 'קבוע') {
+      if (!formData.startDate) return 'יש לבחור תאריך התחלה.';
+      if (!formData.endDate) return 'יש לבחור תאריך סיום.';
+      if (formData.endDate < formData.startDate) {
+        return 'תאריך הסיום לא יכול להיות לפני תאריך ההתחלה.';
+      }
+      if (!formData.daysOfWeek.length) return 'יש לבחור לפחות יום אחד בשבוע.';
+    }
+    if (formData.type === 'חד פעמי' && !formData.date) return 'יש לבחור תאריך פעילות.';
     if (!formData.time) return 'יש להזין שעת פעילות.';
 
     const maxParticipants = Number(formData.maxParticipants);
@@ -148,9 +197,12 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     onSubmit({
       ...formData,
       type: formData.type || 'קבוע',
-      dayOfWeek: isOneTime ? '' : formData.dayOfWeek,
-      date: formData.date,
-      activityDate: formData.date,
+      dayOfWeek: isOneTime ? '' : (formData.daysOfWeek[0] || ''),
+      daysOfWeek: isOneTime ? [] : formData.daysOfWeek,
+      date: isOneTime ? formData.date : '',
+      activityDate: isOneTime ? formData.date : formData.startDate,
+      startDate: isOneTime ? '' : formData.startDate,
+      endDate: isOneTime ? '' : formData.endDate,
       maxParticipants: Number(formData.maxParticipants),
       currentParticipants: Number(formData.currentParticipants || 0),
       availableSpots,
@@ -256,35 +308,62 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
           />
         </label>
 
-        {!isOneTime && (
+        {isOneTime ? (
           <label className="block">
-            <span className="mb-2 block text-lg font-bold text-slate-800">יום בשבוע</span>
-            <select
+            <span className="mb-2 block text-lg font-bold text-slate-800">תאריך פעילות</span>
+            <input
               className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-              name="dayOfWeek"
-              value={formData.dayOfWeek}
+              name="date"
+              type="date"
+              value={formData.date}
               onChange={handleChange}
-            >
-              <option value="">בחרו יום</option>
-              {dayOptions.map((day) => (
-                <option key={day} value={day}>
-                  {day}
-                </option>
-              ))}
-            </select>
+            />
           </label>
-        )}
+        ) : (
+          <>
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-slate-800">תאריך התחלה</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                name="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={handleChange}
+              />
+            </label>
 
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">תאריך פעילות</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="date"
-            type="date"
-            value={formData.date}
-            onChange={handleChange}
-          />
-        </label>
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-slate-800">תאריך סיום</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                name="endDate"
+                type="date"
+                value={formData.endDate}
+                onChange={handleChange}
+              />
+            </label>
+
+            <fieldset className="rounded-lg border border-slate-200 bg-slate-50 p-5 lg:col-span-2">
+              <legend className="px-2 text-lg font-bold text-slate-800">ימים בשבוע</legend>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {dayOptions.map((day) => (
+                  <label
+                    key={day}
+                    className="flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-slate-800"
+                  >
+                    <input
+                      className="h-6 w-6 rounded border-slate-300 text-sky-800 focus:ring-sky-700"
+                      type="checkbox"
+                      checked={formData.daysOfWeek.includes(day)}
+                      onChange={() => handleWeekdayChange(day)}
+                    />
+                    {day}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </>
+        )}
 
         <label className="block">
           <span className="mb-2 block text-lg font-bold text-slate-800">שעה</span>

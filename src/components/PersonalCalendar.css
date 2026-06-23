@@ -1,0 +1,127 @@
+.personal-calendar {
+  height: 700px;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+}
+
+.personal-calendar .rbc-calendar {
+  color: #0f2240;
+  font-family: inherit;
+}
+
+.personal-calendar .rbc-toolbar {
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.personal-calendar .rbc-toolbar button {
+  border-color: #cbd5e1;
+  color: #334155;
+  font-weight: 800;
+}
+
+.personal-calendar .rbc-toolbar button:hover,
+.personal-calendar .rbc-toolbar button:focus,
+.personal-calendar .rbc-toolbar button.rbc-active {
+  border-color: #008080;
+  background: #008080;
+  color: #fff;
+}
+
+.personal-calendar .rbc-header {
+  min-height: 60px;
+  padding: 7px 4px;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.personal-calendar__date-header,
+.personal-calendar__week-header {
+  display: grid;
+  gap: 2px;
+  color: #334155;
+  text-align: center;
+}
+
+.personal-calendar__date-header small,
+.personal-calendar__week-header small {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.personal-calendar .rbc-event.personal-calendar__event {
+  overflow: hidden;
+  border: 0;
+  border-radius: 7px;
+  padding: 4px 6px;
+}
+
+.personal-calendar .personal-calendar__event--activity {
+  background: #008080;
+}
+
+.personal-calendar .personal-calendar__event--holiday {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.personal-calendar .personal-calendar__event--past {
+  background: #94a3b8;
+}
+
+.personal-calendar__event-content {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.personal-calendar__event-content > span {
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.personal-calendar__event-content button {
+  width: fit-content;
+  padding: 2px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #006b6b;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.personal-calendar .rbc-off-range-bg {
+  background: #f8fafc;
+}
+
+.personal-calendar .rbc-today {
+  background: #f0fdfa;
+}
+
+@media (max-width: 720px) {
+  .personal-calendar {
+    height: 660px;
+    padding: 10px;
+    overflow-x: auto;
+  }
+
+  .personal-calendar .rbc-calendar {
+    min-width: 720px;
+  }
+
+  .personal-calendar .rbc-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

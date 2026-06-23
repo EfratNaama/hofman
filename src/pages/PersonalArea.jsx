@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserPaidRegistrations } from '../services/activityRegistrationsService';
-import { toDate } from '../utils/activityDateUtils';
+import PersonalCalendar from '../components/PersonalCalendar';
+import { getUserAllRegistrations } from '../services/activityRegistrationsService';
+import {
+  generateActivityOccurrences,
+  getActivityType,
+  toDate,
+} from '../utils/activityDateUtils';
 
 const cardStyle = {
   padding: '20px',
@@ -14,8 +19,38 @@ const sectionStyle = {
   marginBottom: '40px',
 };
 
-const getActivityDate = (activity, registration) =>
-  toDate(activity?.activityDate || activity?.date || registration?.activityDate || registration?.date);
+const applyActivityTime = (date, activity, registration) => {
+  const start = new Date(date);
+  const time = activity?.time || registration?.time;
+  if (time) {
+    const [hours, minutes] = time.split(':').map(Number);
+    if (Number.isFinite(hours) && Number.isFinite(minutes)) {
+      start.setHours(hours, minutes, 0, 0);
+    }
+  }
+
+  return start;
+};
+
+const getActivityEnd = (activity, start) => {
+  if (activity?.endTime) {
+    const explicitEnd = toDate(activity.endTime);
+    if (explicitEnd) return explicitEnd;
+
+    if (typeof activity.endTime === 'string' && activity.endTime.includes(':')) {
+      const [hours, minutes] = activity.endTime.split(':').map(Number);
+      if (Number.isFinite(hours) && Number.isFinite(minutes)) {
+        const end = new Date(start);
+        end.setHours(hours, minutes, 0, 0);
+        return end;
+      }
+    }
+  }
+
+  const end = new Date(start);
+  end.setHours(end.getHours() + 1);
+  return end;
+};
 
 const formatDate = (value) => {
   const date = toDate(value);
@@ -29,124 +64,9 @@ const formatPrice = (value) =>
     maximumFractionDigits: 2,
   }).format(Number(value) || 0);
 
-const getStartOfWeek = (date) => {
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - start.getDay());
-  return start;
-};
-
-const getCalendarDays = (view) => {
-  const today = new Date();
-
-  if (view === 'week') {
-    const weekStart = getStartOfWeek(today);
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(weekStart);
-      date.setDate(weekStart.getDate() + index);
-      return date;
-    });
-  }
-
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const gridStart = getStartOfWeek(monthStart);
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(gridStart);
-    date.setDate(gridStart.getDate() + index);
-    return date;
-  });
-};
-
-function PersonalCalendar({ events, view, onViewChange }) {
-  const days = useMemo(() => getCalendarDays(view), [view]);
-  const currentMonth = new Date().getMonth();
-  const dayNames = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
-
-  return (
-    <div style={cardStyle}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          flexWrap: 'wrap',
-          marginBottom: '18px',
-        }}
-      >
-        <h3 style={{ margin: 0, color: '#1a1a2e', fontSize: '20px' }}>
-          {new Date().toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}
-        </h3>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[
-            { value: 'month', label: 'חודשי' },
-            { value: 'week', label: 'שבועי' },
-          ].map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => onViewChange(option.value)}
-              style={{
-                padding: '9px 15px',
-                border: 0,
-                borderRadius: '9px',
-                backgroundColor: view === option.value ? '#008080' : '#eef2f3',
-                color: view === option.value ? '#fff' : '#334155',
-                fontWeight: 800,
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="personal-area__calendar">
-        {dayNames.map((day) => (
-          <div key={day} className="personal-area__day-name">{day}</div>
-        ))}
-        {days.map((day) => {
-          const dayEvents = events.filter((event) => (
-            event.start.toDateString() === day.toDateString()
-          ));
-          const outsideMonth = view === 'month' && day.getMonth() !== currentMonth;
-
-          return (
-            <div
-              key={day.toISOString()}
-              className="personal-area__calendar-day"
-              style={{ opacity: outsideMonth ? 0.45 : 1 }}
-            >
-              <strong style={{ color: '#475569', fontSize: '13px' }}>{day.getDate()}</strong>
-              {dayEvents.map((event) => (
-                <div
-                  key={`${event.registrationId}-${event.start.toISOString()}`}
-                  title={`${event.title}${event.location ? `, ${event.location}` : ''}`}
-                  style={{
-                    marginTop: '6px',
-                    padding: '6px 8px',
-                    borderRadius: '7px',
-                    backgroundColor: '#d9f3f1',
-                    color: '#006b6b',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                  }}
-                >
-                  {event.title}
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function PersonalArea() {
   const { currentUser } = useAuth();
-  const [paidRegistrations, setPaidRegistrations] = useState([]);
-  const [calendarView, setCalendarView] = useState('month');
+  const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -160,10 +80,9 @@ function PersonalArea() {
       setError('');
 
       try {
-        const paidData = await getUserPaidRegistrations(currentUser.uid);
-
+        const registrationData = await getUserAllRegistrations(currentUser.uid);
         if (isMounted) {
-          setPaidRegistrations(paidData);
+          setRegistrations(registrationData);
         }
       } catch (loadError) {
         console.error('Failed to load personal area:', loadError);
@@ -182,42 +101,60 @@ function PersonalArea() {
     };
   }, [currentUser]);
 
-  const calendarEvents = useMemo(() => (
-    paidRegistrations
-      .map(({ registration, activity }) => {
-        const start = getActivityDate(activity, registration);
-        if (!start) return null;
-
-        return {
-          registrationId: registration.id,
-          title: activity?.title || registration.activityTitle || 'פעילות',
-          start,
-          end: toDate(activity?.endTime) || start,
-          location: activity?.location || registration.location || '',
-          type: activity?.type || '',
+  const activityEvents = useMemo(() => (
+    registrations
+      .flatMap(({ registration, activity }) => {
+        const sourceActivity = activity || {
+          type: 'חד פעמי',
+          date: registration.date,
+          activityDate: registration.activityDate,
         };
+        const occurrences = generateActivityOccurrences(sourceActivity);
+
+        return occurrences.map((occurrenceDate, index) => {
+          const start = applyActivityTime(occurrenceDate, activity, registration);
+          return {
+            id: `${registration.id}-${index}`,
+            registrationId: registration.id,
+            activityId: activity?.id || registration.activityId,
+            title: activity?.title || registration.activityTitle || 'פעילות',
+            start,
+            end: getActivityEnd(activity, start),
+            type: 'activity',
+            activityType: getActivityType(sourceActivity),
+            allDay: false,
+          };
+        });
       })
-      .filter(Boolean)
-  ), [paidRegistrations]);
+  ), [registrations]);
 
   const nextActivity = useMemo(() => {
     const now = new Date();
-    return [...calendarEvents]
+    return [...activityEvents]
       .filter((event) => event.start >= now)
       .sort((first, second) => first.start - second.start)[0] || null;
-  }, [calendarEvents]);
+  }, [activityEvents]);
 
-  const now = new Date();
-  const currentMonthPayments = paidRegistrations.filter(({ registration }) => {
-    const registeredAt = toDate(registration.registeredAt);
-    return (
-      registeredAt &&
-      registeredAt.getMonth() === now.getMonth() &&
-      registeredAt.getFullYear() === now.getFullYear()
-    );
-  });
-  const monthlyTotal = currentMonthPayments.reduce(
-    (total, { activity }) => total + (Number(activity?.price) || 0),
+  const currentMonthPaidActivities = useMemo(() => {
+    const now = new Date();
+
+    return registrations.filter(({ registration, activity }) => {
+      const registeredAt = toDate(registration.registeredAt);
+      const paymentRequired = Boolean(
+        activity?.paymentRequired ?? activity?.requiresPayment
+      );
+
+      return (
+        paymentRequired &&
+        registeredAt &&
+        registeredAt.getMonth() === now.getMonth() &&
+        registeredAt.getFullYear() === now.getFullYear()
+      );
+    });
+  }, [registrations]);
+
+  const monthlyTotal = currentMonthPaidActivities.reduce(
+    (total, { activity }) => total + Number(activity?.price ?? activity?.cost ?? 0),
     0
   );
 
@@ -230,27 +167,10 @@ function PersonalArea() {
           padding: 32px;
         }
 
-        .personal-area__calendar {
+        .personal-area__payment-grid {
           display: grid;
-          grid-template-columns: repeat(7, minmax(0, 1fr));
-          gap: 6px;
-        }
-
-        .personal-area__day-name {
-          padding: 8px;
-          color: #64748b;
-          font-size: 13px;
-          font-weight: 800;
-          text-align: center;
-        }
-
-        .personal-area__calendar-day {
-          min-height: 94px;
-          padding: 8px;
-          border: 1px solid #e5e7eb;
-          border-radius: 9px;
-          background: #fff;
-          overflow: hidden;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px;
         }
 
         @media (max-width: 768px) {
@@ -258,9 +178,8 @@ function PersonalArea() {
             padding: 24px 16px;
           }
 
-          .personal-area__calendar {
-            overflow-x: auto;
-            grid-template-columns: repeat(7, minmax(100px, 1fr));
+          .personal-area__payment-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
@@ -288,11 +207,15 @@ function PersonalArea() {
       )}
 
       {loading ? (
-        <div style={{ ...cardStyle, color: '#475569', fontWeight: 800 }}>טוען את האזור האישי...</div>
+        <div style={{ ...cardStyle, color: '#475569', fontWeight: 800 }}>
+          טוען את האזור האישי...
+        </div>
       ) : (
         <>
           <section style={sectionStyle}>
-            <h2 style={{ margin: '0 0 16px', color: '#1a1a2e', fontSize: '24px' }}>הלוח שלי</h2>
+            <h2 style={{ margin: '0 0 16px', color: '#1a1a2e', fontSize: '24px' }}>
+              הלוח האישי שלי
+            </h2>
 
             <div style={{ ...cardStyle, marginBottom: '20px', borderInlineStart: '4px solid #008080' }}>
               <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>הפעילות הקרובה</p>
@@ -303,27 +226,23 @@ function PersonalArea() {
                   </h3>
                   <p style={{ margin: '7px 0 0', color: '#475569' }}>
                     {formatDate(nextActivity.start)}
-                    {nextActivity.location ? ` · ${nextActivity.location}` : ''}
                   </p>
                 </>
               ) : (
                 <p style={{ margin: '8px 0 0', color: '#64748b' }}>
-                  אין פעילויות רשומות ומשולמות עדיין
+                  אין פעילויות רשומות
                 </p>
               )}
             </div>
 
-            {calendarEvents.length ? (
-              <PersonalCalendar
-                events={calendarEvents}
-                view={calendarView}
-                onViewChange={setCalendarView}
-              />
-            ) : (
+            {!activityEvents.length && (
               <div style={{ ...cardStyle, color: '#64748b', textAlign: 'center', fontWeight: 800 }}>
-                אין פעילויות רשומות ומשולמות עדיין
+                אין פעילויות רשומות
               </div>
             )}
+            <div style={{ marginTop: activityEvents.length ? 0 : '20px' }}>
+              <PersonalCalendar activityEvents={activityEvents} />
+            </div>
           </section>
 
           <section style={sectionStyle}>
@@ -331,20 +250,31 @@ function PersonalArea() {
               סיכום תשלומים חודשי
             </h2>
 
-            <div style={{ ...cardStyle, borderInlineStart: '4px solid #008080' }}>
-              <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>
-                סה״כ תשלומים לחודש הנוכחי
-              </p>
-              {currentMonthPayments.length ? (
-                <p style={{ margin: '8px 0 0', color: '#008080', fontSize: '32px', fontWeight: 900 }}>
-                  {formatPrice(monthlyTotal)}
-                </p>
-              ) : (
-                <p style={{ margin: '10px 0 0', color: '#64748b', fontWeight: 800 }}>
-                  לא נמצאו תשלומים לחודש הנוכחי
-                </p>
-              )}
-            </div>
+            {currentMonthPaidActivities.length ? (
+              <div className="personal-area__payment-grid">
+                <div style={{ ...cardStyle, borderInlineStart: '4px solid #008080' }}>
+                  <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>
+                    סה״כ לתשלום החודש
+                  </p>
+                  <p style={{ margin: '8px 0 0', color: '#008080', fontSize: '32px', fontWeight: 900 }}>
+                    {formatPrice(monthlyTotal)}
+                  </p>
+                </div>
+
+                <div style={{ ...cardStyle, borderInlineStart: '4px solid #5B6FE6' }}>
+                  <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>
+                    מספר פעילויות בתשלום
+                  </p>
+                  <p style={{ margin: '8px 0 0', color: '#5B6FE6', fontSize: '32px', fontWeight: 900 }}>
+                    {currentMonthPaidActivities.length}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ ...cardStyle, color: '#64748b', textAlign: 'center', fontWeight: 800 }}>
+                לא נמצאו תשלומים לחודש הנוכחי
+              </div>
+            )}
           </section>
         </>
       )}
