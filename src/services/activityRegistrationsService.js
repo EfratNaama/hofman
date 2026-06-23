@@ -32,7 +32,7 @@ export async function getUserActivityRegistrations(userId) {
 export async function getUserAllRegistrations(userId) {
   const registrations = await getUserActivityRegistrations(userId);
 
-  return Promise.all(
+  const registrationsWithActivities = await Promise.all(
     registrations.map(async (registration) => {
       if (!registration.activityId) {
         return { registration, activity: null };
@@ -43,10 +43,12 @@ export async function getUserAllRegistrations(userId) {
         registration,
         activity: activitySnapshot.exists()
           ? { id: activitySnapshot.id, ...activitySnapshot.data() }
-          : null,
+        : null,
       };
     })
   );
+
+  return registrationsWithActivities.filter(({ activity }) => Boolean(activity));
 }
 
 export async function getUserPaidRegistrations(userId) {
@@ -58,7 +60,7 @@ export async function getUserPaidRegistrations(userId) {
   const snapshot = await getDocs(registrationsQuery);
   const registrations = snapshot.docs.map(normalizeRegistration);
 
-  return Promise.all(
+  const paidRegistrationsWithActivities = await Promise.all(
     registrations.map(async (registration) => {
       if (!registration.activityId) {
         return { registration, activity: null };
@@ -69,10 +71,12 @@ export async function getUserPaidRegistrations(userId) {
         registration,
         activity: activitySnapshot.exists()
           ? { id: activitySnapshot.id, ...activitySnapshot.data() }
-          : null,
+        : null,
       };
     })
   );
+
+  return paidRegistrationsWithActivities.filter(({ activity }) => Boolean(activity));
 }
 
 export async function getActivityRegistrations(activityId) {

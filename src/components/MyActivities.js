@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { cancelActivityRegistration, getUserActivityRegistrations } from '../services/activityRegistrationsService';
+import { cancelActivityRegistration, getUserAllRegistrations } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 
 function MyActivities() {
@@ -27,9 +27,19 @@ function MyActivities() {
       setSuccessMessage('');
 
       try {
-        const registrationsData = await getUserActivityRegistrations(currentUser.uid);
+        const registrationsData = await getUserAllRegistrations(currentUser.uid);
         if (isMounted) {
-          setRegistrations(registrationsData);
+          setRegistrations(
+            registrationsData.map(({ registration, activity }) => ({
+              ...registration,
+              activityTitle: activity.title || registration.activityTitle,
+              activityDate: activity.activityDate || registration.activityDate,
+              date: activity.date || registration.date,
+              time: activity.time || registration.time,
+              location: activity.location || registration.location,
+              description: activity.description || registration.description,
+            }))
+          );
         }
       } catch (err) {
         console.error('Failed to load registered activities', err);

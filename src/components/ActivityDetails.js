@@ -44,6 +44,7 @@ function ActivityDetails() {
 
     try {
       await deleteActivity(id);
+      window.alert('׳”׳₪׳¢׳™׳׳•׳× ׳•׳”׳”׳¨׳©׳׳•׳× ׳”׳§׳©׳•׳¨׳•׳× ׳ ׳׳—׳§׳• ׳‘׳”׳¦׳׳—׳”');
       navigate('/activities');
     } catch (err) {
       setError('לא ניתן למחוק את הפעילות. נסו שוב.');

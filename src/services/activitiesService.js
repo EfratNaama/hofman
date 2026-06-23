@@ -11,10 +11,12 @@ import {
   serverTimestamp,
   Timestamp,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const ACTIVITIES_COLLECTION = 'activities';
+const REGISTRATIONS_COLLECTION = 'activityRegistrations';
 
 const activitiesCollectionRef = collection(db, ACTIVITIES_COLLECTION);
 
@@ -138,5 +140,15 @@ export async function updateActivity(activityId, activityData) {
 
 export async function deleteActivity(activityId) {
   const activityRef = doc(db, ACTIVITIES_COLLECTION, activityId);
+  const registrationsQuery = query(
+    collection(db, REGISTRATIONS_COLLECTION),
+    where('activityId', '==', activityId)
+  );
+  const registrationsSnapshot = await getDocs(registrationsQuery);
+
+  await Promise.all(
+    registrationsSnapshot.docs.map((registrationDoc) => deleteDoc(registrationDoc.ref))
+  );
+
   await deleteDoc(activityRef);
 }
