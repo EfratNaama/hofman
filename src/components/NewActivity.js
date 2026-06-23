@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { createActivity } from '../services/activitiesService';
 import ActivityForm from './ActivityForm';
+import './NewActivity.css';
 
 function NewActivity() {
   const { currentUser } = useAuth();
@@ -28,21 +29,21 @@ function NewActivity() {
   };
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-8 text-right" dir="rtl">
-      <div className="rounded-lg bg-white p-6 shadow-sm">
-        <div className="mb-6">
-          <p className="text-lg font-bold text-slate-500">ניהול פעילויות</p>
-          <h1 className="mt-2 text-4xl font-black text-slate-900">יצירת פעילות חדשה</h1>
+    <section className="admin-activities-page" dir="rtl">
+      <div className="activity-form-card">
+        <div className="activity-form-header">
+          <p>ניהול פעילויות</p>
+          <h1>יצירת פעילות חדשה</h1>
         </div>
 
         {error && (
-          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700">
+          <div className="activity-form-alert activity-form-alert--error">
             {error}
           </div>
         )}
 
         {successMessage && (
-          <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-lg font-semibold text-green-700">
+          <div className="activity-form-alert activity-form-alert--success">
             {successMessage}
           </div>
         )}

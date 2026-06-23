@@ -1,0 +1,262 @@
+.admin-activities-page {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+  color: #3f342f;
+  text-align: right;
+}
+
+.admin-activities-page * {
+  box-sizing: border-box;
+}
+
+.activity-form-card {
+  width: 100%;
+  max-width: 760px;
+  margin: 24px auto 32px;
+  border: 1px solid rgba(130, 77, 63, 0.16);
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 24px 28px;
+  box-shadow: 0 10px 24px rgba(63, 52, 47, 0.08);
+}
+
+.activity-form-header {
+  margin-bottom: 22px;
+}
+
+.activity-form-header p {
+  margin: 0;
+  color: #977665;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.activity-form-header h1 {
+  margin: 8px 0 0;
+  color: #3f342f;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.activity-form-alert {
+  margin-bottom: 18px;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.activity-form-alert--error,
+.admin-activities-page form > div[role='alert'] {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.activity-form-alert--success {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.admin-activities-page form {
+  display: grid;
+  gap: 20px;
+  text-align: right;
+}
+
+.admin-activities-page form > div[role='alert'] {
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.admin-activities-page form > .grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.admin-activities-page label {
+  display: grid;
+  gap: 8px;
+  color: #3f342f;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-activities-page label span {
+  margin: 0;
+  color: #3f342f;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-activities-page input,
+.admin-activities-page select,
+.admin-activities-page textarea {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #d8c8ba;
+  border-radius: 14px;
+  background: #fffdfb;
+  color: #3f342f;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  outline: none;
+  box-shadow: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.admin-activities-page textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.admin-activities-page input:focus,
+.admin-activities-page select:focus,
+.admin-activities-page textarea:focus {
+  border-color: #824d3f;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(199, 171, 149, 0.32);
+}
+
+.admin-activities-page label.lg\:col-span-2,
+.admin-activities-page fieldset.lg\:col-span-2 {
+  grid-column: 1 / -1;
+}
+
+.admin-activities-page fieldset {
+  border: 1px solid rgba(130, 77, 63, 0.16);
+  border-radius: 16px;
+  background: #f8f5f0;
+  padding: 16px;
+}
+
+.admin-activities-page fieldset legend {
+  padding: 0 8px;
+  color: #3f342f;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.admin-activities-page fieldset .grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.admin-activities-page fieldset label,
+.admin-activities-page .grid.rounded-lg {
+  border: 1px solid rgba(130, 77, 63, 0.14);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 12px 14px;
+}
+
+.admin-activities-page input[type='checkbox'] {
+  width: 20px;
+  min-height: 20px;
+  height: 20px;
+  padding: 0;
+  accent-color: #824d3f;
+}
+
+.admin-activities-page label:has(input[type='checkbox']) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-activities-page .rounded-lg.border.border-slate-200.bg-slate-50.px-5.py-4,
+.admin-activities-page .grid.gap-4.rounded-lg {
+  border: 1px solid rgba(130, 77, 63, 0.14);
+  border-radius: 14px;
+  background: #f8f5f0;
+  padding: 14px 16px;
+}
+
+.admin-activities-page .rounded-lg.border.border-slate-200.bg-slate-50.px-5.py-4 p {
+  margin: 0;
+}
+
+.admin-activities-page .rounded-lg.border.border-slate-200.bg-slate-50.px-5.py-4 p:last-child {
+  margin-top: 4px;
+  color: #3f342f;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.admin-activities-page form > .flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-activities-page button,
+.admin-activities-page a.rounded-lg {
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 11px 20px;
+  font-size: 1rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.admin-activities-page button {
+  border: 0;
+  background: #824d3f;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.admin-activities-page button:hover:not(:disabled) {
+  background: #6f4035;
+}
+
+.admin-activities-page button:disabled {
+  cursor: not-allowed;
+  background: #c7ab95;
+}
+
+.admin-activities-page a.rounded-lg {
+  display: inline-flex;
+  align-items: center;
+  background: #f3eee8;
+  color: #3f342f;
+}
+
+@media (max-width: 768px) {
+  .admin-activities-page {
+    padding: 24px 12px 40px;
+  }
+
+  .activity-form-card {
+    max-width: 100%;
+    margin: 18px auto 28px;
+    padding: 20px 18px;
+  }
+
+  .admin-activities-page form > .grid,
+  .admin-activities-page fieldset .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-activities-page form > .flex {
+    flex-direction: column;
+  }
+
+  .admin-activities-page button,
+  .admin-activities-page a.rounded-lg {
+    width: 100%;
+    justify-content: center;
+  }
+}
