@@ -1,0 +1,130 @@
+.user-announcements-page {
+  width: 100%;
+  max-width: 900px;
+  margin: 24px auto 40px;
+  border: 1px solid rgba(130, 77, 63, 0.16);
+  border-radius: 22px;
+  background: #ffffff;
+  padding: 24px 28px;
+  box-shadow: 0 10px 24px rgba(63, 52, 47, 0.08);
+  direction: rtl;
+  text-align: right;
+  color: #3f342f;
+}
+
+.user-announcements-page * {
+  box-sizing: border-box;
+}
+
+.user-announcements-header {
+  margin-bottom: 20px;
+}
+
+.user-announcements-header p {
+  margin: 0;
+  color: #977665;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.user-announcements-header h1 {
+  margin: 8px 0 0;
+  color: #3f342f;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.user-announcements-state {
+  border-radius: 16px;
+  background: #f3eee8;
+  padding: 18px 20px;
+  color: #5f514b;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.7;
+}
+
+.user-announcements-state--error {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.user-announcements-state--empty {
+  text-align: center;
+}
+
+.user-announcements-state--empty p {
+  margin: 0;
+  color: #3f342f;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.user-announcements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.user-announcement-card {
+  border: 1px solid rgba(130, 77, 63, 0.12);
+  border-radius: 16px;
+  background: #fffaf7;
+  padding: 16px 20px;
+}
+
+.user-announcement-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 14px;
+}
+
+.user-announcement-card__header h2 {
+  margin: 0;
+  color: #3f342f;
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.user-announcement-card__date {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  background: #f3eee8;
+  color: #977665;
+  padding: 5px 12px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.user-announcement-card__content {
+  margin: 12px 0 0;
+  color: #51443e;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 768px) {
+  .user-announcements-page {
+    max-width: calc(100% - 24px);
+    margin: 20px auto 34px;
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .user-announcement-card {
+    padding: 15px 16px;
+  }
+
+  .user-announcement-card__header {
+    display: grid;
+  }
+}
