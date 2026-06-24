@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getAnnouncements } from '../services/announcementService';
+import { useAuth } from '../context/AuthContext';
+import { getAnnouncements, markAnnouncementsRead } from '../services/announcementService';
 import './Announcements.css';
 
 function formatAnnouncementDate(createdAt) {
@@ -11,6 +12,7 @@ function formatAnnouncementDate(createdAt) {
 }
 
 function Announcements() {
+  const { currentUser } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,6 +53,17 @@ function Announcements() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentUser?.uid || isLoading || error || !announcements.length) return;
+
+    markAnnouncementsRead(
+      currentUser.uid,
+      announcements.map((announcement) => announcement.id)
+    ).catch((err) => {
+      console.error('Firestore "users" document write failed while marking announcements as read:', err);
+    });
+  }, [announcements, currentUser?.uid, error, isLoading]);
 
   return (
     <section className="user-announcements-page" dir="rtl">

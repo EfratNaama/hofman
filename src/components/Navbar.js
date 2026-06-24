@@ -1,15 +1,31 @@
 import { useEffect, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { subscribeUnreadAnnouncementsCount } from '../services/announcementService';
 
 function Navbar() {
   const navigate = useNavigate();
   const { authLoading, currentUser, isAdmin, signOutUser } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
+  const [unreadAnnouncementsCount, setUnreadAnnouncementsCount] = useState(0);
 
   useEffect(() => {
     setIsLoggedIn(Boolean(currentUser));
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser?.uid) {
+      setUnreadAnnouncementsCount(0);
+      return undefined;
+    }
+
+    return subscribeUnreadAnnouncementsCount(
+      currentUser.uid,
+      setUnreadAnnouncementsCount,
+      () => setUnreadAnnouncementsCount(0)
+    );
+  }, [currentUser?.uid]);
 
   const navLinkStyle = ({ isActive }) => ({
     display: 'inline-flex',
@@ -52,6 +68,21 @@ function Navbar() {
     }
   };
 
+  const bellLinkStyle = ({ isActive }) => ({
+    position: 'relative',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '48px',
+    height: '48px',
+    borderRadius: '999px',
+    textDecoration: 'none',
+    color: isActive ? '#ffffff' : '#0f2240',
+    backgroundColor: isActive ? '#0f2240' : 'transparent',
+    border: `1px solid ${isActive ? '#0f2240' : '#e5e7eb'}`,
+    transition: 'background-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
+  });
+
   return (
     <nav
       aria-label="תפריט ראשי"
@@ -89,6 +120,41 @@ function Navbar() {
 
           {!authLoading && isLoggedIn && (
             <>
+              <NavLink
+                to="/announcements"
+                style={bellLinkStyle}
+                aria-label={
+                  unreadAnnouncementsCount > 0
+                    ? `יש ${unreadAnnouncementsCount} הודעות חדשות`
+                    : 'הודעות'
+                }
+                title="הודעות"
+              >
+                <Bell size={21} strokeWidth={2.2} aria-hidden="true" />
+                {unreadAnnouncementsCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '2px',
+                      right: '2px',
+                      minWidth: '20px',
+                      height: '20px',
+                      padding: '0 5px',
+                      borderRadius: '999px',
+                      backgroundColor: '#dc2626',
+                      color: '#ffffff',
+                      border: '2px solid #ffffff',
+                      fontSize: '0.75rem',
+                      fontWeight: 900,
+                      lineHeight: '16px',
+                      textAlign: 'center',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {unreadAnnouncementsCount > 99 ? '99+' : unreadAnnouncementsCount}
+                  </span>
+                )}
+              </NavLink>
               {isAdmin ? (
                 <>
                   <NavLink to="/admin-dashboard" style={navLinkStyle}>
