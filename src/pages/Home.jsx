@@ -1,11 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ActivitiesPreview from '../components/ActivitiesPreview';
 import AnnouncementPreview from '../components/AnnouncementPreview';
-import GalleryPreview from '../components/GalleryPreview';
-import AboutSection from '../components/AboutSection';
 import FooterSection from '../components/FooterSection';
-import { useAuth } from '../context/AuthContext';
 import useHomeData from '../hooks/useHomeData';
 import aboutHofmanImage from '../assets/about-hofman.png';
 import './Home.css';
@@ -142,8 +138,7 @@ function FeatureIcon({ type }) {
 }
 
 function Home() {
-  const { activities, announcements, galleryImages, centerInfo, loading, error } = useHomeData();
-  const { currentUser } = useAuth();
+  const { announcements, centerInfo, loading, error } = useHomeData();
 
   const scrollToAbout = (event) => {
     event.preventDefault();
@@ -214,7 +209,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="home-public-about" aria-labelledby="home-public-about-title">
+      <section id="about-hofman" className="home-public-about" aria-labelledby="home-public-about-title">
         <div className="home-public-about__inner">
           <div className="home-public-about__image-wrap">
             <img
@@ -253,14 +248,7 @@ function Home() {
           </div>
         )}
 
-        {currentUser && <ActivitiesPreview activities={activities} loading={loading} />}
         <AnnouncementPreview announcements={announcements} loading={loading} />
-        {currentUser && <GalleryPreview images={galleryImages} loading={loading} />}
-        {currentUser && (
-          <div id="about-hofman" className="home-about-anchor">
-            <AboutSection />
-          </div>
-        )}
         <FooterSection centerInfo={centerInfo} loading={loading} />
       </div>
     </main>
