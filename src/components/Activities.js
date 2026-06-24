@@ -719,20 +719,22 @@ function Activities() {
         >
           קטלוג פעילויות
         </button>
-        <button
-          type="button"
-          onClick={() => setActivitiesView('schedule')}
-          style={{
-            padding: '10px 16px',
-            border: 0,
-            borderRadius: '9px',
-            backgroundColor: activitiesView === 'schedule' ? '#008080' : 'transparent',
-            color: activitiesView === 'schedule' ? '#fff' : '#475569',
-            fontWeight: 900,
-          }}
-        >
-          מערכת שבועית
-        </button>
+        {!canCreateActivity && (
+          <button
+            type="button"
+            onClick={() => setActivitiesView('schedule')}
+            style={{
+              padding: '10px 16px',
+              border: 0,
+              borderRadius: '9px',
+              backgroundColor: activitiesView === 'schedule' ? '#008080' : 'transparent',
+              color: activitiesView === 'schedule' ? '#fff' : '#475569',
+              fontWeight: 900,
+            }}
+          >
+            מערכת שבועית
+          </button>
+        )}
       </div>
 
       <div
