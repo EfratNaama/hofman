@@ -7,13 +7,8 @@ const links = [
     to: '/activities/new',
   },
   {
-    title: 'פעילויות קיימות',
-    description: 'צפייה, עריכה ומחיקה של פעילויות.',
-    to: '/activities',
-  },
-  {
-    title: 'נרשמים לפעילויות',
-    description: 'פתיחת רשימות הנרשמים מתוך הפעילויות הקיימות.',
+    title: 'ניהול פעילויות',
+    description: 'צפייה, עריכה, מחיקה וניהול נרשמים לפעילויות.',
     to: '/activities',
   },
 ];
