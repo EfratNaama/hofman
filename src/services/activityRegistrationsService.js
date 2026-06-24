@@ -100,6 +100,7 @@ export async function registerForActivity(activity, user) {
     activityId: activity.id,
     activityTitle: activity.title || '',
     userId: user.uid,
+    userName: user.fullName || user.displayName || user.name || '',
     userEmail: user.email || '',
     paymentStatus: 'pending',
     registeredAt: serverTimestamp(),

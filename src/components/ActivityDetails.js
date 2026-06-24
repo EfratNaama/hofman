@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { deleteActivity, getActivityById } from '../services/activitiesService';
+import { getActivityRegistrations } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 
 function ActivityDetails() {
@@ -11,6 +12,7 @@ function ActivityDetails() {
   const normalizedRole = (role || '').toLowerCase();
   const canManageActivity = normalizedRole === 'admin' || normalizedRole === 'manager';
   const [activity, setActivity] = useState(null);
+  const [registrationsCount, setRegistrationsCount] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -23,6 +25,13 @@ function ActivityDetails() {
       try {
         const activityData = await getActivityById(id);
         setActivity(activityData);
+
+        if (canManageActivity) {
+          const registrations = await getActivityRegistrations(id);
+          setRegistrationsCount(registrations.length);
+        } else {
+          setRegistrationsCount(null);
+        }
       } catch (err) {
         setError('לא ניתן לטעון את פרטי הפעילות. נסו שוב מאוחר יותר.');
       } finally {
@@ -31,7 +40,7 @@ function ActivityDetails() {
     }
 
     loadActivity();
-  }, [id]);
+  }, [canManageActivity, id]);
 
   const handleDelete = async () => {
     const confirmed = window.confirm('האם למחוק את הפעילות? לא ניתן לבטל פעולה זו.');
@@ -81,6 +90,9 @@ function ActivityDetails() {
     .map((value) => String(value || '').trim())
     .filter(Boolean)
     .join(' - ');
+  const maxParticipants = Number(activity.maxParticipants || 0);
+  const displayedRegisteredCount = registrationsCount ?? Number(activity.currentParticipants || 0);
+  const displayedAvailableSpots = Math.max(maxParticipants - displayedRegisteredCount, 0);
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-8 text-right" dir="rtl">
@@ -147,8 +159,8 @@ function ActivityDetails() {
           <DetailItem label="תאריך" value={formatActivityDate(activity.activityDate)} />
           <DetailItem label="שעה" value={activity.time} />
           <DetailItem label="מכסת משתתפים" value={activity.maxParticipants} />
-          <DetailItem label="משתתפים רשומים" value={activity.currentParticipants} />
-          <DetailItem label="מקומות פנויים" value={activity.availableSpots} />
+          <DetailItem label="משתתפים רשומים" value={displayedRegisteredCount} />
+          <DetailItem label="מקומות פנויים" value={displayedAvailableSpots} />
           <DetailItem label="סטטוס" value={activity.isActive ? 'פעילה' : 'לא פעילה'} />
           <DetailItem label="תשלום" value={paymentLabel} />
           <DetailItem label="קישור לתשלום" value={activity.paymentLink || '-'} />

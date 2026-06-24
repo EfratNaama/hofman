@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import ActivityForm from './ActivityForm';
 import { getActivityById, updateActivity } from '../services/activitiesService';
+import { getActivityRegistrations } from '../services/activityRegistrationsService';
 import { formatActivityDateInput } from '../utils/activityDateUtils';
 
 function EditActivity() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activity, setActivity] = useState(null);
+  const [registrationsCount, setRegistrationsCount] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -18,8 +20,12 @@ function EditActivity() {
       setError('');
 
       try {
-        const activityData = await getActivityById(id);
+        const [activityData, registrations] = await Promise.all([
+          getActivityById(id),
+          getActivityRegistrations(id),
+        ]);
         setActivity(activityData);
+        setRegistrationsCount(registrations.length);
       } catch (err) {
         setError('לא ניתן לטעון את פרטי הפעילות לעריכה.');
       } finally {
@@ -76,7 +82,7 @@ function EditActivity() {
           ? [activity.dayOfWeek]
           : [],
     maxParticipants: activity.maxParticipants ?? '',
-    currentParticipants: activity.currentParticipants ?? 0,
+    currentParticipants: registrationsCount ?? activity.currentParticipants ?? 0,
     paymentRequired: activity.paymentRequired ?? activity.requiresPayment ?? false,
     price: activity.price ?? '',
     paymentLink: activity.paymentLink || '',

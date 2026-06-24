@@ -1009,6 +1009,9 @@ function Activities() {
                     >
                       <h3 style={{ margin: 0, color: '#0f2240', fontSize: '18px' }}>
                         נרשמים לפעילות
+                        {adminRegistrationsByActivity[activity.id]
+                          ? ` (${adminRegistrationsByActivity[activity.id].length})`
+                          : ''}
                       </h3>
                       {loadingRegistrationActivityId === activity.id && (
                         <p style={{ color: '#475569' }}>טוען נרשמים...</p>
@@ -1036,6 +1039,7 @@ function Activities() {
                                     registeredUser?.fullName ||
                                     registeredUser?.displayName ||
                                     registeredUser?.name ||
+                                    adminRegistration.userName ||
                                     'משתמש לא נמצא';
                                   const email =
                                     registeredUser?.email ||
