@@ -45,8 +45,7 @@ service cloud.firestore {
           isLoggedIn()
           && registrationId.matches(request.auth.uid + '_.*')
         );
-      allow list: if isAdmin()
-        || (isLoggedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isLoggedIn();
       allow create: if isLoggedIn()
         && request.resource.data.userId == request.auth.uid
         && registrationId == request.auth.uid + '_' + request.resource.data.activityId;

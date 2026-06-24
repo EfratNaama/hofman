@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../hooks/useActivities';
 import {
   getActivityRegistrations,
+  getActivityRegistrationCounts,
   getUserActivityRegistrations,
   registerForActivity,
 } from '../services/activityRegistrationsService';
@@ -173,6 +174,7 @@ function Activities() {
   const [registrationMessage, setRegistrationMessage] = useState('');
   const [registeringActivityId, setRegisteringActivityId] = useState('');
   const [successfulRegistrationIds, setSuccessfulRegistrationIds] = useState([]);
+  const [registrationCountsByActivityId, setRegistrationCountsByActivityId] = useState({});
   const [adminUsers, setAdminUsers] = useState([]);
   const [adminRegistrationsByActivity, setAdminRegistrationsByActivity] = useState({});
   const [expandedRegistrationActivityId, setExpandedRegistrationActivityId] = useState('');
@@ -194,6 +196,14 @@ function Activities() {
 
     return usersById;
   }, [adminUsers]);
+
+  const getRegisteredCount = (activity) => (
+    registrationCountsByActivityId[activity.id] ?? Number(activity.currentParticipants || 0)
+  );
+
+  const getAvailableSpots = (activity) => (
+    Math.max(Number(activity.maxParticipants || 0) - getRegisteredCount(activity), 0)
+  );
 
   const availableActivityTypes = useMemo(
     () => Array.from(new Set(activities.flatMap(getActivityTypes)))
@@ -310,6 +320,34 @@ function Activities() {
   useEffect(() => {
     let isMounted = true;
 
+    async function loadRegistrationCounts() {
+      if (!currentUser || !activities.length) {
+        setRegistrationCountsByActivityId({});
+        return;
+      }
+
+      try {
+        const counts = await getActivityRegistrationCounts(
+          activities.map((activity) => activity.id)
+        );
+        if (isMounted) {
+          setRegistrationCountsByActivityId(counts);
+        }
+      } catch (err) {
+        console.error('Failed to load activity registration counts', err);
+      }
+    }
+
+    loadRegistrationCounts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activities, currentUser]);
+
+  useEffect(() => {
+    let isMounted = true;
+
     async function loadAdminUsers() {
       if (!canCreateActivity) {
         setAdminUsers([]);
@@ -368,6 +406,11 @@ function Activities() {
       return;
     }
 
+    if (getAvailableSpots(activity) <= 0) {
+      setRegistrationError('לא נותרו מקומות פנויים לפעילות זו.');
+      return;
+    }
+
     setRegisteringActivityId(activity.id);
 
     try {
@@ -385,6 +428,10 @@ function Activities() {
           ]
       ));
       if (!result.alreadyRegistered) {
+        setRegistrationCountsByActivityId((currentCounts) => ({
+          ...currentCounts,
+          [activity.id]: (currentCounts[activity.id] ?? Number(activity.currentParticipants || 0)) + 1,
+        }));
         setSuccessfulRegistrationIds((currentIds) => (
           currentIds.includes(activity.id) ? currentIds : [...currentIds, activity.id]
         ));
@@ -796,6 +843,10 @@ function Activities() {
               successfulRegistrationIds.includes(activity.id)
             );
             const activityDate = getActivityDate(activity);
+            const registeredCount = getRegisteredCount(activity);
+            const availableSpots = getAvailableSpots(activity);
+            const isFull = availableSpots <= 0;
+            const registrationUnavailable = registrationClosed || isFull;
 
             return (
               <article key={activity.id} className="activities-catalog__card">
@@ -887,6 +938,8 @@ function Activities() {
                     <Info label="קטגוריה" value={getActivityCategoryLabel(activity) || '-'} />
                     <Info label="מיקום" value={activity.location || '-'} />
                     <Info label="מחיר" value={formatPrice(activity)} />
+                    <Info label="משתתפים רשומים" value={registeredCount} />
+                    <Info label="מקומות פנויים" value={availableSpots} />
                   </div>
 
                   <p
@@ -932,7 +985,7 @@ function Activities() {
                       <button
                         type="button"
                         disabled={
-                          registrationClosed ||
+                          registrationUnavailable ||
                           Boolean(registration) ||
                           registeringActivityId === activity.id
                         }
@@ -943,20 +996,26 @@ function Activities() {
                           borderRadius: '10px',
                           backgroundColor: registrationClosed
                             ? '#e5e7eb'
+                            : isFull
+                              ? '#e5e7eb'
                             : registration
                               ? registrationPresentation.backgroundColor
                               : '#008080',
                           color: registrationClosed
                             ? '#6b7280'
+                            : isFull
+                              ? '#6b7280'
                             : registration
                               ? registrationPresentation.color
                               : '#fff',
-                          cursor: registrationClosed || registration ? 'not-allowed' : 'pointer',
+                          cursor: registrationUnavailable || registration ? 'not-allowed' : 'pointer',
                           fontWeight: 900,
                         }}
                       >
                         {registrationClosed
                           ? 'ההרשמה נסגרה'
+                          : isFull
+                            ? 'הפעילות מלאה'
                           : registeringActivityId === activity.id
                           ? 'נרשם...'
                           : registrationPresentation.label}

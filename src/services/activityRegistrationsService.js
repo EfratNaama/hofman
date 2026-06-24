@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getCountFromServer,
   query,
   serverTimestamp,
   setDoc,
@@ -86,6 +87,27 @@ export async function getActivityRegistrations(activityId) {
   );
   const snapshot = await getDocs(registrationsQuery);
   return snapshot.docs.map(normalizeRegistration);
+}
+
+export async function getActivityRegistrationCount(activityId) {
+  const registrationsQuery = query(
+    collection(db, REGISTRATIONS_COLLECTION),
+    where('activityId', '==', activityId)
+  );
+  const snapshot = await getCountFromServer(registrationsQuery);
+  return snapshot.data().count || 0;
+}
+
+export async function getActivityRegistrationCounts(activityIds) {
+  const uniqueActivityIds = Array.from(new Set(activityIds.filter(Boolean)));
+  const counts = await Promise.all(
+    uniqueActivityIds.map(async (activityId) => [
+      activityId,
+      await getActivityRegistrationCount(activityId),
+    ])
+  );
+
+  return Object.fromEntries(counts);
 }
 
 export async function registerForActivity(activity, user) {

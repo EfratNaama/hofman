@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { deleteActivity, getActivityById } from '../services/activitiesService';
-import { getActivityRegistrations } from '../services/activityRegistrationsService';
+import { getActivityRegistrationCount } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 
 function ActivityDetails() {
@@ -24,14 +24,9 @@ function ActivityDetails() {
 
       try {
         const activityData = await getActivityById(id);
+        const registrationCount = await getActivityRegistrationCount(id);
         setActivity(activityData);
-
-        if (canManageActivity) {
-          const registrations = await getActivityRegistrations(id);
-          setRegistrationsCount(registrations.length);
-        } else {
-          setRegistrationsCount(null);
-        }
+        setRegistrationsCount(registrationCount);
       } catch (err) {
         setError('לא ניתן לטעון את פרטי הפעילות. נסו שוב מאוחר יותר.');
       } finally {
