@@ -82,9 +82,15 @@ const isActivityRegistrationClosed = (activity) =>
   isOneTimeActivityExpired(activity) || getRecurringActivityStatus(activity) === 'ended';
 
 const getActivityTypes = (activity) =>
-  [activity.category, activity.type]
+  [activity.category, activity.subCategory, activity.type]
     .map((value) => String(value || '').trim())
     .filter(Boolean);
+
+const getActivityCategoryLabel = (activity) =>
+  [activity.category, activity.subCategory]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join(' - ');
 
 const formatPrice = (activity) => {
   if (activity.price !== undefined && activity.price !== null && activity.price !== '') {
@@ -878,6 +884,7 @@ function Activities() {
                       </>
                     )}
                     <Info label="שעה" value={activity.time || '-'} />
+                    <Info label="קטגוריה" value={getActivityCategoryLabel(activity) || '-'} />
                     <Info label="מיקום" value={activity.location || '-'} />
                     <Info label="מחיר" value={formatPrice(activity)} />
                   </div>

@@ -75,6 +75,7 @@ const buildActivityPayload = (activityData, options = {}) => {
     whatsappLink: activityData.whatsappLink?.trim() || '',
     imageUrl: activityData.imageUrl?.trim() || '',
     category: activityData.category,
+    subCategory: activityData.subCategory?.trim() || '',
     dayOfWeek: isOneTime ? '' : (daysOfWeek[0] || ''),
     daysOfWeek,
     date,

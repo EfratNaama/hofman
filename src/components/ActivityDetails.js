@@ -77,6 +77,10 @@ function ActivityDetails() {
   const paymentLabel = paymentRequired
     ? `מחיר: ₪${Number(activity.price || 0).toLocaleString('he-IL')}`
     : 'ללא תשלום';
+  const categoryLabel = [activity.category, activity.subCategory]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join(' - ');
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-8 text-right" dir="rtl">
@@ -137,7 +141,7 @@ function ActivityDetails() {
         )}
 
         <dl className="grid gap-4 md:grid-cols-2">
-          <DetailItem label="קטגוריה" value={activity.category} />
+          <DetailItem label="קטגוריה" value={categoryLabel} />
           <DetailItem label="מיקום" value={activity.location} />
           <DetailItem label="יום בשבוע" value={activity.dayOfWeek} />
           <DetailItem label="תאריך" value={formatActivityDate(activity.activityDate)} />

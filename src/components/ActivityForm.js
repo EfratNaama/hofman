@@ -2,7 +2,28 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatActivityDateInput } from '../utils/activityDateUtils';
 
-const categoryOptions = ['ספורט', 'אמנות', 'הרצאה', 'מוזיקה', 'חברה', 'בריאות', 'אחר'];
+const otherCategory = 'אחר';
+const categoryGroups = [
+  {
+    category: 'חוגים',
+    subCategories: ['עיוני', 'ספורט', 'אומנות'],
+  },
+  {
+    category: 'תרבות ופנאי',
+    subCategories: ['מופעים', 'הרצאות', 'פרויקטים', 'טיולים', 'סדנאות'],
+  },
+  {
+    category: 'מועדונים חברתיים',
+    subCategories: ['מועדון מפגש', 'שני שני', 'נשים באמצע החיים'],
+  },
+];
+const mainCategoryOptions = [...categoryGroups.map((group) => group.category), otherCategory];
+const subCategoryToMainCategory = categoryGroups.reduce((lookup, group) => {
+  group.subCategories.forEach((subCategory) => {
+    lookup[subCategory] = group.category;
+  });
+  return lookup;
+}, {});
 const dayOptions = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const typeOptions = ['קבוע', 'חד פעמי'];
 
@@ -14,6 +35,8 @@ const initialFormState = {
   whatsappLink: '',
   imageUrl: '',
   category: '',
+  subCategory: '',
+  customCategory: '',
   dayOfWeek: '',
   daysOfWeek: [],
   date: '',
@@ -28,6 +51,33 @@ const initialFormState = {
   price: '',
   paymentLink: '',
 };
+
+function normalizeCategoryFields(initialValues) {
+  const category = String(initialValues?.category || '').trim();
+  const subCategory = String(initialValues?.subCategory || '').trim();
+
+  if (!category) {
+    return { category: '', subCategory: '', customCategory: '' };
+  }
+
+  if (category === otherCategory) {
+    return { category, subCategory, customCategory: subCategory };
+  }
+
+  if (mainCategoryOptions.includes(category)) {
+    return { category, subCategory, customCategory: '' };
+  }
+
+  if (subCategoryToMainCategory[category]) {
+    return {
+      category: subCategoryToMainCategory[category],
+      subCategory: category,
+      customCategory: '',
+    };
+  }
+
+  return { category: otherCategory, subCategory: category, customCategory: category };
+}
 
 function buildFormState(initialValues) {
   const type = initialValues?.type || 'קבוע';
@@ -44,10 +94,12 @@ function buildFormState(initialValues) {
   const requiresPayment = Boolean(
     initialValues?.paymentRequired ?? initialValues?.requiresPayment
   );
+  const categoryFields = normalizeCategoryFields(initialValues);
 
   return {
     ...initialFormState,
     ...initialValues,
+    ...categoryFields,
     type,
     date: type === 'חד פעמי' ? date : '',
     activityDate: type === 'חד פעמי' ? date : startDate,
@@ -64,6 +116,10 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
   const [formData, setFormData] = useState(buildFormState(initialValues));
   const [validationError, setValidationError] = useState('');
   const isOneTime = formData.type === 'חד פעמי';
+  const selectedCategoryGroup = categoryGroups.find((group) => group.category === formData.category);
+  const hasListedSubCategory = Boolean(
+    selectedCategoryGroup?.subCategories.includes(formData.subCategory)
+  );
 
   useEffect(() => {
     setFormData(buildFormState(initialValues));
@@ -94,6 +150,21 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
           endDate: value === 'קבוע' ? nextData.endDate : '',
           dayOfWeek: value === 'קבוע' ? (nextData.daysOfWeek[0] || '') : '',
           daysOfWeek: value === 'קבוע' ? nextData.daysOfWeek : [],
+        };
+      }
+
+      if (name === 'category') {
+        return {
+          ...nextData,
+          subCategory: '',
+          customCategory: '',
+        };
+      }
+
+      if (name === 'customCategory') {
+        return {
+          ...nextData,
+          subCategory: value,
         };
       }
 
@@ -142,6 +213,12 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     if (!formData.description.trim()) return 'יש להזין תיאור פעילות.';
     if (!formData.location.trim()) return 'יש להזין מקום פעילות.';
     if (!formData.category) return 'יש לבחור קטגוריה.';
+    if (formData.category === otherCategory && !formData.customCategory.trim()) {
+      return 'יש להזין קטגוריה מותאמת.';
+    }
+    if (formData.category !== otherCategory && !formData.subCategory) {
+      return 'יש לבחור תת קטגוריה.';
+    }
     if (!formData.type) return 'יש לבחור סוג פעילות.';
     if (formData.type === 'קבוע') {
       if (!formData.startDate) return 'יש לבחור תאריך התחלה.';
@@ -194,8 +271,13 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
       return;
     }
 
+    const subCategory = formData.category === otherCategory
+      ? formData.customCategory.trim()
+      : formData.subCategory;
+
     onSubmit({
       ...formData,
+      subCategory,
       type: formData.type || 'קבוע',
       dayOfWeek: isOneTime ? '' : (formData.daysOfWeek[0] || ''),
       daysOfWeek: isOneTime ? [] : formData.daysOfWeek,
@@ -240,13 +322,48 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
             onChange={handleChange}
           >
             <option value="">בחרו קטגוריה</option>
-            {categoryOptions.map((category) => (
+            {mainCategoryOptions.map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>
             ))}
           </select>
         </label>
+
+        {selectedCategoryGroup && (
+          <label className="block">
+            <span className="mb-2 block text-lg font-bold text-slate-800">תת קטגוריה</span>
+            <select
+              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              name="subCategory"
+              value={formData.subCategory}
+              onChange={handleChange}
+            >
+              <option value="">בחרו תת קטגוריה</option>
+              {formData.subCategory && !hasListedSubCategory && (
+                <option value={formData.subCategory}>{formData.subCategory}</option>
+              )}
+              {selectedCategoryGroup.subCategories.map((subCategory) => (
+                <option key={subCategory} value={subCategory}>
+                  {subCategory}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {formData.category === otherCategory && (
+          <label className="block">
+            <span className="mb-2 block text-lg font-bold text-slate-800">קטגוריה מותאמת</span>
+            <input
+              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+              name="customCategory"
+              type="text"
+              value={formData.customCategory}
+              onChange={handleChange}
+            />
+          </label>
+        )}
 
         <label className="block">
           <span className="mb-2 block text-lg font-bold text-slate-800">סוג פעילות</span>
