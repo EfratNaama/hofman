@@ -43,6 +43,14 @@ button:focus-visible {
   outline-offset: 4px;
 }
 
+.navbar-link:hover,
+.navbar-link:focus-visible {
+  color: #0f2240 !important;
+  text-decoration-line: underline !important;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+}
+
 .home-cta {
   display: inline-flex;
   align-items: center;

@@ -31,15 +31,17 @@ function Navbar() {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '48px',
-    padding: '0.75rem 1.25rem',
-    borderRadius: '999px',
+    padding: '0.75rem 0',
     textDecoration: 'none',
+    textDecorationLine: isActive ? 'underline' : 'none',
+    textDecorationThickness: '2px',
+    textUnderlineOffset: '8px',
     fontSize: '1.125rem',
     fontWeight: 800,
-    color: isActive ? '#ffffff' : '#0f2240',
-    backgroundColor: isActive ? '#0f2240' : 'transparent',
-    border: `1px solid ${isActive ? '#0f2240' : '#e5e7eb'}`,
-    transition: 'background-color 0.2s ease, color 0.2s ease, transform 0.2s ease',
+    color: isActive ? '#0f2240' : '#334155',
+    backgroundColor: 'transparent',
+    border: '0',
+    transition: 'color 0.2s ease, text-decoration-color 0.2s ease',
   });
 
   const authButtonStyle = {
@@ -47,14 +49,14 @@ function Navbar() {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '48px',
-    padding: '0.75rem 1.25rem',
-    borderRadius: '999px',
-    border: '1px solid #0f2240',
-    backgroundColor: '#0f2240',
-    color: '#ffffff',
+    padding: '0.75rem 0',
+    border: '0',
+    backgroundColor: 'transparent',
+    color: '#334155',
     fontSize: '1.125rem',
     fontWeight: 800,
     cursor: 'pointer',
+    transition: 'color 0.2s ease, text-decoration-color 0.2s ease',
   };
 
   const handleLogout = async () => {
@@ -102,8 +104,8 @@ function Navbar() {
           בית הופמן
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px' }}>
-          <NavLink end to="/" style={navLinkStyle}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
+          <NavLink end to="/" className="navbar-link" style={navLinkStyle}>
             דף הבית
           </NavLink>
 
@@ -111,35 +113,36 @@ function Navbar() {
             <>
               {isAdmin ? (
                 <>
-                  <NavLink to="/admin-dashboard" style={navLinkStyle}>
+                  <NavLink to="/admin-dashboard" className="navbar-link" style={navLinkStyle}>
                     לוח בקרה
                   </NavLink>
-                  <NavLink to="/admin/activities" style={navLinkStyle}>
+                  <NavLink to="/admin/activities" className="navbar-link" style={navLinkStyle}>
                     ניהול פעילויות
                   </NavLink>
-                  <NavLink to="/users" style={navLinkStyle}>
+                  <NavLink to="/users" className="navbar-link" style={navLinkStyle}>
                     משתמשים
                   </NavLink>
-                  <NavLink to="/gallery" style={navLinkStyle}>
+                  <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>
                     גלריה
                   </NavLink>
-                  <NavLink to="/admin/announcements" style={navLinkStyle}>
+                  <NavLink to="/admin/announcements" className="navbar-link" style={navLinkStyle}>
                     ניהול הודעות
                   </NavLink>
                 </>
               ) : (
                 <>
-                  <NavLink to="/activities" style={navLinkStyle}>
+                  <NavLink to="/activities" className="navbar-link" style={navLinkStyle}>
                     פעילויות
                   </NavLink>
-                  <NavLink to="/personal-area" style={navLinkStyle}>
+                  <NavLink to="/personal-area" className="navbar-link" style={navLinkStyle}>
                     אזור אישי
                   </NavLink>
-                  <NavLink to="/gallery" style={navLinkStyle}>
+                  <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>
                     גלריה
                   </NavLink>
                   <NavLink
                     to="/announcements"
+                    className="navbar-link"
                     style={messagesLinkStyle}
                     aria-label={
                       unreadAnnouncementsCount > 0
@@ -174,7 +177,7 @@ function Navbar() {
                   </NavLink>
                 </>
               )}
-              <button type="button" style={authButtonStyle} onClick={handleLogout}>
+              <button type="button" className="navbar-link" style={authButtonStyle} onClick={handleLogout}>
                 התנתקות
               </button>
             </>
@@ -182,7 +185,7 @@ function Navbar() {
 
           {!authLoading && !isLoggedIn && (
             <>
-              <NavLink to="/login" style={navLinkStyle}>
+              <NavLink to="/login" className="navbar-link" style={navLinkStyle}>
                 כניסה
               </NavLink>
             </>
