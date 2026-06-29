@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import GalleryGrid from '../components/GalleryGrid';
 import GalleryModal from '../components/GalleryModal';
 import useGallery from '../hooks/useGallery';
+import galleryHeroImage from '../logo/gallery.png';
 import './Gallery.css';
 
 function Gallery() {
@@ -80,12 +81,7 @@ function Gallery() {
     <main dir="rtl" className="gallery-page">
       <div className="gallery-page__inner">
         <section className="gallery-hero" aria-label="גלריית תמונות">
-          <div className="gallery-hero__media">
-            <img
-              src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1600&q=80"
-              alt="חברי קהילה משתתפים בפעילות משותפת"
-              className="gallery-hero__image"
-            />
+          <div className="gallery-hero__media" style={{ '--gallery-hero-image': `url(${galleryHeroImage})` }}>
             <div className="gallery-hero__overlay" />
             <div className="gallery-hero__content">
               <h1>גלריית תמונות</h1>
