@@ -286,11 +286,13 @@
 }
 
 .home-public-about {
-  width: calc(100% + 40px);
-  margin: 0 -20px 48px;
+  width: min(100%, 1360px);
+  margin: 0 auto 48px;
   padding: 60px 40px;
   direction: rtl;
   background: #CDB2A5;
+  border-radius: 32px;
+  overflow: hidden;
 }
 
 .home-partners {
