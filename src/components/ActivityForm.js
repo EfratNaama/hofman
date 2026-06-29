@@ -119,6 +119,7 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
   const [imageUploadError, setImageUploadError] = useState('');
   const [isReadingImage, setIsReadingImage] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState('');
   const isOneTime = formData.type === 'חד פעמי';
   const selectedCategoryGroup = categoryGroups.find((group) => group.category === formData.category);
   const hasListedSubCategory = Boolean(
@@ -131,13 +132,27 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     setImageUploadError('');
     setIsReadingImage(false);
     setSelectedImageFile(null);
+    setSelectedImagePreviewUrl('');
   }, [initialValues, resetKey]);
+
+  useEffect(() => {
+    if (!selectedImageFile) {
+      setSelectedImagePreviewUrl('');
+      return undefined;
+    }
+
+    const previewUrl = URL.createObjectURL(selectedImageFile);
+    setSelectedImagePreviewUrl(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [selectedImageFile]);
 
   const availableSpots = useMemo(() => {
     const maxParticipants = Number(formData.maxParticipants || 0);
     const currentParticipants = Number(formData.currentParticipants || 0);
     return maxParticipants - currentParticipants;
   }, [formData.maxParticipants, formData.currentParticipants]);
+  const imagePreviewUrl = selectedImagePreviewUrl || formData.imageUrl?.trim();
 
   const handleChange = (event) => {
     const { checked, name, type, value } = event.target;
@@ -495,6 +510,23 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
             <p className="mt-2 text-base font-semibold text-red-700">{imageUploadError}</p>
           )}
         </label>
+
+        {imagePreviewUrl && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 lg:col-span-2">
+            <img
+              src={imagePreviewUrl}
+              alt="Activity preview"
+              style={{
+                display: 'block',
+                width: '100%',
+                maxHeight: '260px',
+                objectFit: 'contain',
+                borderRadius: '10px',
+                backgroundColor: '#ffffff',
+              }}
+            />
+          </div>
+        )}
 
         {isOneTime ? (
           <label className="block">

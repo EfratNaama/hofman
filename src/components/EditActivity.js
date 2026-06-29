@@ -90,7 +90,11 @@ function EditActivity() {
   };
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-8 text-right" dir="rtl">
+    <section
+      className="mx-auto max-w-6xl px-4 py-8 text-right"
+      dir="rtl"
+      style={{ width: '100%', maxWidth: '860px', margin: '0 auto' }}
+    >
       <div className="rounded-lg bg-white p-6 shadow-sm">
         <div className="mb-6">
           <p className="text-lg font-bold text-slate-500">ניהול פעילויות</p>
