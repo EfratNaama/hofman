@@ -312,7 +312,14 @@ function Home() {
                 <article
                   className="home-featured-activity-card"
                   key={image.id}
-                  style={{ height: '390px', minHeight: '390px' }}
+                  style={{
+                    flex: '0 0 320px',
+                    width: '320px',
+                    maxWidth: '320px',
+                    minHeight: 0,
+                    aspectRatio: '4 / 3',
+                    background: 'rgba(255, 255, 255, 0.55)',
+                  }}
                 >
                   <img
                     src={getGalleryImageSource(image)}
