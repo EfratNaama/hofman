@@ -72,7 +72,8 @@ function Navbar() {
 
   const messagesLinkStyle = ({ isActive }) => ({
     ...navLinkStyle({ isActive }),
-    position: 'relative',
+    flexDirection: 'row-reverse',
+    gap: '6px',
   });
 
   return (
@@ -177,12 +178,13 @@ function Navbar() {
                     {unreadAnnouncementsCount > 0 && (
                       <span
                         style={{
-                          position: 'absolute',
-                          top: '2px',
-                          right: '2px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                           minWidth: '20px',
                           height: '20px',
                           padding: '0 5px',
+                          flexShrink: 0,
                           borderRadius: '999px',
                           backgroundColor: '#dc2626',
                           color: '#ffffff',
