@@ -1,9 +1,10 @@
 .admin-announcements-page {
   width: min(100%, 1180px);
   margin: 0 auto;
-  padding: 32px 16px 48px;
+  padding: clamp(32px, 4vw, 56px) 20px 48px;
   color: #3f342f;
   text-align: right;
+  background: #f8f5f0;
 }
 
 .admin-announcements-page * {
@@ -11,22 +12,27 @@
 }
 
 .admin-announcements-header {
-  margin-bottom: 22px;
+  margin-bottom: 24px;
+  padding: 24px 28px;
+  border: 1px solid rgba(205, 178, 165, 0.65);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 40px rgba(63, 52, 47, 0.08);
 }
 
 .admin-announcements-header p {
   margin: 0;
   color: #977665;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .admin-announcements-header h1 {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: #3f342f;
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 600;
-  line-height: 1.15;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.12;
 }
 
 .admin-announcements-alert {
@@ -59,31 +65,31 @@
 
 .admin-announcements-form,
 .admin-announcements-list-panel {
-  border: 1px solid rgba(130, 77, 63, 0.16);
-  border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 10px 24px rgba(63, 52, 47, 0.08);
+  border: 1px solid rgba(205, 178, 165, 0.7);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 44px rgba(63, 52, 47, 0.08);
 }
 
 .admin-announcements-form {
   width: 100%;
   max-width: 420px;
-  padding: 22px 24px;
+  padding: 28px 30px;
 }
 
 .admin-announcements-form h2,
 .admin-announcements-list-panel h2 {
   margin: 0;
   color: #3f342f;
-  font-size: 1.55rem;
-  font-weight: 600;
-  line-height: 1.25;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 .admin-announcements-form__fields {
   display: grid;
-  gap: 16px;
-  margin-top: 20px;
+  gap: 18px;
+  margin-top: 24px;
 }
 
 .admin-announcements-field {
@@ -98,23 +104,23 @@
 .admin-announcements-textarea {
   width: 100%;
   border: 1px solid #d8c8ba;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #fffdfb;
   color: #3f342f;
-  padding: 12px 14px;
+  padding: 14px 16px;
   font: inherit;
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.7;
   outline: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 .admin-announcements-input {
-  min-height: 50px;
+  min-height: 54px;
 }
 
 .admin-announcements-textarea {
-  min-height: 128px;
+  min-height: 140px;
   resize: vertical;
 }
 
@@ -144,35 +150,36 @@
 .admin-announcements-card__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 
 .admin-announcements-actions {
-  margin-top: 22px;
+  margin-top: 24px;
 }
 
 .admin-announcements-button,
 .admin-announcements-action {
   border: 0;
-  border-radius: 12px;
-  padding: 11px 18px;
+  border-radius: 16px;
+  padding: 13px 20px;
   font: inherit;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .admin-announcements-button:hover:not(:disabled),
 .admin-announcements-action:hover:not(:disabled) {
   transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(63, 52, 47, 0.08);
 }
 
 .admin-announcements-button:disabled,
 .admin-announcements-action:disabled {
   cursor: not-allowed;
   transform: none;
-  opacity: 0.62;
+  opacity: 0.68;
 }
 
 .admin-announcements-button--primary {
@@ -191,7 +198,7 @@
 
 .admin-announcements-list-panel {
   min-width: 0;
-  padding: 22px 24px;
+  padding: 28px 30px;
 }
 
 .admin-announcements-state,
@@ -204,23 +211,24 @@
 }
 
 .admin-announcements-empty {
-  border-radius: 14px;
-  background: #f3eee8;
-  padding: 18px;
+  border-radius: 18px;
+  background: #f6efe4;
+  padding: 20px;
 }
 
 .admin-announcements-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 18px;
+  gap: 18px;
+  margin-top: 22px;
 }
 
 .admin-announcements-card {
-  border: 1px solid rgba(130, 77, 63, 0.14);
-  border-radius: 16px;
-  background: #fffdfb;
-  padding: 16px 18px;
+  border: 1px solid rgba(205, 178, 165, 0.65);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 20px 22px;
+  box-shadow: 0 12px 28px rgba(63, 52, 47, 0.08);
 }
 
 .admin-announcements-card__header {
@@ -228,7 +236,7 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .admin-announcements-card__date {
@@ -241,19 +249,19 @@
 .admin-announcements-card h3 {
   margin: 5px 0 0;
   color: #3f342f;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   line-height: 1.35;
 }
 
 .admin-announcements-status {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: 34px;
   border-radius: 999px;
-  padding: 6px 13px;
+  padding: 8px 14px;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .admin-announcements-status--active {
@@ -267,10 +275,10 @@
 }
 
 .admin-announcements-card__content {
-  margin: 14px 0 0;
+  margin: 18px 0 0;
   color: #51443e;
   font-size: 1rem;
-  line-height: 1.75;
+  line-height: 1.85;
 }
 
 .admin-announcements-card__actions {
