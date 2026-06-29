@@ -37,7 +37,7 @@ function Navbar() {
     textDecorationThickness: '2px',
     textUnderlineOffset: '8px',
     fontSize: '1.125rem',
-    fontWeight: 800,
+    fontWeight: 500,
     color: isActive ? '#0f2240' : '#334155',
     backgroundColor: 'transparent',
     border: '0',
@@ -54,7 +54,7 @@ function Navbar() {
     backgroundColor: 'transparent',
     color: '#334155',
     fontSize: '1.125rem',
-    fontWeight: 800,
+    fontWeight: 500,
     cursor: 'pointer',
     transition: 'color 0.2s ease, text-decoration-color 0.2s ease',
   };
@@ -100,7 +100,7 @@ function Navbar() {
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ color: '#0f2240', fontSize: '1.35rem', fontWeight: 900 }}>
+        <div style={{ color: '#0f2240', fontSize: '1.35rem', fontWeight: 600 }}>
           בית הופמן
         </div>
 
@@ -165,7 +165,7 @@ function Navbar() {
                           color: '#ffffff',
                           border: '2px solid #ffffff',
                           fontSize: '0.75rem',
-                          fontWeight: 900,
+                          fontWeight: 600,
                           lineHeight: '16px',
                           textAlign: 'center',
                           pointerEvents: 'none',
