@@ -103,7 +103,7 @@ function FooterSection({ centerInfo, loading }) {
   ];
 
   return (
-    <footer dir="rtl" style={sectionStyle} aria-label="פרטי קשר בית הופמן">
+    <footer id="contact-info" dir="rtl" style={sectionStyle} aria-label="פרטי קשר בית הופמן">
       <div style={{ marginBottom: '26px' }}>
         <p className="home-section-description" style={{ margin: '0 auto', textAlign: 'center' }}>
           נשמח לעזור, לענות על שאלות ולכוון לפעילות המתאימה.

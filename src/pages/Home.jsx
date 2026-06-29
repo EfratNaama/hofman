@@ -220,9 +220,9 @@ function Home() {
             mediaClass: featuredActivityItems[index % FEATURED_ACTIVITIES_LIMIT].mediaClass,
           }));
 
-  const scrollToAbout = (event) => {
+  const scrollToContactInfo = (event) => {
     event.preventDefault();
-    document.getElementById('about-hofman')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('contact-info')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -244,7 +244,7 @@ function Home() {
           <h1 id="home-public-title">בית הופמן</h1>
           <p>בית צעיר למבוגרים</p>
           <div className="home-public-hero__actions">
-            <a className="home-cta home-cta-primary" href="#about-hofman" onClick={scrollToAbout}>
+            <a className="home-cta home-cta-primary" href="#contact-info" onClick={scrollToContactInfo}>
               לפרטים נוספים
             </a>
             <Link className="home-cta home-cta-secondary" to="/login">
