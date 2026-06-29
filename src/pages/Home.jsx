@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import FooterSection from '../components/FooterSection';
+import { useAuth } from '../context/AuthContext';
 import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
 import useGallery from '../hooks/useGallery';
@@ -174,6 +175,7 @@ function FeatureIcon({ type }) {
 }
 
 function Home() {
+  const { authLoading, currentUser, isAdmin } = useAuth();
   const { centerInfo, loading } = useHomeData();
   const {
     activities,
@@ -185,6 +187,9 @@ function Home() {
   const homeGalleryImages = galleryLoading
     ? []
     : galleryImages.filter(getGalleryImageSource).slice(0, HOME_GALLERY_LIMIT);
+  const showAdminHeroButton = !authLoading && currentUser && isAdmin;
+  const heroAccountLink = showAdminHeroButton ? '/admin-dashboard' : currentUser ? '/personal-area' : '/login';
+  const heroAccountText = showAdminHeroButton ? 'לוח בקרה' : 'אזור אישי';
   const homeFeaturedActivityItems = activitiesLoading
     ? [
         {
@@ -247,8 +252,8 @@ function Home() {
             <a className="home-cta home-cta-primary" href="#contact-info" onClick={scrollToContactInfo}>
               לפרטים נוספים
             </a>
-            <Link className="home-cta home-cta-secondary" to="/login">
-              אזור אישי
+            <Link className="home-cta home-cta-secondary" to={heroAccountLink}>
+              {heroAccountText}
             </Link>
           </div>
         </div>
