@@ -23,14 +23,14 @@
 .user-announcements-header p {
   margin: 0;
   color: #977665;
-  font-size: 1rem;
+  font-size: 1.06rem;
   font-weight: 600;
 }
 
 .user-announcements-header h1 {
   margin: 8px 0 0;
   color: #3f342f;
-  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-size: clamp(2.08rem, 4vw, 2.9rem);
   font-weight: 600;
   line-height: 1.15;
 }
@@ -40,7 +40,7 @@
   background: #f3eee8;
   padding: 18px 20px;
   color: #5f514b;
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   font-weight: 600;
   line-height: 1.7;
 }
@@ -58,7 +58,7 @@
 .user-announcements-state--empty p {
   margin: 0;
   color: #3f342f;
-  font-size: 1.15rem;
+  font-size: 1.22rem;
   font-weight: 600;
 }
 
@@ -86,7 +86,7 @@
 .user-announcement-card__header h2 {
   margin: 0;
   color: #3f342f;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -99,7 +99,7 @@
   background: #f3eee8;
   color: #977665;
   padding: 5px 12px;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -107,7 +107,7 @@
 .user-announcement-card__content {
   margin: 12px 0 0;
   color: #51443e;
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   line-height: 1.8;
   white-space: pre-wrap;
 }

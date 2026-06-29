@@ -167,7 +167,8 @@ function PersonalArea() {
   const profileEmail = getProfileEmail(profile, currentUser);
   const explicitProfileName = profile?.fullName || profile?.displayName || currentUser?.displayName || '';
   const profileInitials = getInitials(explicitProfileName, profileEmail);
-  const greetingText = explicitProfileName ? `שלום, ${profileName}` : 'שלום';
+  // Always show a simple greeting; show the full name in the large heading below.
+  const greetingText = 'שלום';
 
   const handlePhotoButtonClick = () => {
     setUploadError('');

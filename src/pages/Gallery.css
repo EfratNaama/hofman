@@ -53,7 +53,7 @@
 
 .gallery-hero__content h1 {
   margin: 0;
-  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  font-size: clamp(2.5rem, 5vw, 4.35rem);
   font-weight: 600;
   line-height: 1.08;
 }
@@ -61,7 +61,7 @@
 .gallery-hero__content p {
   max-width: 760px;
   margin: 18px auto 0;
-  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  font-size: clamp(1.22rem, 2.2vw, 1.75rem);
   font-weight: 500;
   line-height: 1.6;
 }
@@ -80,14 +80,14 @@
 .gallery-upload-card h2 {
   margin: 0;
   color: #0f2240;
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-size: clamp(1.85rem, 3vw, 2.35rem);
   font-weight: 600;
 }
 
 .gallery-upload-card__description {
   margin: 12px 0 0;
   color: #475569;
-  font-size: 1.1rem;
+  font-size: 1.17rem;
   line-height: 1.8;
 }
 
@@ -103,7 +103,7 @@
   display: grid;
   gap: 8px;
   color: #0f2240;
-  font-size: 1rem;
+  font-size: 1.06rem;
   font-weight: 600;
 }
 
@@ -149,7 +149,7 @@
   background: #d4a373;
   color: #0f2240;
   padding: 12px 30px;
-  font-size: 1.08rem;
+  font-size: 1.14rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
@@ -172,7 +172,7 @@
   margin-top: 20px;
   border-radius: 14px;
   padding: 14px 16px;
-  font-size: 1rem;
+  font-size: 1.06rem;
   font-weight: 500;
   line-height: 1.6;
 }
@@ -204,14 +204,14 @@
 .gallery-state-card h2 {
   margin: 0;
   color: #0f2240;
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: clamp(1.6rem, 3vw, 2.12rem);
   font-weight: 600;
 }
 
 .gallery-state-card p {
   margin: 12px 0 0;
   color: #475569;
-  font-size: 1.1rem;
+  font-size: 1.17rem;
   line-height: 1.7;
 }
 
@@ -250,7 +250,7 @@
 .gallery-card__title {
   margin: 0;
   color: #0f2240;
-  font-size: 1.2rem;
+  font-size: 1.28rem;
   font-weight: 600;
   line-height: 1.45;
 }
@@ -258,7 +258,7 @@
 .gallery-card__date {
   margin: 8px 0 0;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 500;
 }
 
@@ -269,7 +269,7 @@
   background: #dc2626;
   color: #ffffff;
   padding: 10px 18px;
-  font-size: 1rem;
+  font-size: 1.06rem;
   font-weight: 600;
   cursor: pointer;
 }
