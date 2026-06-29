@@ -25,3 +25,4 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 export { app, auth, adminAuth, db, googleProvider };
+
