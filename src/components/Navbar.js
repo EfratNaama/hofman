@@ -91,9 +91,9 @@ function Navbar() {
       <div
         style={{
           width: '100%',
-          maxWidth: '1200px',
           margin: '0 auto',
           padding: '16px 24px',
+          boxSizing: 'border-box',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -108,6 +108,7 @@ function Navbar() {
           style={{
             display: 'inline-flex',
             alignItems: 'center',
+            flexShrink: 0,
             textDecoration: 'none',
           }}
         >
@@ -120,6 +121,8 @@ function Navbar() {
               height: '56px',
               maxWidth: '170px',
               objectFit: 'contain',
+              transform: 'scale(1.18)',
+              transformOrigin: 'right center',
             }}
           />
         </NavLink>
