@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { fileToBase64 } from '../services/galleryService';
 import { formatActivityDateInput } from '../utils/activityDateUtils';
 
 const otherCategory = 'אחר';
@@ -115,6 +116,9 @@ function buildFormState(initialValues) {
 function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSubmit }) {
   const [formData, setFormData] = useState(buildFormState(initialValues));
   const [validationError, setValidationError] = useState('');
+  const [imageUploadError, setImageUploadError] = useState('');
+  const [isReadingImage, setIsReadingImage] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const isOneTime = formData.type === 'חד פעמי';
   const selectedCategoryGroup = categoryGroups.find((group) => group.category === formData.category);
   const hasListedSubCategory = Boolean(
@@ -124,6 +128,9 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
   useEffect(() => {
     setFormData(buildFormState(initialValues));
     setValidationError('');
+    setImageUploadError('');
+    setIsReadingImage(false);
+    setSelectedImageFile(null);
   }, [initialValues, resetKey]);
 
   const availableSpots = useMemo(() => {
@@ -134,6 +141,11 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
 
   const handleChange = (event) => {
     const { checked, name, type, value } = event.target;
+
+    if (name === 'imageUrl') {
+      setSelectedImageFile(null);
+      setImageUploadError('');
+    }
 
     setFormData((currentData) => {
       const nextData = {
@@ -208,6 +220,24 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     });
   };
 
+  const handleImageFileChange = (event) => {
+    const file = event.target.files?.[0];
+    setImageUploadError('');
+    setSelectedImageFile(null);
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type?.startsWith('image/')) {
+      setImageUploadError('יש לבחור קובץ תמונה תקין.');
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedImageFile(file);
+  };
+
   const validateForm = () => {
     if (!formData.title.trim()) return 'יש להזין שם פעילות.';
     if (!formData.description.trim()) return 'יש להזין תיאור פעילות.';
@@ -262,8 +292,12 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     return '';
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isReadingImage) {
+      return;
+    }
+
     const errorMessage = validateForm();
     setValidationError(errorMessage);
 
@@ -275,8 +309,26 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
       ? formData.customCategory.trim()
       : formData.subCategory;
 
+    let imageUrl = formData.imageUrl;
+
+    if (selectedImageFile) {
+      setIsReadingImage(true);
+      setImageUploadError('');
+
+      try {
+        imageUrl = await fileToBase64(selectedImageFile, { resize: true });
+      } catch (error) {
+        setImageUploadError(error.message || 'לא ניתן לטעון את קובץ התמונה.');
+        setIsReadingImage(false);
+        return;
+      }
+
+      setIsReadingImage(false);
+    }
+
     onSubmit({
       ...formData,
+      imageUrl,
       subCategory,
       type: formData.type || 'קבוע',
       dayOfWeek: isOneTime ? '' : (formData.daysOfWeek[0] || ''),
@@ -419,10 +471,29 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
           <input
             className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
             name="imageUrl"
-            type="url"
+            type="text"
             value={formData.imageUrl}
             onChange={handleChange}
           />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-lg font-bold text-slate-800">העלאת תמונה מהמחשב (אופציונלי)</span>
+          <input
+            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+            type="file"
+            accept="image/*"
+            onChange={handleImageFileChange}
+          />
+          {isReadingImage && (
+            <p className="mt-2 text-base font-semibold text-slate-500">טוען תמונה...</p>
+          )}
+          {selectedImageFile && !isReadingImage && (
+            <p className="mt-2 text-base font-semibold text-slate-500">{selectedImageFile.name}</p>
+          )}
+          {imageUploadError && (
+            <p className="mt-2 text-base font-semibold text-red-700">{imageUploadError}</p>
+          )}
         </label>
 
         {isOneTime ? (
@@ -580,7 +651,7 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
         <button
           className="rounded-lg bg-sky-800 px-7 py-4 text-lg font-bold text-white shadow-sm hover:bg-sky-900 disabled:cursor-not-allowed disabled:bg-slate-400"
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isReadingImage}
         >
           {isSubmitting ? 'שומר...' : submitLabel}
         </button>

@@ -14,12 +14,61 @@ import { db } from '../firebase';
 
 const galleryCollection = collection(db, 'gallery');
 
-function fileToBase64(file) {
+function resizeImageDataUrl(dataUrl, options = {}) {
+  const {
+    maxDimension = 1200,
+    quality = 0.82,
+    maxDataUrlLength = 900000,
+  } = options;
+
+  return new Promise((resolve) => {
+    const image = new Image();
+
+    image.onload = () => {
+      const largestSide = Math.max(image.width, image.height);
+      const scale = largestSide > maxDimension ? maxDimension / largestSide : 1;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        resolve(dataUrl);
+        return;
+      }
+
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      let nextQuality = quality;
+      let resizedDataUrl = canvas.toDataURL('image/jpeg', nextQuality);
+
+      while (resizedDataUrl.length > maxDataUrlLength && nextQuality > 0.45) {
+        nextQuality -= 0.08;
+        resizedDataUrl = canvas.toDataURL('image/jpeg', nextQuality);
+      }
+
+      resolve(resizedDataUrl);
+    };
+
+    image.onerror = () => resolve(dataUrl);
+    image.src = dataUrl;
+  });
+}
+
+export function fileToBase64(file, options = {}) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = () => reject(new Error('Could not read image file.'));
     reader.readAsDataURL(file);
+  }).then((dataUrl) => {
+    if (!options.resize) {
+      return dataUrl;
+    }
+
+    return resizeImageDataUrl(dataUrl, options);
   });
 }
 
