@@ -242,6 +242,27 @@ function Home() {
         </div>
       </section>
 
+      <section id="about-hofman" className="home-public-about" aria-labelledby="home-public-about-title">
+        <div className="home-public-about__inner">
+          <div className="home-public-about__image-wrap">
+            <img
+              src={aboutHofmanImage}
+              alt="משתתפות בבית הופמן יושבות יחד סביב שולחן באווירה חמה"
+              className="home-public-about__image"
+            />
+          </div>
+          <div className="home-public-about__content">
+          <h2 id="home-public-about-title">אודות בית הופמן</h2>
+          <p>
+            בית הופמן הוא מרכז קהילתי חם ומקצועי לבני ובנות הגיל השלישי בירושלים. המרכז מציע מרחב מזמין לפעילויות חברתיות, הרצאות, סדנאות יצירה, מפגשי תרבות ותמיכה קהילתית באווירה מכבדת ונגישה.
+          </p>
+          <p>
+            הצוות שלנו פועל כדי שכל מבקר ומבקרת ירגישו בבית, ימצאו עניין, קשר אנושי ותוכן איכותי המתאים לקצב ולצרכים שלהם.
+          </p>
+          </div>
+        </div>
+      </section>
+
       <section className="home-featured-activities" aria-labelledby="home-featured-activities-title">
         <div className="home-featured-activities__inner">
           <h2 id="home-featured-activities-title">פעילויות נבחרות</h2>
@@ -268,27 +289,6 @@ function Home() {
                 </div>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="about-hofman" className="home-public-about" aria-labelledby="home-public-about-title">
-        <div className="home-public-about__inner">
-          <div className="home-public-about__image-wrap">
-            <img
-              src={aboutHofmanImage}
-              alt="משתתפות בבית הופמן יושבות יחד סביב שולחן באווירה חמה"
-              className="home-public-about__image"
-            />
-          </div>
-          <div className="home-public-about__content">
-          <h2 id="home-public-about-title">אודות בית הופמן</h2>
-          <p>
-            בית הופמן הוא מרכז קהילתי חם ומקצועי לבני ובנות הגיל השלישי בירושלים. המרכז מציע מרחב מזמין לפעילויות חברתיות, הרצאות, סדנאות יצירה, מפגשי תרבות ותמיכה קהילתית באווירה מכבדת ונגישה.
-          </p>
-          <p>
-            הצוות שלנו פועל כדי שכל מבקר ומבקרת ירגישו בבית, ימצאו עניין, קשר אנושי ותוכן איכותי המתאים לקצב ולצרכים שלהם.
-          </p>
           </div>
         </div>
       </section>
