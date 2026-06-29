@@ -122,7 +122,17 @@ function ActivityDetails() {
         {activity.imageUrl && (
           <img
             alt={activity.title}
-            className="mb-6 h-72 w-full rounded-lg object-cover"
+            className="mb-6 rounded-lg"
+            style={{
+              display: 'block',
+              width: 'auto',
+              maxWidth: '100%',
+              height: 'auto',
+              maxHeight: '300px',
+              marginInline: 'auto',
+              objectFit: 'contain',
+              objectPosition: 'center',
+            }}
             src={activity.imageUrl}
           />
         )}
