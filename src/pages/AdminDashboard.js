@@ -35,7 +35,7 @@ const initialData = {
 };
 
 const colors = {
-  primary: '#824D3F',
+  primary: '#C99B84',
   muted: '#977665',
   accent: '#C7AB95',
   olive: '#807D6E',
@@ -106,7 +106,13 @@ function ChartCard({ title, hasData, children }) {
   );
 }
 
-function renderPieLabel({ cx, cy, midAngle, outerRadius, name, value }) {
+const pieSliceColors = [colors.primary, colors.olive];
+
+function getPieSliceColor(index = 0) {
+  return pieSliceColors[index % pieSliceColors.length];
+}
+
+function renderPieLabel({ cx, cy, midAngle, outerRadius, name, value, index }) {
   const radius = outerRadius + 34;
   const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
   const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
@@ -115,13 +121,33 @@ function renderPieLabel({ cx, cy, midAngle, outerRadius, name, value }) {
     <text
       x={x}
       y={y}
-      fill={colors.chartText}
+      fill={getPieSliceColor(index)}
       fontSize={12}
       textAnchor={x > cx ? 'start' : 'end'}
       dominantBaseline="central"
     >
       {`${name}: ${value}`}
     </text>
+  );
+}
+
+function renderPieLabelLine({ cx, cy, midAngle, outerRadius, index }) {
+  const startRadius = outerRadius + 2;
+  const endRadius = outerRadius + 28;
+  const x1 = cx + startRadius * Math.cos(-midAngle * Math.PI / 180);
+  const y1 = cy + startRadius * Math.sin(-midAngle * Math.PI / 180);
+  const x2 = cx + endRadius * Math.cos(-midAngle * Math.PI / 180);
+  const y2 = cy + endRadius * Math.sin(-midAngle * Math.PI / 180);
+
+  return (
+    <line
+      x1={x1}
+      y1={y1}
+      x2={x2}
+      y2={y2}
+      stroke={getPieSliceColor(index)}
+      strokeWidth={1.5}
+    />
   );
 }
 
@@ -476,8 +502,8 @@ function AdminDashboard() {
                   height={12}
                 />
                 <YAxis allowDecimals={false} width={48} tickMargin={12} tick={{ fill: colors.chartText }} />
-                <Tooltip formatter={(value) => [value, 'הרשמות']} />
-                <Bar dataKey="count" name="הרשמות" fill={colors.primary} radius={[6, 6, 0, 0]} />
+                <Tooltip cursor={false} formatter={(value) => [value, 'הרשמות']} />
+                <Bar dataKey="count" name="הרשמות" fill={colors.primary} radius={[6, 6, 0, 0]} activeBar={{ stroke: colors.text, strokeWidth: 3 }} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -519,11 +545,13 @@ function AdminDashboard() {
                     cx="50%"
                     cy="38%"
                     outerRadius={66}
-                    labelLine={{ stroke: colors.muted }}
+                    activeShape={{ stroke: colors.text, strokeWidth: 4 }}
+                    labelLine={renderPieLabelLine}
                     label={renderPieLabel}
                   >
-                    <Cell fill={colors.primary} />
-                    <Cell fill={colors.olive} />
+                    {pieSliceColors.map((color) => (
+                      <Cell key={color} fill={color} />
+                    ))}
                   </Pie>
                   <Tooltip formatter={(value, name) => [value, name]} />
                   <Legend
