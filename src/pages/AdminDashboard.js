@@ -18,6 +18,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
+import './AdminDashboard.css';
 
 const collectionNames = {
   users: 'users',
@@ -46,22 +47,6 @@ const colors = {
   surface: '#ffffff',
 };
 
-const cardStyle = {
-  minWidth: 0,
-  padding: '20px',
-  border: `1px solid ${colors.border}`,
-  borderRadius: '16px',
-  backgroundColor: colors.surface,
-  boxShadow: '0 10px 24px rgba(130,77,63,0.08)',
-};
-
-const sectionTitleStyle = {
-  margin: '0 0 18px',
-  color: colors.text,
-  fontSize: '20px',
-  fontWeight: 900,
-};
-
 const toDate = (value) => {
   if (!value) return null;
   if (value?.toDate) return value.toDate();
@@ -88,27 +73,13 @@ const getRoleGroup = (user) => {
   return ['admin', 'manager', 'מנהל'].includes(role) ? 'מנהלים' : 'משתמשים רגילים';
 };
 
-function SummaryCard({ label, value, description, color }) {
+function SummaryCard({ label, value, description, tone }) {
   return (
-    <article
-      style={{
-        ...cardStyle,
-        display: 'flex',
-        minHeight: '146px',
-        alignItems: 'center',
-        borderInlineStart: `4px solid ${color}`,
-      }}
-    >
-      <div style={{ minWidth: 0 }}>
-        <p style={{ margin: 0, color: colors.text, fontSize: '13px', fontWeight: 800 }}>
-          {label}
-        </p>
-        <p style={{ margin: '7px 0 0', color, fontSize: '34px', fontWeight: 950, lineHeight: 1 }}>
-          {value}
-        </p>
-        <p style={{ margin: '10px 0 0', color: colors.text, fontSize: '12px', lineHeight: 1.5 }}>
-          {description}
-        </p>
+    <article className={`admin-dashboard__summary-card admin-dashboard__summary-card--${tone}`}>
+      <div>
+        <p className="admin-dashboard__summary-label">{label}</p>
+        <p className="admin-dashboard__summary-value">{value}</p>
+        <p className="admin-dashboard__summary-description">{description}</p>
       </div>
     </article>
   );
@@ -116,19 +87,7 @@ function SummaryCard({ label, value, description, color }) {
 
 function EmptyState({ children = 'אין פריטים הדורשים טיפול כרגע' }) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        minHeight: '130px',
-        placeItems: 'center',
-        padding: '20px',
-        borderRadius: '12px',
-        backgroundColor: colors.background,
-        color: colors.text,
-        fontWeight: 700,
-        textAlign: 'center',
-      }}
-    >
+    <div className="admin-dashboard__empty">
       {children}
     </div>
   );
@@ -136,12 +95,10 @@ function EmptyState({ children = 'אין פריטים הדורשים טיפול 
 
 function ChartCard({ title, hasData, children }) {
   return (
-    <article style={cardStyle}>
-      <h3 style={{ margin: '0 0 16px', color: colors.text, fontSize: '17px', fontWeight: 900 }}>
-        {title}
-      </h3>
+    <article className="admin-dashboard__chart-card">
+      <h3 className="admin-dashboard__chart-title">{title}</h3>
       {hasData ? (
-        <div style={{ width: '100%', height: '290px' }}>{children}</div>
+        <div className="admin-dashboard__chart-body">{children}</div>
       ) : (
         <EmptyState>אין מספיק נתונים להצגת התרשים.</EmptyState>
       )}
@@ -168,98 +125,18 @@ function renderPieLabel({ cx, cy, midAngle, outerRadius, name, value }) {
   );
 }
 
-const dashboardCss = `
-  @keyframes adminDashboardPulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-  }
-
-  .admin-dashboard {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 36px 24px 64px;
-  }
-
-  .admin-dashboard__section {
-    margin-bottom: 42px;
-  }
-
-  .admin-dashboard__summary-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
-  }
-
-  .admin-dashboard__attention-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-
-  .admin-dashboard__charts-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-
-  .admin-dashboard__chart-wide {
-    grid-column: 1 / -1;
-  }
-
-  .admin-dashboard__skeleton {
-    width: 100%;
-    border-radius: 16px;
-    background: linear-gradient(90deg, #C7AB95 25%, #C0977B 50%, #C7AB95 75%);
-    background-size: 200% 100%;
-    animation: adminDashboardPulse 1.4s ease-in-out infinite;
-  }
-
-  @media (max-width: 980px) {
-    .admin-dashboard__summary-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 760px) {
-    .admin-dashboard {
-      padding: 24px 16px 48px;
-    }
-
-    .admin-dashboard__summary-grid,
-    .admin-dashboard__attention-grid,
-    .admin-dashboard__charts-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .admin-dashboard__chart-wide {
-      grid-column: auto;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .admin-dashboard__skeleton {
-      animation: none;
-    }
-  }
-`;
-
 function LoadingDashboard() {
   return (
     <section className="admin-dashboard" dir="rtl" aria-label="טעינת נתוני לוח הבקרה">
-      <style>{dashboardCss}</style>
-      <p style={{ margin: '0 0 20px', color: colors.text, fontWeight: 800 }}>
-        טוען את נתוני לוח הבקרה...
-      </p>
-      <div className="admin-dashboard__summary-grid">
-        {[1, 2, 3].map((item) => (
-          <div key={item} className="admin-dashboard__skeleton" style={{ height: '146px' }} />
-        ))}
+      <div className="admin-dashboard__shell">
+        <p className="admin-dashboard__loading-text">טוען את נתוני לוח הבקרה...</p>
+        <div className="admin-dashboard__summary-grid">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="admin-dashboard__skeleton admin-dashboard__skeleton--summary" />
+          ))}
+        </div>
+        <div className="admin-dashboard__skeleton admin-dashboard__skeleton--wide" />
       </div>
-      <div
-        className="admin-dashboard__skeleton"
-        style={{ height: '330px', marginTop: '42px' }}
-      />
     </section>
   );
 }
@@ -454,25 +331,16 @@ function AdminDashboard() {
   if (!currentUser || !hasAdminAccess) {
     return (
       <section className="admin-dashboard" dir="rtl">
-        <style>{dashboardCss}</style>
-        <div style={{ ...cardStyle, textAlign: 'center' }}>
-          <h1 style={{ margin: 0, color: colors.text, fontSize: '28px' }}>
-            אין לך הרשאה לצפות בעמוד זה
-          </h1>
+        <div className="admin-dashboard__shell">
+        <div className="admin-dashboard__card admin-dashboard__denied">
+          <h1>אין לך הרשאה לצפות בעמוד זה</h1>
           <Link
             to="/"
-            style={{
-              display: 'inline-flex',
-              marginTop: '18px',
-              padding: '11px 20px',
-              borderRadius: '10px',
-              backgroundColor: colors.accent,
-              color: colors.text,
-              fontWeight: 800,
-            }}
+            className="admin-dashboard__home-link"
           >
             חזרה לעמוד הבית
           </Link>
+        </div>
         </div>
       </section>
     );
@@ -483,19 +351,19 @@ function AdminDashboard() {
       label: 'סך המשתמשים',
       value: data.users.length,
       description: 'כל המשתמשים הרשומים במערכת',
-      color: colors.primary,
+      tone: 'primary',
     },
     {
       label: 'סך הפעילויות',
       value: data.activities.length,
       description: 'כל הפעילויות הקיימות במערכת',
-      color: colors.warm,
+      tone: 'warm',
     },
     {
       label: 'הרשמות פעילות',
       value: dashboardData.registrations.length,
       description: `${dashboardData.paidPayments.length} הרשמות ששולמו`,
-      color: colors.olive,
+      tone: 'olive',
     },
   ];
 
@@ -505,26 +373,13 @@ function AdminDashboard() {
 
   return (
     <main className="admin-dashboard" dir="rtl">
-      <style>{dashboardCss}</style>
-
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '20px',
-          flexWrap: 'wrap',
-          marginBottom: '34px',
-          paddingBottom: '22px',
-          borderBottom: `1px solid ${colors.border}`,
-        }}
-      >
+      <div className="admin-dashboard__shell">
+      <header className="admin-dashboard__header">
         <div>
-          <h1 style={{ margin: 0, color: colors.text, fontSize: '32px', fontWeight: 950 }}>
-            לוח בקרה
-          </h1>
+          <p className="admin-dashboard__eyebrow">ניהול מערכת</p>
+          <h1 className="admin-dashboard__title">לוח בקרה</h1>
         </div>
-        <time style={{ color: colors.text, fontSize: '32px', fontWeight: 950, lineHeight: 1 }}>
+        <time className="admin-dashboard__date">
           {new Date().toLocaleDateString('he-IL')}
         </time>
       </header>
@@ -532,14 +387,7 @@ function AdminDashboard() {
       {error && (
         <div
           role="alert"
-          style={{
-            ...cardStyle,
-            marginBottom: '24px',
-            borderColor: colors.primary,
-            backgroundColor: colors.background,
-            color: colors.text,
-            fontWeight: 800,
-          }}
+          className="admin-dashboard__message admin-dashboard__message--error"
         >
           {error}
         </div>
@@ -552,39 +400,26 @@ function AdminDashboard() {
       </section>
 
       <section className="admin-dashboard__section">
-        <h2 style={sectionTitleStyle}>מידע קרוב וחשוב</h2>
+        <h2 className="admin-dashboard__section-title">מידע קרוב וחשוב</h2>
         {!hasAttentionItems ? (
           <EmptyState />
         ) : (
           <div className="admin-dashboard__attention-grid">
-            <article style={cardStyle}>
-              <h3 style={{ margin: '0 0 15px', color: colors.text, fontSize: '17px' }}>
-                פעילויות בשבעת הימים הקרובים
-              </h3>
+            <article className="admin-dashboard__card">
+              <h3 className="admin-dashboard__card-title">פעילויות בשבעת הימים הקרובים</h3>
               {dashboardData.upcomingActivities.length ? (
-                <div style={{ display: 'grid', gap: '10px' }}>
+                <div className="admin-dashboard__list">
                   {dashboardData.upcomingActivities.map((activity) => (
                     <div
                       key={activity.id}
-                      style={{
-                        padding: '12px',
-                        borderRadius: '10px',
-                        backgroundColor: colors.background,
-                      }}
+                      className="admin-dashboard__list-item"
                     >
                       <strong
                         title={activity.title}
-                        style={{
-                          display: 'block',
-                          overflow: 'hidden',
-                          color: colors.text,
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
                       >
                         {activity.title || 'פעילות ללא כותרת'}
                       </strong>
-                      <span style={{ color: colors.text, fontSize: '13px' }}>
+                      <span>
                         {formatDate(activity.activityDate || activity.date)}
                         {activity.location ? ` · ${activity.location}` : ''}
                       </span>
@@ -596,36 +431,21 @@ function AdminDashboard() {
               )}
             </article>
 
-            <article style={cardStyle}>
-              <h3 style={{ margin: '0 0 15px', color: colors.text, fontSize: '17px' }}>
-                פריטי גלריה אחרונים
-              </h3>
+            <article className="admin-dashboard__card">
+              <h3 className="admin-dashboard__card-title">פריטי גלריה אחרונים</h3>
               {dashboardData.latestGalleryItems.length ? (
-                <div style={{ display: 'grid', gap: '10px' }}>
+                <div className="admin-dashboard__list">
                   {dashboardData.latestGalleryItems.map((galleryItem) => (
                     <div
                       key={galleryItem.id}
-                      style={{
-                        padding: '12px',
-                        borderRadius: '10px',
-                        backgroundColor: colors.background,
-                      }}
+                      className="admin-dashboard__list-item"
                     >
                       <strong
                         title={galleryItem.title || galleryItem.caption}
-                        style={{
-                          display: 'block',
-                          overflow: 'hidden',
-                          color: colors.text,
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
                       >
                         {galleryItem.title || galleryItem.caption || 'פריט גלריה'}
                       </strong>
-                      <span style={{ color: colors.text, fontSize: '13px' }}>
-                        {formatDate(galleryItem.createdAt)}
-                      </span>
+                      <span>{formatDate(galleryItem.createdAt)}</span>
                     </div>
                   ))}
                 </div>
@@ -638,7 +458,7 @@ function AdminDashboard() {
       </section>
 
       <section className="admin-dashboard__section">
-        <h2 style={sectionTitleStyle}>סטטיסטיקות</h2>
+        <h2 className="admin-dashboard__section-title">סטטיסטיקות</h2>
         <div className="admin-dashboard__charts-grid">
           <div className="admin-dashboard__chart-wide">
             <ChartCard
@@ -709,8 +529,7 @@ function AdminDashboard() {
                   <Legend
                     verticalAlign="bottom"
                     height={42}
-                    formatter={(value) => <span style={{ marginInlineStart: '8px' }}>{value}</span>}
-                    wrapperStyle={{ color: colors.muted }}
+                    formatter={(value) => <span className="admin-dashboard__legend-label">{value}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -718,6 +537,7 @@ function AdminDashboard() {
         </div>
       </section>
 
+      </div>
     </main>
   );
 }

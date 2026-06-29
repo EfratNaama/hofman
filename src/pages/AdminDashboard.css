@@ -1,0 +1,311 @@
+.admin-dashboard {
+  width: 100%;
+  min-height: calc(100vh - 96px);
+  padding: clamp(28px, 5vw, 64px) 20px;
+  background: radial-gradient(circle at 18% 16%, rgba(212, 163, 115, 0.16), transparent 18rem), #f8f5f0;
+  color: #0f2240;
+}
+
+.admin-dashboard__shell {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+}
+
+.admin-dashboard__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding: clamp(22px, 4vw, 34px);
+  border: 1px solid rgba(205, 178, 165, 0.7);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 44px rgba(15, 34, 64, 0.08);
+}
+
+.admin-dashboard__eyebrow {
+  margin: 0;
+  color: #9a6b3f;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.admin-dashboard__title {
+  margin: 6px 0 0;
+  color: #0f2240;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.admin-dashboard__date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0f2240;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  font-weight: 950;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.admin-dashboard__section {
+  margin-bottom: 34px;
+}
+
+.admin-dashboard__section-title {
+  margin: 0 0 18px;
+  color: #0f2240;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  font-weight: 900;
+}
+
+.admin-dashboard__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.admin-dashboard__attention-grid,
+.admin-dashboard__charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.admin-dashboard__chart-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-dashboard__card,
+.admin-dashboard__summary-card,
+.admin-dashboard__chart-card,
+.admin-dashboard__message {
+  border: 1px solid rgba(205, 178, 165, 0.7);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(90, 51, 39, 0.1);
+}
+
+.admin-dashboard__summary-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 150px;
+  align-items: center;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.admin-dashboard__summary-card::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 5px;
+  background: var(--summary-color, #824d3f);
+  content: "";
+}
+
+.admin-dashboard__summary-card--primary {
+  --summary-color: #824d3f;
+}
+
+.admin-dashboard__summary-card--warm {
+  --summary-color: #c0977b;
+}
+
+.admin-dashboard__summary-card--olive {
+  --summary-color: #807d6e;
+}
+
+.admin-dashboard__summary-label {
+  margin: 0;
+  color: #5f5047;
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.admin-dashboard__summary-value {
+  margin: 9px 0 0;
+  color: var(--summary-color, #824d3f);
+  font-size: clamp(2.2rem, 5vw, 3.1rem);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.admin-dashboard__summary-description {
+  margin: 12px 0 0;
+  color: #5f5047;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  font-weight: 550;
+}
+
+.admin-dashboard__card,
+.admin-dashboard__chart-card {
+  padding: clamp(20px, 3vw, 26px);
+}
+
+.admin-dashboard__card-title,
+.admin-dashboard__chart-title {
+  margin: 0 0 16px;
+  color: #0f2240;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.admin-dashboard__list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-dashboard__list-item {
+  padding: 14px;
+  border: 1px solid rgba(226, 216, 203, 0.75);
+  border-radius: 16px;
+  background: #f8f5f0;
+}
+
+.admin-dashboard__list-item strong {
+  display: block;
+  overflow: hidden;
+  color: #0f2240;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-dashboard__list-item span {
+  display: block;
+  margin-top: 5px;
+  color: #5f5047;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.admin-dashboard__chart-body {
+  width: 100%;
+  height: 290px;
+}
+
+.admin-dashboard__chart-body .recharts-legend-wrapper {
+  color: #977665;
+}
+
+.admin-dashboard__legend-label {
+  margin-inline-start: 8px;
+}
+
+.admin-dashboard__empty {
+  display: grid;
+  min-height: 130px;
+  place-items: center;
+  padding: 20px;
+  border: 1px solid rgba(226, 216, 203, 0.75);
+  border-radius: 18px;
+  background: #f8f5f0;
+  color: #5f5047;
+  font-weight: 800;
+  text-align: center;
+}
+
+.admin-dashboard__message {
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  color: #0f2240;
+  font-weight: 800;
+}
+
+.admin-dashboard__message--error {
+  border-color: rgba(168, 79, 61, 0.45);
+  background: #fff7ed;
+}
+
+.admin-dashboard__denied {
+  padding: clamp(26px, 5vw, 42px);
+  text-align: center;
+}
+
+.admin-dashboard__denied h1 {
+  margin: 0;
+  color: #0f2240;
+  font-size: clamp(1.6rem, 4vw, 2rem);
+}
+
+.admin-dashboard__home-link {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 0.8rem 1.25rem;
+  border-radius: 999px;
+  background: #0f2240;
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.admin-dashboard__loading-text {
+  margin: 0 0 20px;
+  color: #0f2240;
+  font-weight: 850;
+}
+
+.admin-dashboard__skeleton {
+  width: 100%;
+  border-radius: 24px;
+  background: linear-gradient(90deg, #e2d8cb 25%, #cdb2a5 50%, #e2d8cb 75%);
+  background-size: 200% 100%;
+  animation: adminDashboardPulse 1.4s ease-in-out infinite;
+}
+
+.admin-dashboard__skeleton--summary {
+  height: 146px;
+}
+
+.admin-dashboard__skeleton--wide {
+  height: 330px;
+  margin-top: 42px;
+}
+
+@keyframes adminDashboardPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 980px) {
+  .admin-dashboard__summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-dashboard {
+    padding: 24px 16px 48px;
+  }
+
+  .admin-dashboard__header {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .admin-dashboard__summary-grid,
+  .admin-dashboard__attention-grid,
+  .admin-dashboard__charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard__chart-wide {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-dashboard__skeleton {
+    animation: none;
+  }
+}
