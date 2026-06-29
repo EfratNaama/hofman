@@ -5,7 +5,22 @@ import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
 import useGallery from '../hooks/useGallery';
 import aboutHofmanImage from '../assets/about-hofman.png';
+import partnerLogo60Plus from '../logo/60+.png';
+import partnerLogoGonenim from '../logo/gonenim.jpg';
+import partnerLogoJerusalemMunicipality from '../logo/Jerusalem Municipality.png';
+import partnerLogoMarom from '../logo/marom.png';
+import partnerLogoMatnasim from '../logo/matnasim.png';
+import partnerLogoJerusalemFoundation from '../logo/The Jerusalem Foundation.png';
 import './Home.css';
+
+const partnerLogos = [
+  { src: partnerLogo60Plus, alt: 'לוגו 60+' },
+  { src: partnerLogoGonenim, alt: 'לוגו גוננים' },
+  { src: partnerLogoJerusalemMunicipality, alt: 'לוגו עיריית ירושלים' },
+  { src: partnerLogoMarom, alt: 'לוגו מרום' },
+  { src: partnerLogoMatnasim, alt: 'לוגו מתנ"סים' },
+  { src: partnerLogoJerusalemFoundation, alt: 'לוגו קרן ירושלים' },
+];
 
 const homeFeatureItems = [
   {
@@ -249,6 +264,19 @@ function Home() {
               <p>{item.description}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="home-partners" aria-labelledby="home-partners-title">
+        <div className="home-partners__inner">
+          <h2 id="home-partners-title">השותפים שלנו</h2>
+          <div className="home-partners__grid">
+            {partnerLogos.map((partner) => (
+              <div className="home-partners__card" key={partner.alt}>
+                <img src={partner.src} alt={partner.alt} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
