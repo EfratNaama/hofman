@@ -76,6 +76,27 @@ button:focus-visible {
   text-underline-offset: 8px;
 }
 
+.navbar-link--personal-area {
+  min-height: 48px !important;
+  padding: 0.7rem 1.15rem !important;
+  border-radius: 999px !important;
+  background-color: #8A9183 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-decoration-line: none !important;
+  box-shadow: 0 8px 18px rgba(138, 145, 131, 0.24);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.navbar-link--personal-area:hover,
+.navbar-link--personal-area:focus-visible {
+  background-color: #747C6F !important;
+  color: #ffffff !important;
+  text-decoration-line: none !important;
+  box-shadow: 0 10px 22px rgba(116, 124, 111, 0.28);
+  transform: translateY(-1px);
+}
+
 .home-cta {
   display: inline-flex;
   align-items: center;
