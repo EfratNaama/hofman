@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { subscribeUnreadAnnouncementsCount } from '../services/announcementService';
+import hoffmanLogo from '../logo/Hoffman.png';
 
 function Navbar() {
   const navigate = useNavigate();
@@ -100,9 +101,28 @@ function Navbar() {
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ color: '#0f2240', fontSize: '1.35rem', fontWeight: 600 }}>
-          בית הופמן
-        </div>
+        <NavLink
+          end
+          to="/"
+          aria-label="בית הופמן"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            textDecoration: 'none',
+          }}
+        >
+          <img
+            src={hoffmanLogo}
+            alt="בית הופמן"
+            style={{
+              display: 'block',
+              width: 'auto',
+              height: '56px',
+              maxWidth: '170px',
+              objectFit: 'contain',
+            }}
+          />
+        </NavLink>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
           <NavLink end to="/" className="navbar-link" style={navLinkStyle}>
