@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import GalleryGrid from '../components/GalleryGrid';
 import GalleryModal from '../components/GalleryModal';
@@ -30,6 +30,7 @@ function Gallery() {
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState('');
   const [formError, setFormError] = useState('');
+  const fileInputRef = useRef(null);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -54,7 +55,9 @@ function Gallery() {
       await uploadImage(file, caption);
       setFile(null);
       setCaption('');
-      event.currentTarget.reset();
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } catch (uploadError) {
       setFormError(uploadError.message || 'העלאת התמונה נכשלה.');
     }
@@ -103,6 +106,7 @@ function Gallery() {
               <label className="gallery-field">
                 <span>קובץ תמונה</span>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={(event) => setFile(event.target.files?.[0] || null)}
