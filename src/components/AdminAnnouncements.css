@@ -18,14 +18,14 @@
   margin: 0;
   color: #977665;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-announcements-header h1 {
   margin: 8px 0 0;
   color: #3f342f;
   font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1.15;
 }
 
@@ -34,7 +34,7 @@
   border-radius: 14px;
   padding: 14px 18px;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.6;
 }
 
@@ -76,7 +76,7 @@
   margin: 0;
   color: #3f342f;
   font-size: 1.55rem;
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1.25;
 }
 
@@ -91,7 +91,7 @@
   gap: 8px;
   color: #3f342f;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-announcements-input,
@@ -131,7 +131,7 @@
   gap: 10px;
   color: #3f342f;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-announcements-checkbox__input {
@@ -158,7 +158,7 @@
   padding: 11px 18px;
   font: inherit;
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 600;
   cursor: pointer;
   transition: background 160ms ease, color 160ms ease, transform 160ms ease;
 }
@@ -199,7 +199,7 @@
   margin: 18px 0 0;
   color: #5f514b;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.7;
 }
 
@@ -235,14 +235,14 @@
   margin: 0;
   color: #977665;
   font-size: 0.95rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-announcements-card h3 {
   margin: 5px 0 0;
   color: #3f342f;
   font-size: 1.2rem;
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -253,7 +253,7 @@
   border-radius: 999px;
   padding: 6px 13px;
   font-size: 0.95rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .admin-announcements-status--active {
