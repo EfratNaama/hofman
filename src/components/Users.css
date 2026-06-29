@@ -1,0 +1,222 @@
+.admin-users-page {
+  min-height: calc(100vh - 96px);
+  padding: clamp(28px, 5vw, 64px) 20px;
+  background: radial-gradient(circle at 18% 16%, rgba(212, 163, 115, 0.16), transparent 18rem), #f8f5f0;
+  color: #0f2240;
+}
+
+.admin-users-page__shell {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+}
+
+.admin-users-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 26px;
+  padding: clamp(22px, 4vw, 32px);
+  border: 1px solid rgba(205, 178, 165, 0.7);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 44px rgba(15, 34, 64, 0.08);
+}
+
+.admin-users-page__eyebrow {
+  margin: 0;
+  color: #9a6b3f;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.admin-users-page__title {
+  margin: 6px 0 0;
+  color: #0f2240;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.admin-users-page__add-link {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.25rem;
+  border-radius: 999px;
+  background: #0f2240;
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 14px 26px rgba(15, 34, 64, 0.18);
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.admin-users-page__add-link:hover,
+.admin-users-page__add-link:focus-visible {
+  transform: translateY(-2px);
+  background: #17365f;
+  box-shadow: 0 18px 34px rgba(15, 34, 64, 0.22);
+}
+
+.admin-users-page__notice,
+.admin-users-page__table-card,
+.admin-users-page__empty {
+  border: 1px solid rgba(205, 178, 165, 0.7);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(90, 51, 39, 0.1);
+}
+
+.admin-users-page__notice {
+  margin-bottom: 18px;
+  padding: 16px 18px;
+}
+
+.admin-users-page__notice--error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.admin-users-page__empty {
+  padding: 32px;
+  text-align: center;
+}
+
+.admin-users-page__table-card {
+  overflow: hidden;
+}
+
+.admin-users-page__table-scroll {
+  overflow-x: auto;
+}
+
+.admin-users-page__table {
+  min-width: 820px;
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.admin-users-page__table thead {
+  background: #f8f5f0;
+}
+
+.admin-users-page__table th {
+  padding: 18px 20px;
+  color: #5f5047;
+  font-size: 0.95rem;
+  font-weight: 900;
+  border-bottom: 1px solid #e2d8cb;
+}
+
+.admin-users-page__table td {
+  padding: 18px 20px;
+  color: #334155;
+  border-bottom: 1px solid #f0e6dc;
+  vertical-align: middle;
+}
+
+.admin-users-page__table tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.admin-users-page__table tbody tr:hover {
+  background: rgba(248, 245, 240, 0.72);
+}
+
+.admin-users-page__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-users-page__name {
+  color: #0f2240;
+  font-weight: 900;
+}
+
+.admin-users-page__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.admin-users-page__status--active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-users-page__status--inactive {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.admin-users-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-users-page__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.48rem 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-users-page__action:hover:not(:disabled),
+.admin-users-page__action:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 34, 64, 0.1);
+}
+
+.admin-users-page__action--view {
+  background: #f8f5f0;
+  color: #0f2240;
+}
+
+.admin-users-page__action--edit {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.admin-users-page__action--activities {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.admin-users-page__action--delete {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.admin-users-page__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 720px) {
+  .admin-users-page__header {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .admin-users-page__add-link {
+    width: 100%;
+  }
+}

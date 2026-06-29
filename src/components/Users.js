@@ -4,6 +4,7 @@ import { getActivityById } from '../services/activitiesService';
 import { getUserActivityRegistrations } from '../services/activityRegistrationsService';
 import { deleteUser, getUsers } from '../services/usersService';
 import { formatActivityDate } from '../utils/activityDateUtils';
+import './Users.css';
 
 const roleLabels = {
   admin: 'מנהל',
@@ -148,15 +149,16 @@ function Users() {
   };
 
   return (
-    <section className="rounded-lg bg-white p-5 text-right shadow-lg" dir="rtl">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <section className="admin-users-page" dir="rtl">
+      <div className="admin-users-page__shell">
+      <div className="admin-users-page__header">
         <div>
-          <p className="text-sm font-semibold text-slate-500">ניהול מערכת</p>
-          <h2 className="mt-1 text-2xl font-bold text-slate-900">משתמשים</h2>
+          <p className="admin-users-page__eyebrow">ניהול מערכת</p>
+          <h2 className="admin-users-page__title">משתמשים</h2>
         </div>
 
         <Link
-          className="rounded-md bg-sky-800 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-sky-900"
+          className="admin-users-page__add-link"
           to="/users/new"
         >
           הוספת משתמש
@@ -164,15 +166,15 @@ function Users() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="admin-users-page__notice admin-users-page__notice--error">
           {error}
         </div>
       )}
 
-      {isLoading && <p className="text-slate-700">טוען משתמשים...</p>}
+      {isLoading && <p className="admin-users-page__notice">טוען משתמשים...</p>}
 
       {!isLoading && !error && users.length === 0 && (
-        <div className="rounded-md border border-slate-200 bg-slate-50 p-6 text-center">
+        <div className="admin-users-page__empty">
           <p className="text-base font-semibold text-slate-800">לא נמצאו משתמשים.</p>
           <p className="mt-2 text-sm text-slate-600">
             צרו את פרופיל המשתמש הראשון כדי להתחיל לנהל גישה.
@@ -181,56 +183,57 @@ function Users() {
       )}
 
       {!isLoading && users.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse text-right">
+        <div className="admin-users-page__table-card">
+        <div className="admin-users-page__table-scroll">
+          <table className="admin-users-page__table">
             <thead>
-              <tr className="border-b border-slate-200 text-sm text-slate-500">
-                <th className="px-4 py-3 font-semibold">שם מלא</th>
-                <th className="px-4 py-3 font-semibold">אימייל</th>
-                <th className="px-4 py-3 font-semibold">תפקיד</th>
-                <th className="px-4 py-3 font-semibold">סטטוס</th>
-                <th className="px-4 py-3 font-semibold">פעולות</th>
+              <tr>
+                <th>שם מלא</th>
+                <th>אימייל</th>
+                <th>תפקיד</th>
+                <th>סטטוס</th>
+                <th>פעולות</th>
               </tr>
             </thead>
 
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-b border-slate-100">
-                  <td className="px-4 py-4 font-semibold text-slate-900">
+                <tr key={user.id}>
+                  <td className="admin-users-page__name">
                     {user.fullName || '-'}
                   </td>
-                  <td className="px-4 py-4 text-slate-700">{user.email || '-'}</td>
-                  <td className="px-4 py-4 text-slate-700">{formatRole(user.role)}</td>
-                  <td className="px-4 py-4">
+                  <td>{user.email || '-'}</td>
+                  <td>{formatRole(user.role)}</td>
+                  <td>
                     <span
                       className={
                         user.status === 'active'
-                          ? 'rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700'
-                          : 'rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600'
+                          ? 'admin-users-page__status admin-users-page__status--active'
+                          : 'admin-users-page__status admin-users-page__status--inactive'
                       }
                     >
                       {formatStatus(user.status)}
                     </span>
                   </td>
 
-                  <td className="px-4 py-4">
-                    <div className="flex flex-wrap gap-2">
+                  <td>
+                    <div className="admin-users-page__actions">
                       <Link
-                        className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+                        className="admin-users-page__action admin-users-page__action--view"
                         to={`/users/${user.id}`}
                       >
                         צפייה
                       </Link>
 
                       <Link
-                        className="rounded-md bg-sky-100 px-3 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-200"
+                        className="admin-users-page__action admin-users-page__action--edit"
                         to={`/users/${user.id}/edit`}
                       >
                         עריכה
                       </Link>
 
                       <button
-                        className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-100"
+                        className="admin-users-page__action admin-users-page__action--activities"
                         type="button"
                         onClick={() => handleViewActivities(user)}
                       >
@@ -238,7 +241,7 @@ function Users() {
                       </button>
 
                       <button
-                        className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                        className="admin-users-page__action admin-users-page__action--delete"
                         type="button"
                         disabled={deletingUserId === user.id}
                         onClick={() => handleDelete(user.id)}
@@ -252,7 +255,9 @@ function Users() {
             </tbody>
           </table>
         </div>
+        </div>
       )}
+      </div>
 
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
