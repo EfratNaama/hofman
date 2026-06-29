@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import FooterSection from '../components/FooterSection';
 import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
+import useGallery from '../hooks/useGallery';
 import aboutHofmanImage from '../assets/about-hofman.png';
 import './Home.css';
 
@@ -73,6 +74,7 @@ const featuredActivityItems = [
 ];
 
 const FEATURED_ACTIVITIES_LIMIT = featuredActivityItems.length;
+const HOME_GALLERY_LIMIT = 6;
 
 function getActivityImageUrl(activity) {
   return activity.imageUrl || activity.image || '';
@@ -84,6 +86,10 @@ function getActivityTitle(activity) {
 
 function getActivityDescription(activity) {
   return activity.description || activity.location || 'פרטים נוספים יפורסמו בקרוב.';
+}
+
+function getGalleryImageSource(image) {
+  return image.imageBase64 || image.imageUrl || image.url || '';
 }
 
 function FeatureIcon({ type }) {
@@ -158,7 +164,11 @@ function Home() {
     isLoading: activitiesLoading,
     error: activitiesError,
   } = useActivities();
+  const { images: galleryImages, loading: galleryLoading } = useGallery();
   const featuredActivities = activities.slice(0, FEATURED_ACTIVITIES_LIMIT);
+  const homeGalleryImages = galleryLoading
+    ? []
+    : galleryImages.filter(getGalleryImageSource).slice(0, HOME_GALLERY_LIMIT);
   const homeFeaturedActivityItems = activitiesLoading
     ? [
         {
@@ -292,6 +302,30 @@ function Home() {
           </div>
         </div>
       </section>
+
+      {homeGalleryImages.length > 0 && (
+        <section className="home-featured-activities" aria-label="תמונות מהגלריה">
+          <div className="home-featured-activities__inner">
+            <h2 id="home-gallery-title">תמונות מהגלריה</h2>
+            <div className="home-featured-activities__grid">
+              {homeGalleryImages.map((image) => (
+                <article className="home-featured-activity-card" key={image.id}>
+                  <img
+                    src={getGalleryImageSource(image)}
+                    alt={image.caption || 'Gallery image'}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      height: '390px',
+                      objectFit: 'cover',
+                    }}
+                  />
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gap: '40px' }}>
         <FooterSection centerInfo={centerInfo} loading={loading} />
