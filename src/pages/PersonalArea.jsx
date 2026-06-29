@@ -327,7 +327,7 @@ function PersonalArea() {
           box-shadow: 0 6px 20px rgba(15, 34, 64, 0.18);
           color: #fff;
           font-size: 34px;
-          font-weight: 900;
+          font-weight: 600;
         }
 
         .personal-area__avatar img {
@@ -365,18 +365,18 @@ function PersonalArea() {
           margin: 0;
           color: #1a1a2e;
           font-size: 28px;
-          font-weight: 900;
+          font-weight: 600;
         }
 
         .personal-area__profile-content p {
           margin: 6px 0 0;
           color: #475569;
-          font-weight: 700;
+          font-weight: 500;
         }
 
         .personal-area__upload-status {
           margin-top: 12px;
-          font-weight: 800;
+          font-weight: 600;
         }
 
         .personal-area__upload-status--error {

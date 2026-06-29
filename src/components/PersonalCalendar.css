@@ -20,7 +20,7 @@
 .personal-calendar .rbc-toolbar button {
   border-color: #cbd5e1;
   color: #334155;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .personal-calendar .rbc-toolbar button:hover,
@@ -38,6 +38,10 @@
   color: #334155;
 }
 
+.personal-calendar .rbc-show-more {
+  font-weight: 500;
+}
+
 .personal-calendar__date-header,
 .personal-calendar__week-header {
   display: grid;
@@ -51,7 +55,7 @@
   overflow: hidden;
   color: #64748b;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -85,7 +89,7 @@
 .personal-calendar__event-content > span {
   overflow: hidden;
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -98,7 +102,7 @@
   background: rgba(255, 255, 255, 0.92);
   color: #006b6b;
   font-size: 0.7rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .personal-calendar .rbc-off-range-bg {

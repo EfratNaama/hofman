@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @tailwind base;
@@ -11,7 +12,7 @@
 html,
 body,
 #root {
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: 'Assistant', 'Segoe UI', Arial, sans-serif;
 }
 
 html {
@@ -21,6 +22,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  font-weight: 400;
   background-color: #f8f5f0;
   color: #0f2240;
   -webkit-font-smoothing: antialiased;
@@ -49,7 +51,12 @@ h3,
 h4,
 h5,
 h6 {
-  font: inherit;
+  font-family: inherit;
+}
+
+b,
+strong {
+  font-weight: 600;
 }
 
 a:focus-visible,
@@ -75,7 +82,7 @@ button:focus-visible {
   padding: 16px 28px;
   border-radius: 18px;
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 600;
   text-decoration: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -107,7 +114,7 @@ button:focus-visible {
   color: #0f2240;
   font-size: clamp(2rem, 4vw, 2.7rem);
   line-height: 1.18;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-section-description {
@@ -128,7 +135,7 @@ button:focus-visible {
   background-color: #0f2240;
   color: #ffffff;
   font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 600;
   text-decoration: none;
   box-shadow: 0 10px 20px rgba(15, 34, 64, 0.16);
   transition: transform 0.2s ease, background-color 0.2s ease;
@@ -170,7 +177,7 @@ button:focus-visible {
   margin: 0 0 10px;
   color: #9a6b3f;
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-card-title {
@@ -178,7 +185,7 @@ button:focus-visible {
   color: #0f2240;
   font-size: 1.45rem;
   line-height: 1.35;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-card-text {
@@ -209,7 +216,7 @@ button:focus-visible {
   color: #ffffff;
   cursor: pointer;
   font-size: 1.12rem;
-  font-weight: 900;
+  font-weight: 600;
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
@@ -268,7 +275,7 @@ button:focus-visible {
   background-color: rgba(255, 255, 255, 0.92);
   color: #0f2240;
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-about-layout {
@@ -297,7 +304,7 @@ button:focus-visible {
   border: 1px solid #e5e7eb;
   color: #0f2240;
   font-size: 1.12rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-contact-grid {
@@ -332,7 +339,7 @@ button:focus-visible {
   margin: 18px 0 10px;
   color: #9a6b3f;
   font-size: 1.08rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .home-contact-card p {
@@ -340,7 +347,7 @@ button:focus-visible {
   color: #0f2240;
   font-size: 1.15rem;
   line-height: 1.7;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 @media (max-width: 760px) {
@@ -369,7 +376,7 @@ a {
 button,
 input,
 select {
-  font: inherit;
+  font-family: inherit;
 }
 
 button {
@@ -433,7 +440,7 @@ button {
 .text-base { font-size: 1rem; line-height: 1.5rem; }
 .text-2xl { font-size: 1.5rem; line-height: 2rem; }
 .font-semibold { font-weight: 600; }
-.font-bold { font-weight: 700; }
+.font-bold { font-weight: 500; }
 .uppercase { text-transform: uppercase; }
 .tracking-wide { letter-spacing: 0.025em; }
 .text-green-700 { color: #15803d; }
@@ -501,7 +508,7 @@ button {
   color: #ffffff;
   box-shadow: 0 14px 30px rgba(15, 34, 64, 0.28);
   font-size: 2rem;
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -542,7 +549,7 @@ button {
   margin: 0;
   color: #111111;
   font-size: 1.1rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .accessibility-actions {
@@ -562,7 +569,7 @@ button {
   border-radius: 14px;
   background-color: #ffffff;
   color: #111111;
-  font-weight: 800;
+  font-weight: 600;
   text-align: right;
   transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -575,7 +582,7 @@ button {
   outline-offset: 3px !important;
   box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35) !important;
   transform: scale(1.03);
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .accessibility-action[aria-pressed="true"] {
@@ -591,7 +598,7 @@ button {
   border-radius: 10px;
   background-color: #f1f5f9;
   color: #111111;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .accessibility-message {
@@ -601,7 +608,7 @@ button {
   border-radius: 12px;
   background-color: #fff8dc;
   color: #111111;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.5;
 }
 
@@ -617,7 +624,7 @@ button {
 .accessibility-shortcuts-title {
   margin: 0 0 8px;
   color: #111111;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .accessibility-shortcuts ul {
@@ -787,7 +794,7 @@ body.accessibility-contrast-black .accessibility-action:focus-visible {
   outline-offset: 3px !important;
   box-shadow: 0 0 0 4px #000000 !important;
   transform: scale(1.03);
-  font-weight: 900;
+  font-weight: 600;
 }
 
 body.accessibility-contrast-black .accessibility-action:hover *,
@@ -848,7 +855,7 @@ body.accessibility-contrast-white .accessibility-action:focus-visible {
   outline-offset: 3px !important;
   box-shadow: 0 0 0 4px #ffffff !important;
   transform: scale(1.03);
-  font-weight: 900;
+  font-weight: 600;
 }
 
 body.accessibility-contrast-white .accessibility-action:hover *,

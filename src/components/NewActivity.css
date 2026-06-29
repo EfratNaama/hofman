@@ -29,14 +29,14 @@
   margin: 0;
   color: #977665;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .activity-form-header h1 {
   margin: 8px 0 0;
   color: #3f342f;
   font-size: clamp(1.9rem, 4vw, 2.6rem);
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1.15;
 }
 
@@ -45,7 +45,7 @@
   border-radius: 14px;
   padding: 14px 16px;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.6;
 }
 
@@ -72,7 +72,7 @@
   border-radius: 14px;
   padding: 14px 16px;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.6;
 }
 
@@ -87,14 +87,14 @@
   gap: 8px;
   color: #3f342f;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-activities-page label span {
   margin: 0;
   color: #3f342f;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-activities-page input,
@@ -144,7 +144,7 @@
   padding: 0 8px;
   color: #3f342f;
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .admin-activities-page fieldset .grid {
@@ -192,7 +192,7 @@
   margin-top: 4px;
   color: #3f342f;
   font-size: 1.8rem;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .admin-activities-page form > .flex {
@@ -207,7 +207,7 @@
   border-radius: 12px;
   padding: 11px 20px;
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 600;
   text-decoration: none;
 }
 

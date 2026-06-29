@@ -513,7 +513,7 @@ function Activities() {
         .activities-catalog__field label {
           color: #475569;
           font-size: 13px;
-          font-weight: 800;
+          font-weight: 600;
         }
 
         .activities-catalog__field input,
@@ -563,7 +563,7 @@ function Activities() {
           overflow: hidden;
           color: #0f2240;
           font-size: 23px;
-          font-weight: 900;
+          font-weight: 600;
           line-height: 1.3;
           text-overflow: ellipsis;
           white-space: nowrap;
