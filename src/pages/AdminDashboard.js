@@ -34,16 +34,16 @@ const initialData = {
 };
 
 const colors = {
-  teal: '#008080',
-  navy: '#0f2240',
-  blue: '#5B6FE6',
-  orange: '#E67E22',
-  red: '#E74C3C',
-  green: '#16a34a',
-  text: '#1a1a2e',
-  muted: '#64748b',
-  border: '#e5e7eb',
-  background: '#f8fafc',
+  primary: '#824D3F',
+  muted: '#977665',
+  accent: '#C7AB95',
+  olive: '#807D6E',
+  warm: '#C0977B',
+  text: '#000000',
+  chartText: '#807D6E',
+  border: '#C7AB95',
+  background: '#F4ECE6',
+  surface: '#ffffff',
 };
 
 const cardStyle = {
@@ -51,8 +51,8 @@ const cardStyle = {
   padding: '20px',
   border: `1px solid ${colors.border}`,
   borderRadius: '16px',
-  backgroundColor: '#fff',
-  boxShadow: '0 4px 18px rgba(15,34,64,0.07)',
+  backgroundColor: colors.surface,
+  boxShadow: '0 10px 24px rgba(130,77,63,0.08)',
 };
 
 const sectionTitleStyle = {
@@ -88,7 +88,7 @@ const getRoleGroup = (user) => {
   return ['admin', 'manager', 'מנהל'].includes(role) ? 'מנהלים' : 'משתמשים רגילים';
 };
 
-function SummaryCard({ label, value, description, icon, color }) {
+function SummaryCard({ label, value, description, color }) {
   return (
     <article
       style={{
@@ -96,37 +96,20 @@ function SummaryCard({ label, value, description, icon, color }) {
         display: 'flex',
         minHeight: '146px',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '16px',
         borderInlineStart: `4px solid ${color}`,
       }}
     >
       <div style={{ minWidth: 0 }}>
-        <p style={{ margin: 0, color: colors.muted, fontSize: '13px', fontWeight: 800 }}>
+        <p style={{ margin: 0, color: colors.text, fontSize: '13px', fontWeight: 800 }}>
           {label}
         </p>
         <p style={{ margin: '7px 0 0', color, fontSize: '34px', fontWeight: 950, lineHeight: 1 }}>
           {value}
         </p>
-        <p style={{ margin: '10px 0 0', color: colors.muted, fontSize: '12px', lineHeight: 1.5 }}>
+        <p style={{ margin: '10px 0 0', color: colors.text, fontSize: '12px', lineHeight: 1.5 }}>
           {description}
         </p>
       </div>
-      <span
-        aria-hidden="true"
-        style={{
-          display: 'grid',
-          width: '48px',
-          height: '48px',
-          flexShrink: 0,
-          placeItems: 'center',
-          borderRadius: '50%',
-          backgroundColor: `${color}18`,
-          fontSize: '24px',
-        }}
-      >
-        {icon}
-      </span>
     </article>
   );
 }
@@ -141,7 +124,7 @@ function EmptyState({ children = 'אין פריטים הדורשים טיפול 
         padding: '20px',
         borderRadius: '12px',
         backgroundColor: colors.background,
-        color: colors.muted,
+        color: colors.text,
         fontWeight: 700,
         textAlign: 'center',
       }}
@@ -163,6 +146,25 @@ function ChartCard({ title, hasData, children }) {
         <EmptyState>אין מספיק נתונים להצגת התרשים.</EmptyState>
       )}
     </article>
+  );
+}
+
+function renderPieLabel({ cx, cy, midAngle, outerRadius, name, value }) {
+  const radius = outerRadius + 34;
+  const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+  const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill={colors.chartText}
+      fontSize={12}
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+    >
+      {`${name}: ${value}`}
+    </text>
   );
 }
 
@@ -208,7 +210,7 @@ const dashboardCss = `
   .admin-dashboard__skeleton {
     width: 100%;
     border-radius: 16px;
-    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background: linear-gradient(90deg, #C7AB95 25%, #C0977B 50%, #C7AB95 75%);
     background-size: 200% 100%;
     animation: adminDashboardPulse 1.4s ease-in-out infinite;
   }
@@ -246,7 +248,7 @@ function LoadingDashboard() {
   return (
     <section className="admin-dashboard" dir="rtl" aria-label="טעינת נתוני לוח הבקרה">
       <style>{dashboardCss}</style>
-      <p style={{ margin: '0 0 20px', color: colors.muted, fontWeight: 800 }}>
+      <p style={{ margin: '0 0 20px', color: colors.text, fontWeight: 800 }}>
         טוען את נתוני לוח הבקרה...
       </p>
       <div className="admin-dashboard__summary-grid">
@@ -464,8 +466,8 @@ function AdminDashboard() {
               marginTop: '18px',
               padding: '11px 20px',
               borderRadius: '10px',
-              backgroundColor: colors.teal,
-              color: '#fff',
+              backgroundColor: colors.accent,
+              color: colors.text,
               fontWeight: 800,
             }}
           >
@@ -481,22 +483,19 @@ function AdminDashboard() {
       label: 'סך המשתמשים',
       value: data.users.length,
       description: 'כל המשתמשים הרשומים במערכת',
-      icon: '👥',
-      color: colors.teal,
+      color: colors.primary,
     },
     {
       label: 'סך הפעילויות',
       value: data.activities.length,
       description: 'כל הפעילויות הקיימות במערכת',
-      icon: '📅',
-      color: colors.blue,
+      color: colors.warm,
     },
     {
       label: 'הרשמות פעילות',
       value: dashboardData.registrations.length,
       description: `${dashboardData.paidPayments.length} הרשמות ששולמו`,
-      icon: '📋',
-      color: colors.orange,
+      color: colors.olive,
     },
   ];
 
@@ -511,7 +510,7 @@ function AdminDashboard() {
       <header
         style={{
           display: 'flex',
-          alignItems: 'flex-start',
+          alignItems: 'center',
           justifyContent: 'space-between',
           gap: '20px',
           flexWrap: 'wrap',
@@ -521,14 +520,11 @@ function AdminDashboard() {
         }}
       >
         <div>
-          <h1 style={{ margin: 0, color: colors.navy, fontSize: '32px', fontWeight: 950 }}>
+          <h1 style={{ margin: 0, color: colors.text, fontSize: '32px', fontWeight: 950 }}>
             לוח בקרה
           </h1>
-          <p style={{ margin: '9px 0 0', color: colors.muted, fontSize: '15px', lineHeight: 1.7 }}>
-            סקירה כללית של משתמשים, פעילויות, הרשמות, תשלומים והודעות
-          </p>
         </div>
-        <time style={{ color: colors.muted, fontSize: '14px', fontWeight: 800 }}>
+        <time style={{ color: colors.text, fontSize: '32px', fontWeight: 950, lineHeight: 1 }}>
           {new Date().toLocaleDateString('he-IL')}
         </time>
       </header>
@@ -539,9 +535,9 @@ function AdminDashboard() {
           style={{
             ...cardStyle,
             marginBottom: '24px',
-            borderColor: '#fecaca',
-            backgroundColor: '#fef2f2',
-            color: '#b91c1c',
+            borderColor: colors.primary,
+            backgroundColor: colors.background,
+            color: colors.text,
             fontWeight: 800,
           }}
         >
@@ -588,7 +584,7 @@ function AdminDashboard() {
                       >
                         {activity.title || 'פעילות ללא כותרת'}
                       </strong>
-                      <span style={{ color: colors.muted, fontSize: '13px' }}>
+                      <span style={{ color: colors.text, fontSize: '13px' }}>
                         {formatDate(activity.activityDate || activity.date)}
                         {activity.location ? ` · ${activity.location}` : ''}
                       </span>
@@ -627,7 +623,7 @@ function AdminDashboard() {
                       >
                         {galleryItem.title || galleryItem.caption || 'פריט גלריה'}
                       </strong>
-                      <span style={{ color: colors.muted, fontSize: '13px' }}>
+                      <span style={{ color: colors.text, fontSize: '13px' }}>
                         {formatDate(galleryItem.createdAt)}
                       </span>
                     </div>
@@ -644,69 +640,81 @@ function AdminDashboard() {
       <section className="admin-dashboard__section">
         <h2 style={sectionTitleStyle}>סטטיסטיקות</h2>
         <div className="admin-dashboard__charts-grid">
-          <ChartCard
+          <div className="admin-dashboard__chart-wide">
+            <ChartCard
             title="הרשמות לפי פעילות"
             hasData={dashboardData.registrationsByActivity.some((item) => item.count > 0)}
           >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dashboardData.registrationsByActivity}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="shortTitle" interval={0} tick={{ fontSize: 11 }} />
-                <YAxis allowDecimals={false} />
+              <BarChart data={dashboardData.registrationsByActivity} margin={{ left: 18, bottom: 12 }}>
+                <CartesianGrid stroke={colors.accent} strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="shortTitle"
+                  interval={0}
+                  tick={false}
+                  tickLine={false}
+                  height={12}
+                />
+                <YAxis allowDecimals={false} width={48} tickMargin={12} tick={{ fill: colors.chartText }} />
                 <Tooltip formatter={(value) => [value, 'הרשמות']} />
-                <Bar dataKey="count" name="הרשמות" fill={colors.teal} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" name="הרשמות" fill={colors.primary} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
+          </div>
 
           <ChartCard
             title="פעילויות לפי חודש"
             hasData={dashboardData.activitiesByMonth.some((item) => item.count > 0)}
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dashboardData.activitiesByMonth}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="label" />
-                <YAxis allowDecimals={false} />
+              <LineChart data={dashboardData.activitiesByMonth} margin={{ top: 10, right: 18, left: 18, bottom: 8 }}>
+                <CartesianGrid stroke={colors.accent} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="label" padding={{ left: 12, right: 12 }} tick={{ fill: colors.chartText }} />
+                <YAxis allowDecimals={false} width={48} tickMargin={12} tick={{ fill: colors.chartText }} />
                 <Tooltip formatter={(value) => [value, 'פעילויות']} />
                 <Line
                   type="monotone"
                   dataKey="count"
                   name="פעילויות"
-                  stroke={colors.blue}
+                  stroke={colors.warm}
                   strokeWidth={3}
-                  dot={{ r: 4, fill: colors.blue }}
+                  dot={{ r: 4, fill: colors.warm }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
 
-          <div className="admin-dashboard__chart-wide">
-            <ChartCard
+          <ChartCard
               title="משתמשים לפי תפקיד"
               hasData={dashboardData.usersByRole.some((item) => item.value > 0)}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart margin={{ top: 14, right: 58, bottom: 28, left: 58 }}>
                   <Pie
                     data={dashboardData.usersByRole}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
-                    cy="44%"
-                    outerRadius={92}
-                    label={({ name, percent }) => `${name} ${Math.round(percent * 100)}%`}
+                    cy="38%"
+                    outerRadius={66}
+                    labelLine={{ stroke: colors.muted }}
+                    label={renderPieLabel}
                   >
-                    <Cell fill={colors.teal} />
-                    <Cell fill={colors.blue} />
+                    <Cell fill={colors.primary} />
+                    <Cell fill={colors.olive} />
                   </Pie>
-                  <Tooltip formatter={(value) => [value, 'משתמשים']} />
-                  <Legend verticalAlign="bottom" />
+                  <Tooltip formatter={(value, name) => [value, name]} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={42}
+                    formatter={(value) => <span style={{ marginInlineStart: '8px' }}>{value}</span>}
+                    wrapperStyle={{ color: colors.muted }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </ChartCard>
-          </div>
         </div>
       </section>
 
