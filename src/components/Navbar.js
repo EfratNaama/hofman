@@ -158,9 +158,6 @@ function Navbar() {
                   <NavLink to="/activities" className="navbar-link" style={navLinkStyle}>
                     פעילויות
                   </NavLink>
-                  <NavLink to="/personal-area" className="navbar-link" style={navLinkStyle}>
-                    אזור אישי
-                  </NavLink>
                   <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>
                     גלריה
                   </NavLink>
@@ -205,6 +202,11 @@ function Navbar() {
               <button type="button" className="navbar-link" style={authButtonStyle} onClick={handleLogout}>
                 התנתקות
               </button>
+              {!isAdmin && (
+                  <NavLink to="/personal-area" className="navbar-link navbar-link--personal-area" style={navLinkStyle}>
+                    אזור אישי
+                  </NavLink>
+              )}
             </>
           )}
 
