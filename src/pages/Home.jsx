@@ -5,6 +5,7 @@ import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
 import useGallery from '../hooks/useGallery';
 import aboutHofmanImage from '../assets/about-hofman.png';
+import beitHoffmanHeroImage from '../logo/BeitHoffman.png';
 import partnerLogo60Plus from '../logo/60+.png';
 import partnerLogoGonenim from '../logo/gonenim.jpg';
 import partnerLogoJerusalemMunicipality from '../logo/Jerusalem Municipality.png';
@@ -234,7 +235,11 @@ function Home() {
         padding: '24px 20px 56px',
       }}
     >
-      <section className="home-public-hero" aria-labelledby="home-public-title">
+      <section
+        className="home-public-hero"
+        aria-labelledby="home-public-title"
+        style={{ '--home-hero-image': `url(${beitHoffmanHeroImage})` }}
+      >
         <div className="home-public-hero__inner">
           <h1 id="home-public-title">ברוכים הבאים לבית הופמן</h1>
           <p>בית חם לקהילה, פעילות, והשראה</p>
@@ -247,6 +252,14 @@ function Home() {
             </Link>
           </div>
         </div>
+        <svg
+          className="home-public-hero__wave"
+          viewBox="0 0 1440 130"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M0 52L60 60.7C120 69 240 87 360 82.3C480 78 600 52 720 39C840 26 960 26 1080 45.5C1200 65 1320 104 1380 123.5L1440 143V130H0V52Z" />
+        </svg>
       </section>
 
       <section className="home-features-strip" aria-label="מאפייני בית הופמן">
