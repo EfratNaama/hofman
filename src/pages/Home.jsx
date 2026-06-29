@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AnnouncementPreview from '../components/AnnouncementPreview';
 import FooterSection from '../components/FooterSection';
 import useHomeData from '../hooks/useHomeData';
+import { useActivities } from '../hooks/useActivities';
 import aboutHofmanImage from '../assets/about-hofman.png';
 import './Home.css';
 
@@ -72,6 +73,20 @@ const featuredActivityItems = [
   },
 ];
 
+const FEATURED_ACTIVITIES_LIMIT = featuredActivityItems.length;
+
+function getActivityImageUrl(activity) {
+  return activity.imageUrl || activity.image || '';
+}
+
+function getActivityTitle(activity) {
+  return activity.title || activity.name || 'פעילות ללא כותרת';
+}
+
+function getActivityDescription(activity) {
+  return activity.description || activity.location || 'פרטים נוספים יפורסמו בקרוב.';
+}
+
 function FeatureIcon({ type }) {
   const iconProps = {
     className: 'home-feature-item__svg',
@@ -139,6 +154,46 @@ function FeatureIcon({ type }) {
 
 function Home() {
   const { announcements, centerInfo, loading, error } = useHomeData();
+  const {
+    activities,
+    isLoading: activitiesLoading,
+    error: activitiesError,
+  } = useActivities();
+  const featuredActivities = activities.slice(0, FEATURED_ACTIVITIES_LIMIT);
+  const homeFeaturedActivityItems = activitiesLoading
+    ? [
+        {
+          id: 'activities-loading',
+          title: 'טוען פעילויות...',
+          description: 'הפעילויות מתעדכנות מהמערכת.',
+          mediaClass: 'art',
+        },
+      ]
+    : activitiesError
+      ? [
+          {
+            id: 'activities-error',
+            title: 'לא ניתן לטעון פעילויות כרגע',
+            description: 'נסו שוב מאוחר יותר.',
+            mediaClass: 'art',
+          },
+        ]
+      : featuredActivities.length === 0
+        ? [
+            {
+              id: 'activities-empty',
+              title: 'אין פעילויות להצגה כרגע',
+              description: 'פעילויות חדשות יופיעו כאן לאחר שיעודכנו במערכת.',
+              mediaClass: 'art',
+            },
+          ]
+        : featuredActivities.map((activity, index) => ({
+            id: activity.id,
+            title: getActivityTitle(activity),
+            description: getActivityDescription(activity),
+            imageUrl: getActivityImageUrl(activity),
+            mediaClass: featuredActivityItems[index % FEATURED_ACTIVITIES_LIMIT].mediaClass,
+          }));
 
   const scrollToAbout = (event) => {
     event.preventDefault();
@@ -192,10 +247,19 @@ function Home() {
         <div className="home-featured-activities__inner">
           <h2 id="home-featured-activities-title">פעילויות נבחרות</h2>
           <div className="home-featured-activities__grid">
-            {featuredActivityItems.map((activity) => (
-              <article className="home-featured-activity-card" key={activity.title}>
+            {homeFeaturedActivityItems.map((activity) => (
+              <article className="home-featured-activity-card" key={activity.id}>
                 <div
                   className={`home-featured-activity-card__media home-featured-activity-card__media--${activity.mediaClass}`}
+                  style={
+                    activity.imageUrl
+                      ? {
+                          backgroundImage: `url(${activity.imageUrl})`,
+                          backgroundPosition: 'center',
+                          backgroundSize: 'cover',
+                        }
+                      : undefined
+                  }
                   role="img"
                   aria-label={`תמונה עבור ${activity.title}`}
                 />

@@ -8,8 +8,13 @@
   color-scheme: light;
 }
 
+html,
+body,
+#root {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
 html {
-  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   font-size: calc(16px * var(--accessibility-font-scale, 1));
 }
 
@@ -26,14 +31,24 @@ body * {
   font-size: calc(1em * var(--accessibility-font-scale, 1));
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 button,
 input,
 textarea,
-select {
+select,
+a,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font: inherit;
 }
 
@@ -344,6 +359,7 @@ button:focus-visible {
 
 *, ::before, ::after {
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 a {

@@ -9,7 +9,7 @@
 
 .personal-calendar .rbc-calendar {
   color: #0f2240;
-  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  font-family: inherit;
 }
 
 .personal-calendar .rbc-toolbar {
