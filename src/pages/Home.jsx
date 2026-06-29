@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import AnnouncementPreview from '../components/AnnouncementPreview';
 import FooterSection from '../components/FooterSection';
 import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
@@ -153,7 +152,7 @@ function FeatureIcon({ type }) {
 }
 
 function Home() {
-  const { announcements, centerInfo, loading, error } = useHomeData();
+  const { centerInfo, loading } = useHomeData();
   const {
     activities,
     isLoading: activitiesLoading,
@@ -295,24 +294,6 @@ function Home() {
       </section>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gap: '40px' }}>
-        {error && (
-          <div
-            role="status"
-            style={{
-              padding: '18px 22px',
-              borderRadius: '20px',
-              border: '1px solid #fecaca',
-              backgroundColor: '#fff1f2',
-              color: '#991b1b',
-              fontSize: '1.1rem',
-              lineHeight: 1.7,
-            }}
-          >
-            לא ניתן היה לטעון נתונים עדכניים כרגע, ולכן מוצגים נתוני הדגמה להצגה.
-          </div>
-        )}
-
-        <AnnouncementPreview announcements={announcements} loading={loading} />
         <FooterSection centerInfo={centerInfo} loading={loading} />
       </div>
     </main>
