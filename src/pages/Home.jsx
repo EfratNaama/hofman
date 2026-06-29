@@ -309,15 +309,20 @@ function Home() {
             <h2 id="home-gallery-title">תמונות מהגלריה</h2>
             <div className="home-featured-activities__grid">
               {homeGalleryImages.map((image) => (
-                <article className="home-featured-activity-card" key={image.id}>
+                <article
+                  className="home-featured-activity-card"
+                  key={image.id}
+                  style={{ height: '390px', minHeight: '390px' }}
+                >
                   <img
                     src={getGalleryImageSource(image)}
                     alt={image.caption || 'Gallery image'}
                     style={{
                       display: 'block',
                       width: '100%',
-                      height: '390px',
+                      height: '100%',
                       objectFit: 'cover',
+                      objectPosition: 'center',
                     }}
                   />
                 </article>
