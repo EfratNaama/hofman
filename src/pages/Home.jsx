@@ -241,8 +241,8 @@ function Home() {
         style={{ '--home-hero-image': `url(${beitHoffmanHeroImage})` }}
       >
         <div className="home-public-hero__inner">
-          <h1 id="home-public-title">ברוכים הבאים לבית הופמן</h1>
-          <p>בית חם לקהילה, פעילות, והשראה</p>
+          <h1 id="home-public-title">בית הופמן</h1>
+          <p>בית צעיר למבוגרים</p>
           <div className="home-public-hero__actions">
             <a className="home-cta home-cta-primary" href="#about-hofman" onClick={scrollToAbout}>
               לפרטים נוספים
