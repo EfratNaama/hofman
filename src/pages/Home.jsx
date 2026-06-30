@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import FooterSection from '../components/FooterSection';
 import { useAuth } from '../context/AuthContext';
@@ -176,6 +176,12 @@ function FeatureIcon({ type }) {
 
 function Home() {
   const { authLoading, currentUser, isAdmin } = useAuth();
+  const activitiesCarouselRef = useRef(null);
+  const galleryCarouselRef = useRef(null);
+  const [carouselScrollable, setCarouselScrollable] = useState({
+    activities: false,
+    gallery: false,
+  });
   const { centerInfo, loading } = useHomeData();
   const {
     activities,
@@ -229,6 +235,35 @@ function Home() {
     event.preventDefault();
     document.getElementById('contact-info')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  const scrollCarousel = (carouselRef, direction) => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    const scrollAmount = Math.max(carousel.clientWidth * 0.75, 260);
+    carousel.scrollBy({
+      left: direction === 'right' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+  };
+
+  useEffect(() => {
+    const updateCarouselState = () => {
+      setCarouselScrollable({
+        activities: activitiesCarouselRef.current
+          ? activitiesCarouselRef.current.scrollWidth > activitiesCarouselRef.current.clientWidth + 1
+          : false,
+        gallery: galleryCarouselRef.current
+          ? galleryCarouselRef.current.scrollWidth > galleryCarouselRef.current.clientWidth + 1
+          : false,
+      });
+    };
+
+    updateCarouselState();
+    window.addEventListener('resize', updateCarouselState);
+
+    return () => window.removeEventListener('resize', updateCarouselState);
+  }, [homeFeaturedActivityItems.length, homeGalleryImages.length]);
 
   return (
     <main
@@ -322,7 +357,18 @@ function Home() {
       <section className="home-featured-activities" aria-labelledby="home-featured-activities-title">
         <div className="home-featured-activities__inner">
           <h2 id="home-featured-activities-title">פעילויות נבחרות</h2>
-          <div className="home-featured-activities__grid">
+          <div className="home-carousel">
+            {carouselScrollable.activities && (
+              <button
+                className="home-carousel__arrow home-carousel__arrow--right"
+                type="button"
+                aria-label="גלול ימינה"
+                onClick={() => scrollCarousel(activitiesCarouselRef, 'right')}
+              >
+                <span aria-hidden="true">&rsaquo;</span>
+              </button>
+            )}
+            <div className="home-featured-activities__grid" ref={activitiesCarouselRef}>
             {homeFeaturedActivityItems.map((activity) => (
               <article className="home-featured-activity-card" key={activity.id}>
                 <div
@@ -345,6 +391,17 @@ function Home() {
                 </div>
               </article>
             ))}
+            </div>
+            {carouselScrollable.activities && (
+              <button
+                className="home-carousel__arrow home-carousel__arrow--left"
+                type="button"
+                aria-label="גלול שמאלה"
+                onClick={() => scrollCarousel(activitiesCarouselRef, 'left')}
+              >
+                <span aria-hidden="true">&lsaquo;</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -353,7 +410,18 @@ function Home() {
         <section className="home-featured-activities" aria-label="תמונות מהגלריה">
           <div className="home-featured-activities__inner">
             <h2 id="home-gallery-title">תמונות מהגלריה</h2>
-            <div className="home-featured-activities__grid">
+            <div className="home-carousel">
+              {carouselScrollable.gallery && (
+                <button
+                  className="home-carousel__arrow home-carousel__arrow--right"
+                  type="button"
+                  aria-label="גלול ימינה"
+                  onClick={() => scrollCarousel(galleryCarouselRef, 'right')}
+                >
+                  <span aria-hidden="true">&rsaquo;</span>
+                </button>
+              )}
+              <div className="home-featured-activities__grid" ref={galleryCarouselRef}>
               {homeGalleryImages.map((image) => (
                 <article
                   className="home-featured-activity-card"
@@ -380,6 +448,17 @@ function Home() {
                   />
                 </article>
               ))}
+              </div>
+              {carouselScrollable.gallery && (
+                <button
+                  className="home-carousel__arrow home-carousel__arrow--left"
+                  type="button"
+                  aria-label="גלול שמאלה"
+                  onClick={() => scrollCarousel(galleryCarouselRef, 'left')}
+                >
+                  <span aria-hidden="true">&lsaquo;</span>
+                </button>
+              )}
             </div>
           </div>
         </section>
