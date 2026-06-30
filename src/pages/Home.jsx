@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
 import useGallery from '../hooks/useGallery';
+import { isActivityRegistrationClosed } from '../utils/activityRegistrationUtils';
 import leoHoffmanImage from '../logo/LeoHoffman.jpg';
 import beitHoffmanHeroImage from '../logo/BeitHoffman.png';
 import partnerLogo60Plus from '../logo/60+.png';
@@ -194,7 +195,9 @@ function Home() {
     error: activitiesError,
   } = useActivities();
   const { images: galleryImages, loading: galleryLoading } = useGallery();
-  const featuredActivities = activities.slice(0, FEATURED_ACTIVITIES_LIMIT);
+  const featuredActivities = activities
+    .filter((activity) => !isActivityRegistrationClosed(activity))
+    .slice(0, FEATURED_ACTIVITIES_LIMIT);
   const homeGalleryImages = galleryLoading
     ? []
     : galleryImages.filter(getGalleryImageSource).slice(0, HOME_GALLERY_LIMIT);
