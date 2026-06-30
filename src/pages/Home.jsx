@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import FooterSection from '../components/FooterSection';
 import { useAuth } from '../context/AuthContext';
 import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
 import useGallery from '../hooks/useGallery';
-import aboutHofmanImage from '../assets/about-hofman.png';
+import leoHoffmanImage from '../logo/LeoHoffman.jpg';
 import beitHoffmanHeroImage from '../logo/BeitHoffman.png';
 import partnerLogo60Plus from '../logo/60+.png';
 import partnerLogoGonenim from '../logo/gonenim.jpg';
@@ -92,6 +92,7 @@ const featuredActivityItems = [
 
 const FEATURED_ACTIVITIES_LIMIT = featuredActivityItems.length;
 const HOME_GALLERY_LIMIT = 6;
+const HOME_CAROUSEL_AUTOPLAY_MS = 4000;
 
 function getActivityImageUrl(activity) {
   return activity.imageUrl || activity.image || '';
@@ -182,6 +183,10 @@ function Home() {
     activities: false,
     gallery: false,
   });
+  const [carouselPaused, setCarouselPaused] = useState({
+    activities: false,
+    gallery: false,
+  });
   const { centerInfo, loading } = useHomeData();
   const {
     activities,
@@ -236,7 +241,7 @@ function Home() {
     document.getElementById('contact-info')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const scrollCarousel = (carouselRef, direction) => {
+  const scrollCarousel = useCallback((carouselRef, direction) => {
     const carousel = carouselRef.current;
     if (!carousel) return;
 
@@ -245,7 +250,22 @@ function Home() {
       left: direction === 'right' ? -scrollAmount : scrollAmount,
       behavior: 'smooth',
     });
-  };
+  }, []);
+
+  const autoScrollCarousel = useCallback((carouselRef) => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+    if (maxScroll <= 1) return;
+
+    if (Math.abs(carousel.scrollLeft) >= maxScroll - 4) {
+      carousel.scrollTo({ left: 0, behavior: 'smooth' });
+      return;
+    }
+
+    scrollCarousel(carouselRef, 'right');
+  }, [scrollCarousel]);
 
   useEffect(() => {
     const updateCarouselState = () => {
@@ -264,6 +284,27 @@ function Home() {
 
     return () => window.removeEventListener('resize', updateCarouselState);
   }, [homeFeaturedActivityItems.length, homeGalleryImages.length]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (carouselScrollable.activities && !carouselPaused.activities) {
+        autoScrollCarousel(activitiesCarouselRef);
+      }
+
+      if (carouselScrollable.gallery && !carouselPaused.gallery) {
+        autoScrollCarousel(galleryCarouselRef);
+      }
+    }, HOME_CAROUSEL_AUTOPLAY_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [autoScrollCarousel, carouselPaused, carouselScrollable]);
+
+  const setCarouselPause = (carouselName, isPaused) => {
+    setCarouselPaused((currentPaused) => ({
+      ...currentPaused,
+      [carouselName]: isPaused,
+    }));
+  };
 
   return (
     <main
@@ -337,7 +378,7 @@ function Home() {
         <div className="home-public-about__inner">
           <div className="home-public-about__image-wrap">
             <img
-              src={aboutHofmanImage}
+              src={leoHoffmanImage}
               alt="משתתפות בבית הופמן יושבות יחד סביב שולחן באווירה חמה"
               className="home-public-about__image"
             />
@@ -357,7 +398,13 @@ function Home() {
       <section className="home-featured-activities" aria-labelledby="home-featured-activities-title">
         <div className="home-featured-activities__inner">
           <h2 id="home-featured-activities-title">פעילויות נבחרות</h2>
-          <div className="home-carousel">
+          <div
+            className="home-carousel"
+            onMouseEnter={() => setCarouselPause('activities', true)}
+            onMouseLeave={() => setCarouselPause('activities', false)}
+            onFocus={() => setCarouselPause('activities', true)}
+            onBlur={() => setCarouselPause('activities', false)}
+          >
             {carouselScrollable.activities && (
               <button
                 className="home-carousel__arrow home-carousel__arrow--right"
@@ -410,7 +457,13 @@ function Home() {
         <section className="home-featured-activities" aria-label="תמונות מהגלריה">
           <div className="home-featured-activities__inner">
             <h2 id="home-gallery-title">תמונות מהגלריה</h2>
-            <div className="home-carousel">
+            <div
+              className="home-carousel"
+              onMouseEnter={() => setCarouselPause('gallery', true)}
+              onMouseLeave={() => setCarouselPause('gallery', false)}
+              onFocus={() => setCarouselPause('gallery', true)}
+              onBlur={() => setCarouselPause('gallery', false)}
+            >
               {carouselScrollable.gallery && (
                 <button
                   className="home-carousel__arrow home-carousel__arrow--right"
