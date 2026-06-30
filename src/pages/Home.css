@@ -253,7 +253,9 @@
 }
 
 .home-featured-activity-card {
+  display: flex;
   flex: 0 0 230px;
+  flex-direction: column;
   max-width: 230px;
   min-height: 390px;
   overflow: hidden;
@@ -314,6 +316,9 @@
 }
 
 .home-featured-activity-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 24px 20px 28px;
 }
 
@@ -331,6 +336,31 @@
   font-size: clamp(1.09rem, 1.4vw, 1.22rem);
   font-weight: 600;
   line-height: 1.65;
+}
+
+.home-featured-activity-card__button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  border: 1px solid rgba(98, 144, 134, 0.24);
+  border-radius: 999px;
+  background: rgba(248, 245, 240, 0.92);
+  color: #0f2240;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(63, 52, 47, 0.08);
+  transition: background 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.home-featured-activity-card__button:hover,
+.home-featured-activity-card__button:focus-visible {
+  background: rgb(98, 144, 134);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(98, 144, 134, 0.24);
+  transform: translateY(-1px);
 }
 
 .home-public-about {

@@ -234,6 +234,7 @@ function Home() {
             description: getActivityDescription(activity),
             imageUrl: getActivityImageUrl(activity),
             mediaClass: featuredActivityItems[index % FEATURED_ACTIVITIES_LIMIT].mediaClass,
+            detailsPath: `/activities/${activity.id}`,
           }));
 
   const scrollToContactInfo = (event) => {
@@ -432,6 +433,14 @@ function Home() {
                 <div className="home-featured-activity-card__body">
                   <h3>{activity.title}</h3>
                   <p>{activity.description}</p>
+                  {activity.detailsPath && (
+                    <Link
+                      className="home-featured-activity-card__button"
+                      to={currentUser ? activity.detailsPath : '/login'}
+                    >
+                      פרטים נוספים
+                    </Link>
+                  )}
                 </div>
               </article>
             ))}
