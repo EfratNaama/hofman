@@ -156,7 +156,8 @@ function Login() {
 
         <div className="login-form__actions">
           <button type="submit" className="login-form__button login-form__button--primary" disabled={loading}>
-            {loading ? 'טוען...' : 'התחבר'}
+            {loading && <span className="login-form__spinner" aria-hidden="true" />}
+            <span>{loading ? 'טוען...' : 'התחבר'}</span>
           </button>
           {error && (
             <div className="login-form__error" role="alert" aria-live="assertive">
@@ -164,10 +165,10 @@ function Login() {
               <span>{error}</span>
             </div>
           )}
-          <button type="button" className="login-form__button login-form__button--google" onClick={handleGoogleLogin} disabled={loading}>
-            {loading ? 'טוען...' : 'התחבר עם Google'}
+          <button type="button" className="login-form__button login-form__button--google" onClick={handleGoogleLogin}>
+            התחבר עם Google
           </button>
-          <button type="button" className="login-form__button login-form__button--secondary" onClick={resetForm} disabled={loading}>
+          <button type="button" className="login-form__button login-form__button--secondary" onClick={resetForm}>
             אפס טופס
           </button>
         </div>

@@ -83,6 +83,7 @@
   width: 100%;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   padding: 13px 18px;
   border: 0;
   border-radius: 18px;
@@ -140,6 +141,15 @@
 
 .login-form__button--link {
   display: inline-flex;
+}
+
+.login-form__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.42);
+  border-top-color: #ffffff;
+  border-radius: 999px;
+  animation: loginSpinner 720ms linear infinite;
 }
 
 .login-form__error {
@@ -213,8 +223,15 @@
   }
 }
 
+@keyframes loginSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .login-form__error {
+  .login-form__error,
+  .login-form__spinner {
     animation: none;
   }
 }
