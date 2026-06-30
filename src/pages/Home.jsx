@@ -188,6 +188,7 @@ function Home() {
     activities: false,
     gallery: false,
   });
+  const [galleryActiveIndex, setGalleryActiveIndex] = useState(0);
   const { centerInfo, loading } = useHomeData();
   const {
     activities,
@@ -271,6 +272,17 @@ function Home() {
     scrollCarousel(carouselRef, 'right');
   }, [scrollCarousel]);
 
+  const moveGalleryCarousel = useCallback((direction) => {
+    setGalleryActiveIndex((currentIndex) => {
+      const totalImages = homeGalleryImages.length;
+      if (totalImages <= 1) return currentIndex;
+
+      return direction === 'right'
+        ? (currentIndex + 1) % totalImages
+        : (currentIndex - 1 + totalImages) % totalImages;
+    });
+  }, [homeGalleryImages.length]);
+
   useEffect(() => {
     const updateCarouselState = () => {
       setCarouselScrollable({
@@ -290,18 +302,31 @@ function Home() {
   }, [homeFeaturedActivityItems.length, homeGalleryImages.length]);
 
   useEffect(() => {
+    setGalleryActiveIndex((currentIndex) => {
+      if (homeGalleryImages.length === 0) return 0;
+      return Math.min(currentIndex, homeGalleryImages.length - 1);
+    });
+  }, [homeGalleryImages.length]);
+
+  useEffect(() => {
     const intervalId = window.setInterval(() => {
       if (carouselScrollable.activities && !carouselPaused.activities) {
         autoScrollCarousel(activitiesCarouselRef);
       }
 
-      if (carouselScrollable.gallery && !carouselPaused.gallery) {
-        autoScrollCarousel(galleryCarouselRef);
+      if (homeGalleryImages.length > 1 && !carouselPaused.gallery) {
+        moveGalleryCarousel('right');
       }
     }, HOME_CAROUSEL_AUTOPLAY_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [autoScrollCarousel, carouselPaused, carouselScrollable]);
+  }, [
+    autoScrollCarousel,
+    carouselPaused,
+    carouselScrollable.activities,
+    homeGalleryImages.length,
+    moveGalleryCarousel,
+  ]);
 
   const setCarouselPause = (carouselName, isPaused) => {
     setCarouselPaused((currentPaused) => ({
@@ -473,50 +498,53 @@ function Home() {
               onFocus={() => setCarouselPause('gallery', true)}
               onBlur={() => setCarouselPause('gallery', false)}
             >
-              {carouselScrollable.gallery && (
+              {homeGalleryImages.length > 1 && (
                 <button
                   className="home-carousel__arrow home-carousel__arrow--right"
                   type="button"
                   aria-label="גלול ימינה"
-                  onClick={() => scrollCarousel(galleryCarouselRef, 'right')}
+                  onClick={() => moveGalleryCarousel('right')}
                 >
                   <span aria-hidden="true">&rsaquo;</span>
                 </button>
               )}
-              <div className="home-featured-activities__grid" ref={galleryCarouselRef}>
-              {homeGalleryImages.map((image) => (
-                <article
-                  className="home-featured-activity-card"
-                  key={image.id}
-                  style={{
-                    flex: '0 0 320px',
-                    width: '320px',
-                    maxWidth: '320px',
-                    minHeight: 0,
-                    aspectRatio: '4 / 3',
-                    background: 'rgba(255, 255, 255, 0.55)',
-                  }}
-                >
-                  <img
-                    src={getGalleryImageSource(image)}
-                    alt={image.caption || 'Gallery image'}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'center',
-                    }}
-                  />
-                </article>
-              ))}
+              <div className="home-gallery-carousel" ref={galleryCarouselRef} aria-live="polite">
+                {homeGalleryImages.map((image, index) => {
+                  const totalImages = homeGalleryImages.length;
+                  let position = index - galleryActiveIndex;
+
+                  if (totalImages > 1) {
+                    const halfPoint = totalImages / 2;
+                    if (position > halfPoint) position -= totalImages;
+                    if (position < -halfPoint) position += totalImages;
+                  }
+
+                  const visiblePosition = Math.max(-2, Math.min(2, position));
+                  const isVisible = Math.abs(position) <= 2;
+
+                  return (
+                    <article
+                      className="home-gallery-carousel__item"
+                      data-position={visiblePosition}
+                      data-visible={isVisible ? 'true' : 'false'}
+                      key={image.id}
+                      aria-hidden={!isVisible}
+                    >
+                      <img
+                        className="home-gallery-carousel__image"
+                        src={getGalleryImageSource(image)}
+                        alt={image.caption || 'Gallery image'}
+                      />
+                    </article>
+                  );
+                })}
               </div>
-              {carouselScrollable.gallery && (
+              {homeGalleryImages.length > 1 && (
                 <button
                   className="home-carousel__arrow home-carousel__arrow--left"
                   type="button"
                   aria-label="גלול שמאלה"
-                  onClick={() => scrollCarousel(galleryCarouselRef, 'left')}
+                  onClick={() => moveGalleryCarousel('left')}
                 >
                   <span aria-hidden="true">&lsaquo;</span>
                 </button>
