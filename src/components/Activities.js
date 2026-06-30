@@ -27,6 +27,7 @@ import {
   isOneTimeActivity,
   isOneTimeActivityExpired,
 } from '../utils/activityRegistrationUtils';
+import LogoLoader from './LogoLoader';
 
 const initialFilters = {
   search: '',
@@ -722,7 +723,7 @@ function Activities() {
         }}
       >
         <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>
-          {isLoading ? 'טוען פעילויות...' : `${filteredActivities.length} פעילויות נמצאו`}
+          {isLoading ? '' : `${filteredActivities.length} פעילויות נמצאו`}
         </p>
         <button
           type="button"
@@ -758,20 +759,7 @@ function Activities() {
         </div>
       )}
 
-      {isLoading && (
-        <div
-          style={{
-            padding: '28px',
-            borderRadius: '16px',
-            backgroundColor: '#fff',
-            color: '#475569',
-            fontWeight: 800,
-            textAlign: 'center',
-          }}
-        >
-          טוען פעילויות...
-        </div>
-      )}
+      {isLoading && <LogoLoader label="טוען פעילויות..." />}
 
       {!isLoading && !error && filteredActivities.length === 0 && (
         <div
@@ -1025,9 +1013,7 @@ function Activities() {
                             fontWeight: 800,
                           }}
                         >
-                          {loadingRegistrationActivityId === activity.id
-                            ? 'טוען נרשמים...'
-                            : 'צפייה בנרשמים'}
+                          צפייה בנרשמים
                         </button>
                       </>
                     )}
@@ -1048,9 +1034,7 @@ function Activities() {
                           ? ` (${adminRegistrationsByActivity[activity.id].length})`
                           : ''}
                       </h3>
-                      {loadingRegistrationActivityId === activity.id && (
-                        <p style={{ color: '#475569' }}>טוען נרשמים...</p>
-                      )}
+                      {loadingRegistrationActivityId === activity.id && <LogoLoader label="טוען נרשמים..." />}
                       {loadingRegistrationActivityId !== activity.id &&
                         (adminRegistrationsByActivity[activity.id]?.length || 0) === 0 && (
                           <p style={{ color: '#475569' }}>אין עדיין נרשמים לפעילות זו</p>

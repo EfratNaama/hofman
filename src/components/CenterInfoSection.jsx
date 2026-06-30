@@ -30,6 +30,8 @@ function ContactIcon({ type }) {
   );
 }
 
+import LogoLoader from './LogoLoader';
+
 function CenterInfoSection({ centerInfo, loading }) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8" dir="rtl" id="contact">
@@ -95,7 +97,7 @@ function CenterInfoSection({ centerInfo, loading }) {
               <div>
                 <p className="font-semibold text-slate-950">שעות פתיחה</p>
                 {loading ? (
-                  <p className="mt-2 text-slate-700">טוען שעות פעילות...</p>
+                  <LogoLoader label="טוען שעות פעילות..." />
                 ) : (centerInfo?.openingHours || []).length > 0 ? (
                   <ul className="mt-2 space-y-1 text-slate-700">
                     {centerInfo.openingHours.map((slot, index) => (

@@ -18,6 +18,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
+import LogoLoader from '../components/LogoLoader';
 import './AdminDashboard.css';
 
 const collectionNames = {
@@ -152,19 +153,7 @@ function renderPieLabelLine({ cx, cy, midAngle, outerRadius, index }) {
 }
 
 function LoadingDashboard() {
-  return (
-    <section className="admin-dashboard" dir="rtl" aria-label="טעינת נתוני לוח הבקרה">
-      <div className="admin-dashboard__shell">
-        <p className="admin-dashboard__loading-text">טוען את נתוני לוח הבקרה...</p>
-        <div className="admin-dashboard__summary-grid">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="admin-dashboard__skeleton admin-dashboard__skeleton--summary" />
-          ))}
-        </div>
-        <div className="admin-dashboard__skeleton admin-dashboard__skeleton--wide" />
-      </div>
-    </section>
-  );
+  return <LogoLoader label="טוען את נתוני לוח הבקרה..." />;
 }
 
 function AdminDashboard() {

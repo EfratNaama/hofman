@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { deleteUser, getUserById } from '../services/usersService';
 import { formatDisplayDate } from '../utils/dateUtils';
+import LogoLoader from './LogoLoader';
 
 const roleLabels = {
   admin: 'מנהל',
@@ -63,7 +64,7 @@ function UserDetails() {
   };
 
   if (isLoading) {
-    return <section className="rounded-lg bg-white p-5 text-right shadow-lg text-slate-700" dir="rtl">טוען משתמש...</section>;
+    return <LogoLoader label="טוען משתמש..." />;
   }
 
   if (!user) {

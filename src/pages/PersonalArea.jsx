@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import PersonalCalendar from '../components/PersonalCalendar';
+import LogoLoader from '../components/LogoLoader';
 import { getUserAllRegistrations } from '../services/activityRegistrationsService';
 import { getAnnouncements } from '../services/announcementService';
 import { db } from '../firebase';
@@ -396,7 +397,7 @@ function PersonalArea() {
       )}
 
       {loading ? (
-        <div className="personal-area__state">טוען את האזור האישי...</div>
+        <LogoLoader label="טוען את האזור האישי..." />
       ) : (
         <>
           <section className="personal-area__dashboard" aria-label="לוח אישי והודעות">
@@ -435,9 +436,7 @@ function PersonalArea() {
                   </div>
                 )}
 
-                {announcementsLoading && (
-                  <div className="personal-area__inline-state">טוען הודעות...</div>
-                )}
+                {announcementsLoading && <LogoLoader label="טוען הודעות..." />}
 
                 {!announcementsLoading && !announcementsError && announcements.length === 0 && (
                   <div className="personal-area__inline-state">

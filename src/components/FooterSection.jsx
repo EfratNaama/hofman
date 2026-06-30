@@ -117,7 +117,7 @@ function FooterSection({ centerInfo, loading }) {
               <Icon type={card.icon} />
             </div>
             <h3>{card.title}</h3>
-            <p>{loading && card.title === 'שעות פעילות' ? 'טוען...' : card.content}</p>
+            <p>{card.content}</p>
           </article>
         ))}
       </div>

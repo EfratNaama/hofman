@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useActivities } from '../hooks/useActivities';
 import { formatActivityDate } from '../utils/activityDateUtils';
+import LogoLoader from './LogoLoader';
 
 const sectionStyle = {
   background: '#ffffff',
@@ -32,9 +33,7 @@ function Events() {
         כאן תוצג רשימת האירועים החד פעמיים.
       </p>
 
-      {isLoading && (
-        <p style={{ marginTop: '18px', fontSize: '1rem', color: '#4c5663' }}>טוען אירועים...</p>
-      )}
+      {isLoading && <LogoLoader label="טוען אירועים..." />}
 
       {error && (
         <p style={{ marginTop: '18px', fontSize: '1rem', color: '#b91c1c' }}>{error}</p>

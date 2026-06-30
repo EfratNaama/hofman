@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import ActivityForm from './ActivityForm';
+import LogoLoader from './LogoLoader';
 import { getActivityById, updateActivity } from '../services/activitiesService';
 import { getActivityRegistrations } from '../services/activityRegistrationsService';
 import { formatActivityDateInput } from '../utils/activityDateUtils';
@@ -50,11 +51,7 @@ function EditActivity() {
   };
 
   if (isLoading) {
-    return (
-      <section className="mx-auto max-w-6xl px-4 py-8 text-right" dir="rtl">
-        <div className="rounded-lg bg-white p-6 text-xl font-semibold text-slate-700 shadow-sm">טוען פעילות...</div>
-      </section>
-    );
+    return <LogoLoader label="טוען פעילות..." />;
   }
 
   if (!activity) {

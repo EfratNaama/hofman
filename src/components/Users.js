@@ -4,6 +4,7 @@ import { getActivityById } from '../services/activitiesService';
 import { getUserActivityRegistrations } from '../services/activityRegistrationsService';
 import { deleteUser, getUsers } from '../services/usersService';
 import { formatActivityDate } from '../utils/activityDateUtils';
+import LogoLoader from './LogoLoader';
 import './Users.css';
 
 const roleLabels = {
@@ -171,7 +172,7 @@ function Users() {
         </div>
       )}
 
-      {isLoading && <p className="admin-users-page__notice">טוען משתמשים...</p>}
+      {isLoading && <LogoLoader label="טוען משתמשים..." />}
 
       {!isLoading && !error && users.length === 0 && (
         <div className="admin-users-page__empty">
@@ -278,11 +279,7 @@ function Users() {
               </button>
             </div>
 
-            {isLoadingActivities && (
-              <p className="rounded-md bg-slate-50 p-4 font-semibold text-slate-700">
-                טוען פעילויות...
-              </p>
-            )}
+            {isLoadingActivities && <LogoLoader label="טוען פעילויות..." />}
 
             {!isLoadingActivities && activitiesError && (
               <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

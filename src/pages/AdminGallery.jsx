@@ -1,4 +1,5 @@
 import GalleryUploadForm from '../components/GalleryUploadForm';
+import LogoLoader from '../components/LogoLoader';
 import { useAuth } from '../context/AuthContext';
 import useGallery from '../hooks/useGallery';
 
@@ -62,9 +63,7 @@ function AdminGallery() {
             )}
 
             {loading ? (
-              <div className="mt-6 rounded-2xl bg-slate-50 p-8 text-center text-xl font-semibold text-slate-700">
-                Loading images...
-              </div>
+              <LogoLoader label="Loading images..." />
             ) : images.length === 0 ? (
               <div className="mt-6 rounded-2xl bg-slate-50 p-8 text-center text-xl font-semibold text-slate-700">
                 No uploaded images yet.

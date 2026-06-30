@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import LogoLoader from './LogoLoader';
 
 const sectionStyle = {
   backgroundColor: '#ffffff',
@@ -89,7 +90,7 @@ function ActivitiesPreview({ activities = [], loading }) {
       </div>
 
       {loading ? (
-        <div className="home-state-card">טוען פעילויות...</div>
+        <LogoLoader label="טוען פעילויות..." />
       ) : (
         <div className="home-grid home-grid-activities">
           {visibleActivities.map((activity) => (

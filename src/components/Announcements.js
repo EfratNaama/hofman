@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getAnnouncements, markAnnouncementsRead } from '../services/announcementService';
+import LogoLoader from './LogoLoader';
 import './Announcements.css';
 
 function formatAnnouncementDate(createdAt) {
@@ -78,11 +79,7 @@ function Announcements() {
         </div>
       )}
 
-      {isLoading && (
-        <div className="user-announcements-state">
-          טוען הודעות...
-        </div>
-      )}
+      {isLoading && <LogoLoader label="טוען הודעות..." />}
 
       {!isLoading && !error && announcements.length === 0 && (
         <div className="user-announcements-state user-announcements-state--empty">
