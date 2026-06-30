@@ -1,76 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const sectionStyle = {
-  background: '#ffffff',
-  borderRadius: '22px',
-  padding: '28px',
-  marginBottom: '24px',
-  boxShadow: '0 16px 38px rgba(0,0,0,0.12)',
-  maxWidth: '520px',
-  margin: '0 auto 24px',
-};
-
-const titleStyle = {
-  fontSize: '2rem',
-  marginBottom: '14px',
-  color: '#1b3f5b',
-};
-
-const textStyle = {
-  fontSize: '1rem',
-  lineHeight: 1.8,
-  color: '#4c5663',
-  marginBottom: '24px',
-};
-
-const formStyle = {
-  display: 'grid',
-  gap: '16px',
-};
-
-const inputStyle = {
-  width: '100%',
-  padding: '14px 16px',
-  borderRadius: '16px',
-  border: '1px solid #d2d6dc',
-  fontSize: '1rem',
-  color: '#0f172a',
-};
-
-const buttonStyle = {
-  padding: '14px 16px',
-  borderRadius: '16px',
-  border: 'none',
-  fontSize: '1rem',
-  fontWeight: 700,
-  cursor: 'pointer',
-};
-
-const primaryButton = {
-  ...buttonStyle,
-  background: '#3f6378',
-  color: '#ffffff',
-};
-
-const secondaryButton = {
-  ...buttonStyle,
-  background: '#e9e5df',
-  color: '#1f2933',
-};
-
-const googleButton = {
-  ...buttonStyle,
-  background: '#1a73e8',
-  color: '#ffffff',
-};
-
-const errorStyle = {
-  color: '#991b1b',
-  fontSize: '0.95rem',
-  minHeight: '24px',
-};
+import './Login.css';
 
 function getFriendlyErrorMessage(error) {
   if (!error) return 'אירעה שגיאה אנונימית. נסו שוב.';
@@ -188,54 +119,54 @@ function Login() {
   };
 
   return (
-    <section style={sectionStyle}>
-      <h2 style={titleStyle}>כניסה לחשבון</h2>
-      <p style={textStyle}>
+    <section className="login-card">
+      <h2 className="login-card__title">כניסה לחשבון</h2>
+      <p className="login-card__text">
         התחברו באמצעות כתובת דוא"ל וסיסמה או השתמשו בכניסה עם Google. ניתן לאפס את הטופס בכל עת.
       </p>
 
-      <form onSubmit={handleEmailLogin} style={formStyle}>
-        <label>
-          <span style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1f2933' }}>אימייל</span>
+      <form onSubmit={handleEmailLogin} className="login-form">
+        <label className="login-form__field">
+          <span className="login-form__label">אימייל</span>
           <input
             type="email"
             placeholder="name@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
+            className="login-form__input"
             required
           />
         </label>
 
-        <label>
-          <span style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#1f2933' }}>סיסמה</span>
+        <label className="login-form__field">
+          <span className="login-form__label">סיסמה</span>
           <input
             type="password"
             placeholder="הקלידו סיסמה"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
+            className="login-form__input"
             required
           />
         </label>
 
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <button type="submit" style={primaryButton} disabled={loading}>
+        <div className="login-form__actions">
+          <button type="submit" className="login-form__button login-form__button--primary" disabled={loading}>
             {loading ? 'טוען...' : 'התחבר'}
           </button>
-          <button type="button" style={googleButton} onClick={handleGoogleLogin} disabled={loading}>
+          <button type="button" className="login-form__button login-form__button--google" onClick={handleGoogleLogin} disabled={loading}>
             {loading ? 'טוען...' : 'התחבר עם Google'}
           </button>
-          <button type="button" style={secondaryButton} onClick={resetForm} disabled={loading}>
+          <button type="button" className="login-form__button login-form__button--secondary" onClick={resetForm} disabled={loading}>
             אפס טופס
           </button>
         </div>
       </form>
 
-      <div style={errorStyle} role="alert">{error}</div>
+      <div className="login-form__error" role="alert">{error}</div>
 
-      <div style={{ marginTop: '18px', textAlign: 'center' }}>
-        <Link to="/" style={{ ...secondaryButton, textDecoration: 'none', display: 'inline-block', width: '100%' }}>
+      <div className="login-card__footer">
+        <Link to="/" className="login-form__button login-form__button--secondary login-form__button--link">
           חזרה לדף הבית
         </Link>
       </div>
