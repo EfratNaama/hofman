@@ -3,10 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
+const INVALID_CREDENTIALS_MESSAGE = 'האימייל או הסיסמא שגויים! נסו שנית!';
+
 function getFriendlyErrorMessage(error) {
   if (!error) return 'אירעה שגיאה אנונימית. נסו שוב.';
   const code = error.code || '';
   const message = error.message || '';
+
+  if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
+    return INVALID_CREDENTIALS_MESSAGE;
+  }
 
   if (code === 'unavailable' || code === 'failed-precondition' || /offline/i.test(message)) {
     return 'חיבור ל-Firestore אינו זמין כרגע. בדקו את חיבור הרשת ונסו שוב מאוחר יותר.';
@@ -72,7 +78,6 @@ function Login() {
       console.error('Login email error', err.code, err.message, err);
       const message = getFriendlyErrorMessage(err);
       setError(message);
-      alert(`Login error: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -112,7 +117,6 @@ function Login() {
       console.error('Login Google error', err.code, err.message, err);
       const message = getFriendlyErrorMessage(err);
       setError(message);
-      alert(`Login error: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -154,6 +158,12 @@ function Login() {
           <button type="submit" className="login-form__button login-form__button--primary" disabled={loading}>
             {loading ? 'טוען...' : 'התחבר'}
           </button>
+          {error && (
+            <div className="login-form__error" role="alert" aria-live="assertive">
+              <span className="login-form__error-icon" aria-hidden="true">!</span>
+              <span>{error}</span>
+            </div>
+          )}
           <button type="button" className="login-form__button login-form__button--google" onClick={handleGoogleLogin} disabled={loading}>
             {loading ? 'טוען...' : 'התחבר עם Google'}
           </button>
@@ -162,8 +172,6 @@ function Login() {
           </button>
         </div>
       </form>
-
-      <div className="login-form__error" role="alert">{error}</div>
 
       <div className="login-card__footer">
         <Link to="/" className="login-form__button login-form__button--secondary login-form__button--link">
