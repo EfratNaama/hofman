@@ -2,18 +2,33 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { deleteActivity, getActivityById } from '../services/activitiesService';
-import { getActivityRegistrationCount } from '../services/activityRegistrationsService';
+import {
+  getActivityRegistrationCount,
+  getUserActivityRegistrations,
+  registerForActivity,
+} from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
+import {
+  getRegistrationPresentation,
+  isActivityRegistrationClosed,
+  isOneTimeActivity,
+} from '../utils/activityRegistrationUtils';
 import './ActivityDetails.css';
 
 function ActivityDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { role } = useAuth();
-  const normalizedRole = (role || '').toLowerCase();
+  const { currentUser, role: authRole } = useAuth();
+  const normalizedRole = (authRole ?? currentUser?.role ?? '').toLowerCase();
   const canManageActivity = normalizedRole === 'admin' || normalizedRole === 'manager';
+  const canRegister = Boolean(currentUser) && !canManageActivity;
   const [activity, setActivity] = useState(null);
   const [registrationsCount, setRegistrationsCount] = useState(null);
+  const [userRegistration, setUserRegistration] = useState(null);
+  const [registeringActivityId, setRegisteringActivityId] = useState('');
+  const [registrationError, setRegistrationError] = useState('');
+  const [registrationMessage, setRegistrationMessage] = useState('');
+  const [wasJustRegistered, setWasJustRegistered] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -38,6 +53,39 @@ function ActivityDetails() {
     loadActivity();
   }, [canManageActivity, id]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUserRegistration() {
+      if (!currentUser?.uid) {
+        setUserRegistration(null);
+        setWasJustRegistered(false);
+        return;
+      }
+
+      try {
+        const registrations = await getUserActivityRegistrations(currentUser.uid);
+        if (isMounted) {
+          setUserRegistration(
+            registrations.find((registration) => registration.activityId === id) || null
+          );
+          setWasJustRegistered(false);
+        }
+      } catch (err) {
+        console.error('Failed to load activity registrations', err);
+        if (isMounted) {
+          setRegistrationError('לא ניתן לטעון את ההרשמות שלך כרגע.');
+        }
+      }
+    }
+
+    loadUserRegistration();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser?.uid, id]);
+
   const handleDelete = async () => {
     const confirmed = window.confirm('האם למחוק את הפעילות? לא ניתן לבטל פעולה זו.');
     if (!confirmed) {
@@ -54,6 +102,76 @@ function ActivityDetails() {
     } catch (err) {
       setError('לא ניתן למחוק את הפעילות. נסו שוב.');
       setIsDeleting(false);
+    }
+  };
+
+  const getAvailableSpots = (targetActivity) => (
+    Math.max(
+      Number(targetActivity?.maxParticipants || 0) -
+        (registrationsCount ?? Number(targetActivity?.currentParticipants || 0)),
+      0
+    )
+  );
+
+  const handleRegister = async () => {
+    setRegistrationError('');
+    setRegistrationMessage('');
+
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+
+    if (!canRegister) {
+      setRegistrationError('רק משתמשים רגילים יכולים להירשם לפעילויות.');
+      return;
+    }
+
+    if (!activity) {
+      return;
+    }
+
+    if (isActivityRegistrationClosed(activity)) {
+      setRegistrationError(
+        isOneTimeActivity(activity)
+          ? 'ההרשמה לפעילות זו נסגרה כי התאריך עבר.'
+          : 'ההרשמה לפעילות זו נסגרה כי הפעילות הסתיימה.'
+      );
+      return;
+    }
+
+    if (getAvailableSpots(activity) <= 0) {
+      setRegistrationError('לא נותרו מקומות פנויים לפעילות זו.');
+      return;
+    }
+
+    setRegisteringActivityId(activity.id);
+
+    try {
+      const result = await registerForActivity(activity, currentUser);
+      setUserRegistration((currentRegistration) => (
+        currentRegistration || {
+          id: `${currentUser.uid}_${activity.id}`,
+          activityId: activity.id,
+          paymentStatus: result.alreadyRegistered ? '' : 'pending',
+        }
+      ));
+
+      if (!result.alreadyRegistered) {
+        setRegistrationsCount((currentCount) => (
+          (currentCount ?? Number(activity.currentParticipants || 0)) + 1
+        ));
+        setWasJustRegistered(true);
+      }
+
+      setRegistrationMessage(
+        result.alreadyRegistered ? 'כבר נרשמת לפעילות זו.' : 'נרשמת בהצלחה'
+      );
+    } catch (err) {
+      console.error('Failed to register for activity', err);
+      setRegistrationError('לא ניתן להשלים את ההרשמה. נסו שוב מאוחר יותר.');
+    } finally {
+      setRegisteringActivityId('');
     }
   };
 
@@ -86,14 +204,17 @@ function ActivityDetails() {
     .map((value) => String(value || '').trim())
     .filter(Boolean)
     .join(' - ');
-  const maxParticipants = Number(activity.maxParticipants || 0);
   const displayedRegisteredCount = registrationsCount ?? Number(activity.currentParticipants || 0);
-  const displayedAvailableSpots = Math.max(maxParticipants - displayedRegisteredCount, 0);
+  const displayedAvailableSpots = getAvailableSpots(activity);
   const lecturer = activity.lecturer || {};
   const lecturerName = lecturer.name?.trim() || '';
   const lecturerDescription = lecturer.description?.trim() || '';
   const lecturerImage = lecturer.imageBase64?.trim() || '';
   const hasLecturerDetails = Boolean(lecturerName || lecturerDescription || lecturerImage);
+  const registrationClosed = isActivityRegistrationClosed(activity);
+  const isFull = displayedAvailableSpots <= 0;
+  const registrationUnavailable = registrationClosed || isFull;
+  const registrationPresentation = getRegistrationPresentation(userRegistration, wasJustRegistered);
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-8 text-right" dir="rtl">
@@ -195,6 +316,48 @@ function ActivityDetails() {
           <DetailItem label="תשלום" value={paymentLabel} />
           <DetailItem label="קישור לתשלום" value={activity.paymentLink || '-'} />
         </dl>
+
+        {canRegister && (
+          <section className="activity-details-registration" aria-label="הרשמה לפעילות">
+            {registrationError && (
+              <div className="activity-details-registration__alert activity-details-registration__alert--error" role="alert">
+                {registrationError}
+              </div>
+            )}
+            {registrationMessage && (
+              <div className="activity-details-registration__alert activity-details-registration__alert--success" role="status">
+                {registrationMessage}
+              </div>
+            )}
+            <button
+              className="activity-details-registration__button"
+              type="button"
+              disabled={
+                registrationUnavailable ||
+                Boolean(userRegistration) ||
+                registeringActivityId === activity.id
+              }
+              data-state={
+                registrationClosed
+                  ? 'closed'
+                  : isFull
+                    ? 'full'
+                    : userRegistration
+                      ? 'registered'
+                      : 'available'
+              }
+              onClick={handleRegister}
+            >
+              {registrationClosed
+                ? 'ההרשמה נסגרה'
+                : isFull
+                  ? 'הפעילות מלאה'
+                  : registeringActivityId === activity.id
+                    ? 'נרשם...'
+                    : registrationPresentation.label}
+            </button>
+          </section>
+        )}
       </div>
     </section>
   );
