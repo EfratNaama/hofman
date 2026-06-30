@@ -7,7 +7,9 @@ import {
   getActivityRegistrationCounts,
   getUserActivityRegistrations,
   registerForActivity,
+  removeActivityRegistration,
 } from '../services/activityRegistrationsService';
+import './Activities.css';
 import { getUsers } from '../services/usersService';
 import {
   ACTIVITY_WEEKDAYS,
@@ -109,6 +111,7 @@ function Activities() {
   const [adminRegistrationsByActivity, setAdminRegistrationsByActivity] = useState({});
   const [expandedRegistrationActivityId, setExpandedRegistrationActivityId] = useState('');
   const [loadingRegistrationActivityId, setLoadingRegistrationActivityId] = useState('');
+  const [removingRegistrationId, setRemovingRegistrationId] = useState('');
 
   const registrationsByActivityId = useMemo(
     () => new Map(userRegistrations.map((registration) => [registration.activityId, registration])),
@@ -410,6 +413,47 @@ function Activities() {
       setRegistrationError('לא ניתן לטעון את רשימת הנרשמים לפעילות זו.');
     } finally {
       setLoadingRegistrationActivityId('');
+    }
+  };
+
+  const handleRemoveRegistration = async (activity, registration) => {
+    setRegistrationError('');
+    setRegistrationMessage('');
+
+    if (!canCreateActivity) {
+      setRegistrationError('׳׳™׳ ׳׳ ׳”׳¨׳©׳׳” ׳׳”׳¡׳™׳¨ ׳ ׳¨׳©׳׳™׳ ׳׳₪׳¢׳™׳׳•׳×.');
+      return;
+    }
+
+    const confirmed = window.confirm('׳”׳׳ ׳׳”׳¡׳™׳¨ ׳׳× ׳”׳׳©׳×׳׳© ׳׳”׳¨׳™׳©׳•׳ ׳׳₪׳¢׳™׳׳•׳×?');
+    if (!confirmed) return;
+
+    setRemovingRegistrationId(registration.id);
+
+    try {
+      const result = await removeActivityRegistration(activity.id, registration.id);
+
+      setAdminRegistrationsByActivity((currentRegistrations) => ({
+        ...currentRegistrations,
+        [activity.id]: (currentRegistrations[activity.id] || []).filter(
+          (currentRegistration) => currentRegistration.id !== registration.id
+        ),
+      }));
+      if (!result.alreadyRemoved) {
+        setRegistrationCountsByActivityId((currentCounts) => ({
+          ...currentCounts,
+          [activity.id]: Math.max(
+            (currentCounts[activity.id] ?? Number(activity.currentParticipants || 0)) - 1,
+            0
+          ),
+        }));
+      }
+      setRegistrationMessage('׳”׳ ׳¨׳©׳ ׳”׳•׳¡׳¨ ׳׳”׳₪׳¢׳™׳׳•׳× ׳‘׳”׳¦׳׳—׳”.');
+    } catch (err) {
+      console.error('Failed to remove activity registration', err);
+      setRegistrationError('׳׳ ׳ ׳™׳×׳ ׳׳”׳¡׳™׳¨ ׳׳× ׳”׳ ׳¨׳©׳ ׳›׳¨׳’׳¢. ׳ ׳¡׳• ׳©׳•׳‘ ׳׳׳•׳—׳¨ ׳™׳•׳×׳¨.');
+    } finally {
+      setRemovingRegistrationId('');
     }
   };
 
@@ -1017,6 +1061,7 @@ function Activities() {
                             <table className="min-w-full border-collapse text-right">
                               <thead>
                                 <tr className="border-b border-slate-200 text-sm text-slate-500">
+                                  <th className="px-3 py-2 font-bold">פעולות</th>
                                   <th className="px-3 py-2 font-bold">שם מלא</th>
                                   <th className="px-3 py-2 font-bold">אימייל</th>
                                   <th className="px-3 py-2 font-bold">תאריך הרשמה</th>
@@ -1045,6 +1090,17 @@ function Activities() {
 
                                   return (
                                     <tr key={adminRegistration.id} className="border-b border-slate-200">
+                                      <td className="px-3 py-2 text-sm text-slate-700">
+                                        <button
+                                          className="activities-registration-remove-button"
+                                          type="button"
+                                          disabled={removingRegistrationId === adminRegistration.id}
+                                          onClick={() => handleRemoveRegistration(activity, adminRegistration)}
+                                          aria-label={`הסר את ${fullName} מהרישום לפעילות`}
+                                        >
+                                          {removingRegistrationId === adminRegistration.id ? 'מסיר...' : 'הסר'}
+                                        </button>
+                                      </td>
                                       <td className="px-3 py-2 text-sm font-semibold text-slate-900">
                                         {fullName}
                                       </td>

@@ -153,3 +153,21 @@ export async function cancelActivityRegistration(activityId, userId) {
   await deleteDoc(registrationRef);
   return { alreadyCanceled: false };
 }
+
+export async function removeActivityRegistration(activityId, registrationId) {
+  const registrationRef = doc(db, REGISTRATIONS_COLLECTION, registrationId);
+  const registrationSnapshot = await getDoc(registrationRef);
+
+  if (!registrationSnapshot.exists()) {
+    return { alreadyRemoved: true };
+  }
+
+  const registration = registrationSnapshot.data();
+
+  if (registration.activityId !== activityId) {
+    throw new Error('Cannot remove a registration from another activity.');
+  }
+
+  await deleteDoc(registrationRef);
+  return { alreadyRemoved: false };
+}

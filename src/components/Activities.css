@@ -1,0 +1,36 @@
+.activities-registration-remove-button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border: 1px solid rgba(185, 28, 28, 0.18);
+  border-radius: 999px;
+  background: #fff7f5;
+  color: #9f1239;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.activities-registration-remove-button:hover:not(:disabled),
+.activities-registration-remove-button:focus-visible:not(:disabled) {
+  border-color: rgba(185, 28, 28, 0.28);
+  background: #ffe4e0;
+  color: #7f1d1d;
+  box-shadow: 0 8px 18px rgba(127, 29, 29, 0.12);
+}
+
+.activities-registration-remove-button:focus-visible {
+  outline: 3px solid rgba(248, 113, 113, 0.28);
+  outline-offset: 2px;
+}
+
+.activities-registration-remove-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
