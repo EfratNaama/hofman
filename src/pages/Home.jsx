@@ -94,7 +94,7 @@ const featuredActivityItems = [
 
 const FEATURED_ACTIVITIES_LIMIT = featuredActivityItems.length;
 const HOME_GALLERY_LIMIT = 6;
-const HOME_CAROUSEL_AUTOPLAY_MS = 4000;
+const HOME_CAROUSEL_AUTOPLAY_MS = 2800;
 
 function getActivityImageUrl(activity) {
   return activity.imageUrl || activity.image || '';

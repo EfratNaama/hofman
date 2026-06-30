@@ -274,7 +274,7 @@
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -50%) scale(0.72);
-  transition: transform 520ms ease, opacity 520ms ease, filter 520ms ease, box-shadow 520ms ease;
+  transition: transform 440ms ease, opacity 440ms ease, filter 440ms ease, box-shadow 440ms ease;
   will-change: transform, opacity;
 }
 
