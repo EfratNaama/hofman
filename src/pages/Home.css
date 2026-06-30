@@ -30,6 +30,17 @@
   text-align: center;
 }
 
+.home-public-hero__inner::before {
+  position: absolute;
+  inset: 12% 10%;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 245, 232, 0.46) 0%, rgba(255, 245, 232, 0.26) 38%, rgba(255, 245, 232, 0) 72%);
+  content: '';
+  filter: blur(16px);
+  pointer-events: none;
+}
+
 .home-public-hero h1 {
   margin: 0;
   color: #0f2240;
