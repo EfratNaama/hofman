@@ -147,6 +147,37 @@
   font-weight: 600;
 }
 
+.admin-activities-page .activity-form-lecturer {
+  grid-column: 1 / -1;
+}
+
+.activity-form-lecturer__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.activity-form-lecturer__description,
+.activity-form-lecturer__preview {
+  grid-column: 1 / -1;
+}
+
+.activity-form-lecturer__preview {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.activity-form-lecturer__preview img {
+  width: 128px;
+  height: 128px;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #fffdfb;
+  box-shadow: 0 6px 18px rgba(63, 52, 47, 0.14);
+  object-fit: cover;
+}
+
 .admin-activities-page fieldset .grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -246,7 +277,8 @@
   }
 
   .admin-activities-page form > .grid,
-  .admin-activities-page fieldset .grid {
+  .admin-activities-page fieldset .grid,
+  .activity-form-lecturer__grid {
     grid-template-columns: 1fr;
   }
 

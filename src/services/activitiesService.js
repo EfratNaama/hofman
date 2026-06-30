@@ -66,6 +66,12 @@ const buildActivityPayload = (activityData, options = {}) => {
     activityData.paymentRequired ?? activityData.requiresPayment
   );
   const price = paymentRequired ? Number(activityData.price || 0) : 0;
+  const lecturerData = activityData.lecturer || {};
+  const lecturer = {
+    name: lecturerData.name?.trim() || '',
+    description: lecturerData.description?.trim() || '',
+    imageBase64: lecturerData.imageBase64?.trim() || '',
+  };
 
   return {
     title: activityData.title.trim(),
@@ -74,6 +80,7 @@ const buildActivityPayload = (activityData, options = {}) => {
     location: activityData.location.trim(),
     whatsappLink: activityData.whatsappLink?.trim() || '',
     imageUrl: activityData.imageUrl?.trim() || '',
+    lecturer,
     category: activityData.category,
     subCategory: activityData.subCategory?.trim() || '',
     dayOfWeek: isOneTime ? '' : (daysOfWeek[0] || ''),

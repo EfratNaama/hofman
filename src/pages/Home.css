@@ -9,7 +9,8 @@
   align-items: center;
   background-color: #f8f5f0;
   background-image:
-    linear-gradient(90deg, rgba(248, 245, 240, 0.88) 0%, rgba(248, 245, 240, 0.72) 48%, rgba(248, 245, 240, 0.34) 100%),
+    linear-gradient(90deg, rgba(248, 245, 240, 0.46) 0%, rgba(248, 245, 240, 0.34) 48%, rgba(248, 245, 240, 0.16) 100%),
+    linear-gradient(180deg, rgba(70, 45, 35, 0.24) 0%, rgba(15, 34, 64, 0.18) 100%),
     var(--home-hero-image);
   background-position: center;
   background-size: cover;

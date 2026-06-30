@@ -6,7 +6,7 @@ import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
 import useGallery from '../hooks/useGallery';
 import aboutHofmanImage from '../assets/about-hofman.png';
-import beitHoffmanHeroImage from '../logo/BeitHoffman.png';
+import beitHoffmanHeroImage from '../logo/BeitHoffman.jpeg';
 import partnerLogo60Plus from '../logo/60+.png';
 import partnerLogoGonenim from '../logo/gonenim.jpg';
 import partnerLogoJerusalemMunicipality from '../logo/Jerusalem Municipality.png';

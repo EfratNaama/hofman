@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { deleteActivity, getActivityById } from '../services/activitiesService';
 import { getActivityRegistrationCount } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
+import './ActivityDetails.css';
 
 function ActivityDetails() {
   const { id } = useParams();
@@ -88,6 +89,11 @@ function ActivityDetails() {
   const maxParticipants = Number(activity.maxParticipants || 0);
   const displayedRegisteredCount = registrationsCount ?? Number(activity.currentParticipants || 0);
   const displayedAvailableSpots = Math.max(maxParticipants - displayedRegisteredCount, 0);
+  const lecturer = activity.lecturer || {};
+  const lecturerName = lecturer.name?.trim() || '';
+  const lecturerDescription = lecturer.description?.trim() || '';
+  const lecturerImage = lecturer.imageBase64?.trim() || '';
+  const hasLecturerDetails = Boolean(lecturerName || lecturerDescription || lecturerImage);
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-8 text-right" dir="rtl">
@@ -170,6 +176,25 @@ function ActivityDetails() {
           <DetailItem label="תשלום" value={paymentLabel} />
           <DetailItem label="קישור לתשלום" value={activity.paymentLink || '-'} />
         </dl>
+
+        {hasLecturerDetails && (
+          <section className="activity-lecturer-card" aria-labelledby="activity-lecturer-title">
+            {lecturerImage && (
+              <img
+                className="activity-lecturer-card__image"
+                src={lecturerImage}
+                alt={lecturerName || 'תמונת המרצה'}
+              />
+            )}
+            <div className="activity-lecturer-card__content">
+              <p className="activity-lecturer-card__eyebrow">פרטים על המרצה</p>
+              <h2 id="activity-lecturer-title">{lecturerName || 'מרצה הפעילות'}</h2>
+              {lecturerDescription && (
+                <p className="activity-lecturer-card__description">{lecturerDescription}</p>
+              )}
+            </div>
+          </section>
+        )}
       </div>
     </section>
   );

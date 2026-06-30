@@ -1,0 +1,59 @@
+.activity-lecturer-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  direction: rtl;
+}
+
+.activity-lecturer-card__image {
+  width: 112px;
+  height: 112px;
+  flex: 0 0 auto;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #f8f5f0;
+  box-shadow: 0 6px 20px rgba(15, 34, 64, 0.16);
+  object-fit: cover;
+}
+
+.activity-lecturer-card__content {
+  min-width: 0;
+}
+
+.activity-lecturer-card__eyebrow {
+  margin: 0;
+  color: #977665;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.activity-lecturer-card h2 {
+  margin: 6px 0 0;
+  color: #1a1a2e;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.activity-lecturer-card__description {
+  margin: 10px 0 0;
+  color: #475569;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+@media (max-width: 768px) {
+  .activity-lecturer-card {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
+  }
+}

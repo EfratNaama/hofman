@@ -35,6 +35,11 @@ const initialFormState = {
   location: '',
   whatsappLink: '',
   imageUrl: '',
+  lecturer: {
+    name: '',
+    description: '',
+    imageBase64: '',
+  },
   category: '',
   subCategory: '',
   customCategory: '',
@@ -101,6 +106,10 @@ function buildFormState(initialValues) {
     ...initialFormState,
     ...initialValues,
     ...categoryFields,
+    lecturer: {
+      ...initialFormState.lecturer,
+      ...(initialValues?.lecturer || {}),
+    },
     type,
     date: type === 'חד פעמי' ? date : '',
     activityDate: type === 'חד פעמי' ? date : startDate,
@@ -120,6 +129,9 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
   const [isReadingImage, setIsReadingImage] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState('');
+  const [lecturerImageUploadError, setLecturerImageUploadError] = useState('');
+  const [selectedLecturerImageFile, setSelectedLecturerImageFile] = useState(null);
+  const [selectedLecturerImagePreviewUrl, setSelectedLecturerImagePreviewUrl] = useState('');
   const isOneTime = formData.type === 'חד פעמי';
   const selectedCategoryGroup = categoryGroups.find((group) => group.category === formData.category);
   const hasListedSubCategory = Boolean(
@@ -130,9 +142,12 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     setFormData(buildFormState(initialValues));
     setValidationError('');
     setImageUploadError('');
+    setLecturerImageUploadError('');
     setIsReadingImage(false);
     setSelectedImageFile(null);
     setSelectedImagePreviewUrl('');
+    setSelectedLecturerImageFile(null);
+    setSelectedLecturerImagePreviewUrl('');
   }, [initialValues, resetKey]);
 
   useEffect(() => {
@@ -147,12 +162,25 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     return () => URL.revokeObjectURL(previewUrl);
   }, [selectedImageFile]);
 
+  useEffect(() => {
+    if (!selectedLecturerImageFile) {
+      setSelectedLecturerImagePreviewUrl('');
+      return undefined;
+    }
+
+    const previewUrl = URL.createObjectURL(selectedLecturerImageFile);
+    setSelectedLecturerImagePreviewUrl(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [selectedLecturerImageFile]);
+
   const availableSpots = useMemo(() => {
     const maxParticipants = Number(formData.maxParticipants || 0);
     const currentParticipants = Number(formData.currentParticipants || 0);
     return maxParticipants - currentParticipants;
   }, [formData.maxParticipants, formData.currentParticipants]);
   const imagePreviewUrl = selectedImagePreviewUrl || formData.imageUrl?.trim();
+  const lecturerImagePreviewUrl = selectedLecturerImagePreviewUrl || formData.lecturer?.imageBase64?.trim();
 
   const handleChange = (event) => {
     const { checked, name, type, value } = event.target;
@@ -220,6 +248,18 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     });
   };
 
+  const handleLecturerChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((currentData) => ({
+      ...currentData,
+      lecturer: {
+        ...currentData.lecturer,
+        [name]: value,
+      },
+    }));
+  };
+
   const handleWeekdayChange = (day) => {
     setFormData((currentData) => {
       const isSelected = currentData.daysOfWeek.includes(day);
@@ -251,6 +291,24 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     }
 
     setSelectedImageFile(file);
+  };
+
+  const handleLecturerImageFileChange = (event) => {
+    const file = event.target.files?.[0];
+    setLecturerImageUploadError('');
+    setSelectedLecturerImageFile(null);
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type?.startsWith('image/')) {
+      setLecturerImageUploadError('יש לבחור קובץ תמונה תקין.');
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedLecturerImageFile(file);
   };
 
   const validateForm = () => {
@@ -325,15 +383,29 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
       : formData.subCategory;
 
     let imageUrl = formData.imageUrl;
+    let lecturerImageBase64 = formData.lecturer?.imageBase64 || '';
 
-    if (selectedImageFile) {
+    if (selectedImageFile || selectedLecturerImageFile) {
       setIsReadingImage(true);
       setImageUploadError('');
+      setLecturerImageUploadError('');
 
       try {
-        imageUrl = await fileToBase64(selectedImageFile, { resize: true });
+        if (selectedImageFile) {
+          imageUrl = await fileToBase64(selectedImageFile, { resize: true });
+        }
+
+        if (selectedLecturerImageFile) {
+          lecturerImageBase64 = await fileToBase64(selectedLecturerImageFile, { resize: true });
+        }
       } catch (error) {
-        setImageUploadError(error.message || 'לא ניתן לטעון את קובץ התמונה.');
+        const errorMessage = error.message || 'לא ניתן לטעון את קובץ התמונה.';
+        if (selectedImageFile) {
+          setImageUploadError(errorMessage);
+        }
+        if (selectedLecturerImageFile) {
+          setLecturerImageUploadError(errorMessage);
+        }
         setIsReadingImage(false);
         return;
       }
@@ -344,6 +416,11 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
     onSubmit({
       ...formData,
       imageUrl,
+      lecturer: {
+        name: formData.lecturer?.name?.trim() || '',
+        description: formData.lecturer?.description?.trim() || '',
+        imageBase64: lecturerImageBase64,
+      },
       subCategory,
       type: formData.type || 'קבוע',
       dayOfWeek: isOneTime ? '' : (formData.daysOfWeek[0] || ''),
@@ -527,6 +604,55 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
             />
           </div>
         )}
+
+        <fieldset className="activity-form-lecturer lg:col-span-2">
+          <legend>פרטי מרצה / מדריך</legend>
+
+          <div className="activity-form-lecturer__grid">
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-slate-800">שם המרצה</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                name="name"
+                type="text"
+                value={formData.lecturer?.name || ''}
+                onChange={handleLecturerChange}
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-lg font-bold text-slate-800">תמונת המרצה</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                type="file"
+                accept="image/*"
+                onChange={handleLecturerImageFileChange}
+              />
+              {selectedLecturerImageFile && !isReadingImage && (
+                <p className="mt-2 text-base font-semibold text-slate-500">{selectedLecturerImageFile.name}</p>
+              )}
+              {lecturerImageUploadError && (
+                <p className="mt-2 text-base font-semibold text-red-700">{lecturerImageUploadError}</p>
+              )}
+            </label>
+
+            <label className="block activity-form-lecturer__description">
+              <span className="mb-2 block text-lg font-bold text-slate-800">פרטים על המרצה</span>
+              <textarea
+                className="min-h-36 w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                name="description"
+                value={formData.lecturer?.description || ''}
+                onChange={handleLecturerChange}
+              />
+            </label>
+
+            {lecturerImagePreviewUrl && (
+              <div className="activity-form-lecturer__preview">
+                <img src={lecturerImagePreviewUrl} alt="תצוגה מקדימה של המרצה" />
+              </div>
+            )}
+          </div>
+        </fieldset>
 
         {isOneTime ? (
           <label className="block">
