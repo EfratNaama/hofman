@@ -50,6 +50,79 @@
   white-space: pre-line;
 }
 
+.activity-details-registration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.activity-details-registration__alert {
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.activity-details-registration__alert--error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.activity-details-registration__alert--success {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.activity-details-registration__button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: #008080;
+  color: #ffffff;
+  padding: 10px 18px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(0, 128, 128, 0.18);
+  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.activity-details-registration__button:hover:not(:disabled),
+.activity-details-registration__button:focus-visible:not(:disabled) {
+  background: #006b6b;
+  box-shadow: 0 12px 28px rgba(0, 107, 107, 0.22);
+  transform: translateY(-1px);
+}
+
+.activity-details-registration__button:disabled {
+  cursor: not-allowed;
+  transform: none;
+}
+
+.activity-details-registration__button[data-state='closed'],
+.activity-details-registration__button[data-state='full'] {
+  background: #e5e7eb;
+  color: #6b7280;
+  box-shadow: none;
+}
+
+.activity-details-registration__button[data-state='registered'] {
+  background: #e2e8f0;
+  color: #475569;
+  box-shadow: none;
+}
+
 @media (max-width: 768px) {
   .activity-lecturer-card {
     align-items: flex-start;

@@ -14,11 +14,17 @@ import {
   formatActivityDate,
   generateActivityOccurrences,
   getActivityDaysOfWeek,
-  getActivityType,
-  getRecurringActivityEndDate,
-  getRecurringActivityStartDate,
-  toDate,
 } from '../utils/activityDateUtils';
+import {
+  getActivityDate,
+  getRecurringActivityStatus,
+  getRecurringEndDate,
+  getRecurringStartDate,
+  getRegistrationPresentation,
+  isActivityRegistrationClosed,
+  isOneTimeActivity,
+  isOneTimeActivityExpired,
+} from '../utils/activityRegistrationUtils';
 
 const initialFilters = {
   search: '',
@@ -31,56 +37,7 @@ const initialFilters = {
 const dayOptions = ACTIVITY_WEEKDAYS;
 const noDayLabel = 'ללא יום מוגדר';
 
-const isOneTimeActivity = (activity) => getActivityType(activity) === 'חד פעמי';
 const getRecurringDays = getActivityDaysOfWeek;
-const getRecurringStartDate = getRecurringActivityStartDate;
-const getRecurringEndDate = getRecurringActivityEndDate;
-const getActivityDate = (activity) => (
-  isOneTimeActivity(activity)
-    ? toDate(activity.date || activity.activityDate)
-    : getRecurringStartDate(activity)
-);
-
-const isOneTimeActivityExpired = (activity) => {
-  if (!isOneTimeActivity(activity)) return false;
-
-  const activityDate = toDate(activity.date || activity.activityDate);
-  if (!activityDate) return false;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const activityDay = new Date(activityDate);
-  activityDay.setHours(0, 0, 0, 0);
-
-  return activityDay < today;
-};
-
-const getRecurringActivityStatus = (activity) => {
-  if (isOneTimeActivity(activity)) return 'active';
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const startDate = getRecurringStartDate(activity);
-  const endDate = getRecurringEndDate(activity);
-
-  if (endDate) {
-    const endDay = new Date(endDate);
-    endDay.setHours(0, 0, 0, 0);
-    if (endDay < today) return 'ended';
-  }
-
-  if (startDate) {
-    const startDay = new Date(startDate);
-    startDay.setHours(0, 0, 0, 0);
-    if (today < startDay) return 'upcoming';
-  }
-
-  return 'active';
-};
-
-const isActivityRegistrationClosed = (activity) =>
-  isOneTimeActivityExpired(activity) || getRecurringActivityStatus(activity) === 'ended';
 
 const getActivityTypes = (activity) =>
   [activity.category, activity.subCategory, activity.type]
@@ -106,33 +63,6 @@ const formatPrice = (activity) => {
   return paymentRequired
     ? `₪${Number(activity.price || 0).toLocaleString('he-IL')}`
     : 'ללא תשלום';
-};
-
-const getRegistrationPresentation = (registration, wasJustRegistered = false) => {
-  if (!registration) {
-    return {
-      label: 'הרשמה',
-      badgeLabel: 'פתוח להרשמה',
-      color: '#006b6b',
-      backgroundColor: '#ccfbf1',
-    };
-  }
-
-  if (wasJustRegistered) {
-    return {
-      label: 'נרשמת בהצלחה',
-      badgeLabel: 'נרשמת בהצלחה',
-      color: '#15803d',
-      backgroundColor: '#dcfce7',
-    };
-  }
-
-  return {
-    label: 'כבר נרשמת',
-    badgeLabel: 'כבר נרשמת',
-    color: '#475569',
-    backgroundColor: '#e2e8f0',
-  };
 };
 
 const isInSelectedDateRange = (activity, dateRange) => {
