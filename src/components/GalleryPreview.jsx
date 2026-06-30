@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import LogoLoader from './LogoLoader';
 
 const sectionStyle = {
   backgroundColor: '#ffffff',
@@ -47,7 +48,7 @@ function GalleryPreview({ images = [], loading }) {
       </div>
 
       {loading ? (
-        <div className="home-state-card">טוען תמונות...</div>
+        <LogoLoader label="טוען תמונות..." />
       ) : (
         <div className="home-gallery-grid">
           {visibleImages.map((image) => (

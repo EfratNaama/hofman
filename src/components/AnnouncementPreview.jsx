@@ -1,3 +1,5 @@
+import LogoLoader from './LogoLoader';
+
 const sectionStyle = {
   backgroundColor: '#ffffff',
   borderRadius: '28px',
@@ -23,7 +25,7 @@ function AnnouncementPreview({ announcements = [], loading }) {
       </div>
 
       {loading ? (
-        <div className="home-state-card">טוען הודעות...</div>
+        <LogoLoader label="טוען הודעות..." />
       ) : (
         <div className="home-grid home-grid-announcements">
           {announcements.map((announcement) => (

@@ -15,6 +15,7 @@ import {
   isActivityRegistrationClosed,
   isOneTimeActivity,
 } from '../utils/activityRegistrationUtils';
+import LogoLoader from './LogoLoader';
 import './ActivityDetails.css';
 
 function ActivityDetails() {
@@ -178,11 +179,7 @@ function ActivityDetails() {
   };
 
   if (isLoading) {
-    return (
-      <section className="mx-auto max-w-5xl px-4 py-8 text-right" dir="rtl">
-        <div className="rounded-lg bg-white p-6 text-xl font-semibold text-slate-700 shadow-sm">טוען פעילות...</div>
-      </section>
-    );
+    return <LogoLoader label="טוען פעילות..." />;
   }
 
   if (!activity) {

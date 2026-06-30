@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LogoLoader from './LogoLoader';
 import './Login.css';
 
 const INVALID_CREDENTIALS_MESSAGE = 'האימייל או הסיסמא שגויים! נסו שנית!';
@@ -48,6 +49,7 @@ function Login() {
     setError('');
     setLoading(true);
     console.log('Login: email submit', email);
+    let keepLoaderUntilRedirect = false;
 
     try {
       // Add 10 second timeout to prevent infinite loading
@@ -73,13 +75,16 @@ function Login() {
       }
       
       console.log('Login: success, navigating to home');
+      keepLoaderUntilRedirect = true;
       navigate('/');
     } catch (err) {
       console.error('Login email error', err.code, err.message, err);
       const message = getFriendlyErrorMessage(err);
       setError(message);
     } finally {
-      setLoading(false);
+      if (!keepLoaderUntilRedirect) {
+        setLoading(false);
+      }
     }
   };
 
@@ -87,6 +92,7 @@ function Login() {
     setError('');
     setLoading(true);
     console.log('Login: Google submit');
+    let keepLoaderUntilRedirect = false;
 
     try {
       // Add 10 second timeout to prevent infinite loading
@@ -112,18 +118,22 @@ function Login() {
       }
       
       console.log('Login: success, navigating to home');
+      keepLoaderUntilRedirect = true;
       navigate('/');
     } catch (err) {
       console.error('Login Google error', err.code, err.message, err);
       const message = getFriendlyErrorMessage(err);
       setError(message);
     } finally {
-      setLoading(false);
+      if (!keepLoaderUntilRedirect) {
+        setLoading(false);
+      }
     }
   };
 
   return (
     <section className="login-card">
+      {loading && <LogoLoader label="טוען..." />}
       <h2 className="login-card__title">כניסה לחשבון</h2>
       <p className="login-card__text">
         התחברו באמצעות כתובת דוא"ל וסיסמה או השתמשו בכניסה עם Google. ניתן לאפס את הטופס בכל עת.

@@ -6,6 +6,7 @@ import {
   getAnnouncements,
   updateAnnouncement,
 } from '../services/announcementService';
+import LogoLoader from './LogoLoader';
 import './AdminAnnouncements.css';
 
 const emptyForm = {
@@ -239,7 +240,7 @@ function AdminAnnouncements() {
         <section className="admin-announcements-list-panel">
           <h2>כל ההודעות</h2>
 
-          {isLoading && <p className="admin-announcements-state">טוען הודעות...</p>}
+          {isLoading && <LogoLoader label="טוען הודעות..." />}
 
           {!isLoading && announcements.length === 0 && (
             <p className="admin-announcements-empty">

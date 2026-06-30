@@ -1,12 +1,13 @@
 import { useAuth } from '../context/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
+import LogoLoader from './LogoLoader';
 
 function ProtectedRoute({ children, requireAdmin = false }) {
   const { currentUser, authLoading, isAdmin } = useAuth();
   const location = useLocation();
 
   if (authLoading) {
-    return null;
+    return <LogoLoader label="טוען..." />;
   }
 
   if (!currentUser) {

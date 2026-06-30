@@ -1,12 +1,9 @@
 import GalleryCard from './GalleryCard';
+import LogoLoader from './LogoLoader';
 
 function GalleryGrid({ images, loading, deletingId, onImageClick, onDelete, canDelete = false }) {
   if (loading) {
-    return (
-      <div className="gallery-state-card">
-        טוען תמונות...
-      </div>
-    );
+    return <LogoLoader label="טוען תמונות..." />;
   }
 
   if (!images.length) {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { cancelActivityRegistration, getUserAllRegistrations } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
+import LogoLoader from './LogoLoader';
 
 function MyActivities() {
   const { currentUser } = useAuth();
@@ -109,11 +110,7 @@ function MyActivities() {
         </div>
       )}
 
-      {isLoading && (
-        <p className="rounded-lg bg-white p-6 text-xl font-semibold text-slate-700 shadow-sm">
-          טוען פעילויות...
-        </p>
-      )}
+      {isLoading && <LogoLoader label="טוען פעילויות..." />}
 
       {!isLoading && !error && registrations.length === 0 && (
         <div className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import FooterSection from '../components/FooterSection';
+import LogoLoader from '../components/LogoLoader';
 import { useAuth } from '../context/AuthContext';
 import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
@@ -205,12 +206,13 @@ function Home() {
   const showAdminHeroButton = !authLoading && currentUser && isAdmin;
   const heroAccountLink = showAdminHeroButton ? '/admin-dashboard' : currentUser ? '/personal-area' : '/login';
   const heroAccountText = showAdminHeroButton ? 'לוח בקרה' : 'אזור אישי';
+  const isHomeLoading = loading || activitiesLoading || galleryLoading;
   const homeFeaturedActivityItems = activitiesLoading
     ? [
         {
           id: 'activities-loading',
-          title: 'טוען פעילויות...',
-          description: 'הפעילויות מתעדכנות מהמערכת.',
+          title: '',
+          description: '',
           mediaClass: 'art',
         },
       ]
@@ -345,6 +347,7 @@ function Home() {
         padding: '24px 20px 56px',
       }}
     >
+      {isHomeLoading && <LogoLoader label="טוען..." />}
       <section
         className="home-public-hero"
         aria-labelledby="home-public-title"
