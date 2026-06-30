@@ -269,7 +269,7 @@
   overflow: hidden;
   border: 1px solid rgba(130, 77, 63, 0.12);
   border-radius: 24px;
-  background: rgba(255, 250, 244, 0.78);
+  background: #fffaf4;
   box-shadow: 0 18px 40px rgba(90, 51, 39, 0.14);
   opacity: 0;
   pointer-events: none;
@@ -279,12 +279,12 @@
 }
 
 .home-gallery-carousel__item[data-visible='true'] {
-  opacity: 0.58;
+  opacity: 1;
   pointer-events: auto;
 }
 
 .home-gallery-carousel__item[data-position='0'] {
-  z-index: 2;
+  z-index: 3;
   opacity: 1;
   filter: none;
   transform: translate(-50%, -50%) translateX(0) scale(1) rotateY(0deg);
@@ -292,26 +292,28 @@
 }
 
 .home-gallery-carousel__item[data-position='1'] {
-  z-index: 1;
-  filter: saturate(0.92) brightness(0.96);
+  z-index: 2;
+  filter: saturate(0.9) brightness(1.08) contrast(0.92);
   transform: translate(-50%, -50%) translateX(44%) scale(0.84) rotateY(-10deg);
 }
 
 .home-gallery-carousel__item[data-position='-1'] {
-  z-index: 1;
-  filter: saturate(0.92) brightness(0.96);
+  z-index: 2;
+  filter: saturate(0.9) brightness(1.08) contrast(0.92);
   transform: translate(-50%, -50%) translateX(-44%) scale(0.84) rotateY(10deg);
 }
 
 .home-gallery-carousel__item[data-position='2'] {
-  opacity: 0.34;
-  filter: saturate(0.86) brightness(0.92);
+  z-index: 1;
+  opacity: 1;
+  filter: saturate(0.84) brightness(1.12) contrast(0.88);
   transform: translate(-50%, -50%) translateX(78%) scale(0.68) rotateY(-14deg);
 }
 
 .home-gallery-carousel__item[data-position='-2'] {
-  opacity: 0.34;
-  filter: saturate(0.86) brightness(0.92);
+  z-index: 1;
+  opacity: 1;
+  filter: saturate(0.84) brightness(1.12) contrast(0.88);
   transform: translate(-50%, -50%) translateX(-78%) scale(0.68) rotateY(14deg);
 }
 
@@ -644,12 +646,10 @@
   }
 
   .home-gallery-carousel__item[data-position='2'] {
-    opacity: 0.18;
     transform: translate(-50%, -50%) translateX(62%) scale(0.62) rotateY(-10deg);
   }
 
   .home-gallery-carousel__item[data-position='-2'] {
-    opacity: 0.18;
     transform: translate(-50%, -50%) translateX(-62%) scale(0.62) rotateY(10deg);
   }
 }
@@ -699,11 +699,6 @@
   .home-gallery-carousel__item {
     width: min(78vw, 340px);
     border-radius: 20px;
-  }
-
-  .home-gallery-carousel__item[data-position='2'],
-  .home-gallery-carousel__item[data-position='-2'] {
-    opacity: 0;
   }
 
   .home-public-about {
