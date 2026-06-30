@@ -27,7 +27,7 @@ const partnerLogos = [
 const homeFeatureItems = [
   {
     icon: 'users',
-    color: '#8C9787',
+    color: 'rgb(98, 144, 134)',
     title: 'קהילה חמה',
     description: 'אנשים, שייכות וחברות',
   },
