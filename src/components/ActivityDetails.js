@@ -9,6 +9,8 @@ import {
 } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 import {
+  getRecurringEndDate,
+  getRecurringStartDate,
   getRegistrationPresentation,
   isActivityRegistrationClosed,
   isOneTimeActivity,
@@ -212,6 +214,13 @@ function ActivityDetails() {
   const isFull = displayedAvailableSpots <= 0;
   const registrationUnavailable = registrationClosed || isFull;
   const registrationPresentation = getRegistrationPresentation(userRegistration, wasJustRegistered);
+  const isOneTime = isOneTimeActivity(activity);
+  const recurringStartDate = getRecurringStartDate(activity);
+  const recurringEndDate = getRecurringEndDate(activity);
+  const activityDateValue = isOneTime ? activity.date || activity.activityDate : recurringStartDate;
+  const formattedActivityDateValue = formatActivityDate(activityDateValue);
+  const shouldShowDateItem = formattedActivityDateValue !== '-';
+  const shouldShowCategoryItem = Boolean(categoryLabel);
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-8 text-right" dir="rtl">
@@ -300,11 +309,35 @@ function ActivityDetails() {
           </section>
         )}
 
-        <dl className="grid gap-4 md:grid-cols-2">
-          <DetailItem label="קטגוריה" value={categoryLabel} />
+        <dl className="activity-details-grid grid gap-4 md:grid-cols-2">
+          <DetailItem
+            className="activity-details-grid__item--type"
+            label="סוג פעילות"
+            value={isOneTime ? 'פעילות חד פעמית' : 'פעילות קבועה'}
+          />
+          {shouldShowCategoryItem && (
+            <DetailItem
+              className="activity-details-grid__item--category"
+              label="קטגוריה"
+              value={categoryLabel}
+            />
+          )}
+          {shouldShowDateItem && (
+            <DetailItem
+              className="activity-details-grid__item--date"
+              label={isOneTime ? 'תאריך' : 'מתאריך'}
+              value={formatActivityDate(activityDateValue)}
+            />
+          )}
+          {!isOneTime && recurringEndDate && (
+            <DetailItem
+              className="activity-details-grid__item--end-date"
+              label="עד תאריך"
+              value={formatActivityDate(recurringEndDate)}
+            />
+          )}
           <DetailItem label="מיקום" value={activity.location} />
           <DetailItem label="יום בשבוע" value={activity.dayOfWeek} />
-          <DetailItem label="תאריך" value={formatActivityDate(activity.activityDate)} />
           <DetailItem label="שעה" value={activity.time} />
           <DetailItem label="מכסת משתתפים" value={activity.maxParticipants} />
           <DetailItem label="משתתפים רשומים" value={displayedRegisteredCount} />
@@ -360,9 +393,9 @@ function ActivityDetails() {
   );
 }
 
-function DetailItem({ label, value }) {
+function DetailItem({ label, value, className = '' }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
+    <div className={`rounded-lg border border-slate-200 bg-slate-50 p-5 ${className}`}>
       <dt className="text-base font-bold text-slate-500">{label}</dt>
       <dd className="mt-1 break-words text-xl font-black text-slate-900">{value ?? '-'}</dd>
     </div>
