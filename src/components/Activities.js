@@ -425,7 +425,7 @@ function Activities() {
       return;
     }
 
-    const confirmed = window.confirm('׳”׳׳ ׳׳”׳¡׳™׳¨ ׳׳× ׳”׳׳©׳×׳׳© ׳׳”׳¨׳™׳©׳•׳ ׳׳₪׳¢׳™׳׳•׳×?');
+    const confirmed = window.confirm('האם להסיר את המשתמש מהרישום לפעילות?');
     if (!confirmed) return;
 
     setRemovingRegistrationId(registration.id);
@@ -448,10 +448,10 @@ function Activities() {
           ),
         }));
       }
-      setRegistrationMessage('׳”׳ ׳¨׳©׳ ׳”׳•׳¡׳¨ ׳׳”׳₪׳¢׳™׳׳•׳× ׳‘׳”׳¦׳׳—׳”.');
+      setRegistrationMessage('המשתמש הוסר מהרישום לפעילות בהצלחה');
     } catch (err) {
       console.error('Failed to remove activity registration', err);
-      setRegistrationError('׳׳ ׳ ׳™׳×׳ ׳׳”׳¡׳™׳¨ ׳׳× ׳”׳ ׳¨׳©׳ ׳›׳¨׳’׳¢. ׳ ׳¡׳• ׳©׳•׳‘ ׳׳׳•׳—׳¨ ׳™׳•׳×׳¨.');
+      setRegistrationError('שגיאה בהסרת המשתמש מהרישום לפעילות. נסו שוב');
     } finally {
       setRemovingRegistrationId('');
     }
