@@ -1,25 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import PersonalCalendar from '../components/PersonalCalendar';
 import { getUserAllRegistrations } from '../services/activityRegistrationsService';
+import { getAnnouncements } from '../services/announcementService';
 import { db } from '../firebase';
 import {
   generateActivityOccurrences,
   getActivityType,
   toDate,
 } from '../utils/activityDateUtils';
-
-const cardStyle = {
-  padding: '20px',
-  borderRadius: '12px',
-  backgroundColor: '#fff',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
-};
-
-const sectionStyle = {
-  marginBottom: '40px',
-};
+import './PersonalArea.css';
 
 const allowedImageTypes = ['image/png', 'image/jpeg', 'image/webp'];
 const maxProfileImageSize = 500 * 1024;
@@ -99,6 +91,15 @@ const formatDate = (value) => {
   return date ? date.toLocaleDateString('he-IL') : 'תאריך לא זמין';
 };
 
+const formatTime = (value) => {
+  const date = toDate(value);
+  return date ? date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }) : '';
+};
+
+const formatAnnouncementDate = (createdAt) => (
+  createdAt?.toDate ? createdAt.toDate().toLocaleDateString('he-IL') : ''
+);
+
 const formatPrice = (value) =>
   new Intl.NumberFormat('he-IL', {
     style: 'currency',
@@ -113,8 +114,11 @@ function PersonalArea() {
   const [profile, setProfile] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState('');
   const [registrations, setRegistrations] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [announcementsError, setAnnouncementsError] = useState('');
   const [uploadError, setUploadError] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -132,15 +136,13 @@ function PersonalArea() {
       setError('');
 
       try {
-        console.log('currentUser.uid', currentUserUid);
         const registrationData = await getUserAllRegistrations(currentUserUid);
         const userSnap = await getDoc(doc(db, 'users', currentUserUid));
         const profileData = userSnap.exists()
           ? { id: userSnap.id, ...userSnap.data() }
           : null;
         const firestorePhoto = profileData?.photoURL || '';
-        console.log('user document exists', userSnap.exists());
-        console.log('Loaded saved photo:', firestorePhoto?.slice(0, 30));
+
         if (isMounted) {
           setRegistrations(registrationData);
           setProfile(profileData);
@@ -163,12 +165,44 @@ function PersonalArea() {
     };
   }, [currentUserUid]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAnnouncementsPreview() {
+      setAnnouncementsLoading(true);
+      setAnnouncementsError('');
+
+      try {
+        const announcementsData = await getAnnouncements();
+
+        if (isMounted) {
+          setAnnouncements(
+            announcementsData
+              .filter((announcement) => announcement.isActive !== false)
+              .slice(0, 3)
+          );
+        }
+      } catch (loadError) {
+        console.error('Failed to load announcements preview:', loadError);
+        if (isMounted) {
+          setAnnouncementsError('לא ניתן לטעון את ההודעות כרגע.');
+        }
+      } finally {
+        if (isMounted) setAnnouncementsLoading(false);
+      }
+    }
+
+    loadAnnouncementsPreview();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const profileName = getProfileName(profile, currentUser);
   const profileEmail = getProfileEmail(profile, currentUser);
   const explicitProfileName = profile?.fullName || profile?.displayName || currentUser?.displayName || '';
   const profileInitials = getInitials(explicitProfileName, profileEmail);
-  // Always show a simple greeting; show the full name in the large heading below.
-  const greetingText = 'שלום';
 
   const handlePhotoButtonClick = () => {
     setUploadError('');
@@ -199,22 +233,19 @@ function PersonalArea() {
 
     try {
       const base64 = await readFileAsDataUrl(file);
-      console.log('Saving profile photo for uid:', currentUser.uid);
-      console.log('Base64 starts with:', base64.slice(0, 30));
       const userRef = doc(db, 'users', currentUser.uid);
 
       await setDoc(userRef, {
         photoURL: base64,
         updatedAt: serverTimestamp(),
       }, { merge: true });
-      setProfilePhoto(base64);
-      console.log('photoURL saved to Firestore');
+
       const savedSnap = await getDoc(userRef);
       const savedProfile = savedSnap.exists()
         ? { id: savedSnap.id, ...savedSnap.data() }
         : null;
       const savedPhoto = savedProfile?.photoURL || base64;
-      console.log('Loaded saved photo:', savedPhoto?.slice(0, 30));
+
       setProfile(savedProfile || {
         id: currentUser.uid,
         email: profileEmail || currentUser.email || '',
@@ -258,12 +289,15 @@ function PersonalArea() {
       })
   ), [registrations]);
 
-  const nextActivity = useMemo(() => {
+  const upcomingActivities = useMemo(() => {
     const now = new Date();
     return [...activityEvents]
       .filter((event) => event.start >= now)
-      .sort((first, second) => first.start - second.start)[0] || null;
+      .sort((first, second) => first.start - second.start)
+      .slice(0, 4);
   }, [activityEvents]);
+
+  const nextActivity = upcomingActivities[0] || null;
 
   const currentMonthPaidActivities = useMemo(() => {
     const now = new Date();
@@ -290,130 +324,11 @@ function PersonalArea() {
 
   return (
     <main className="personal-area" dir="rtl">
-      <style>{`
-        .personal-area {
-          max-width: 1100px;
-          margin: 0 auto;
-          padding: 32px;
-        }
-
-        .personal-area__profile-card {
-          display: flex;
-          align-items: center;
-          gap: 22px;
-          margin-bottom: 28px;
-          padding: 22px;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          background: #fff;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-        }
-
-        .personal-area__avatar-wrap {
-          position: relative;
-          width: 112px;
-          height: 112px;
-          flex: 0 0 auto;
-        }
-
-        .personal-area__avatar {
-          display: grid;
-          width: 112px;
-          height: 112px;
-          place-items: center;
-          overflow: hidden;
-          border: 3px solid #fff;
-          border-radius: 999px;
-          background: linear-gradient(135deg, #0f766e, #2563eb);
-          box-shadow: 0 6px 20px rgba(15, 34, 64, 0.18);
-          color: #fff;
-          font-size: 34px;
-          font-weight: 600;
-        }
-
-        .personal-area__avatar img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .personal-area__camera-button {
-          position: absolute;
-          inset-inline-end: 2px;
-          bottom: 3px;
-          display: grid;
-          width: 34px;
-          height: 34px;
-          place-items: center;
-          border: 2px solid #fff;
-          border-radius: 999px;
-          background: #0f2240;
-          color: #fff;
-          cursor: pointer;
-          box-shadow: 0 4px 10px rgba(15, 34, 64, 0.2);
-        }
-
-        .personal-area__camera-button:disabled {
-          cursor: not-allowed;
-          background: #94a3b8;
-        }
-
-        .personal-area__profile-content {
-          min-width: 0;
-        }
-
-        .personal-area__profile-content h2 {
-          margin: 0;
-          color: #1a1a2e;
-          font-size: 28px;
-          font-weight: 600;
-        }
-
-        .personal-area__profile-content p {
-          margin: 6px 0 0;
-          color: #475569;
-          font-weight: 500;
-        }
-
-        .personal-area__upload-status {
-          margin-top: 12px;
-          font-weight: 600;
-        }
-
-        .personal-area__upload-status--error {
-          color: #b91c1c;
-        }
-
-        .personal-area__upload-status--success {
-          color: #15803d;
-        }
-
-        .personal-area__payment-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px;
-        }
-
-        @media (max-width: 768px) {
-          .personal-area {
-            padding: 24px 16px;
-          }
-
-          .personal-area__profile-card {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .personal-area__payment-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
-      <header style={{ ...sectionStyle, borderBottom: '1px solid #e5e7eb', paddingBottom: '20px' }}>
-        <h1 style={{ margin: 0, color: '#1a1a2e', fontSize: '32px', fontWeight: 900 }}>
-          אזור אישי
-        </h1>
+      <header className="personal-area__header">
+        <div>
+          <p>שלום</p>
+          <h1>אזור אישי</h1>
+        </div>
       </header>
 
       <section className="personal-area__profile-card" aria-label="פרופיל משתמש">
@@ -447,20 +362,11 @@ function PersonalArea() {
         </div>
 
         <div className="personal-area__profile-content">
-          <p>{greetingText}</p>
+          <p>ברוכים הבאים</p>
           <h2>{profileName}</h2>
           {profileEmail && <p>{profileEmail}</p>}
           <button
-            style={{
-              marginTop: '14px',
-              padding: '10px 16px',
-              border: 0,
-              borderRadius: '10px',
-              backgroundColor: '#0f2240',
-              color: '#fff',
-              cursor: isUploadingPhoto ? 'not-allowed' : 'pointer',
-              fontWeight: 900,
-            }}
+            className="personal-area__profile-action"
             type="button"
             disabled={isUploadingPhoto}
             onClick={handlePhotoButtonClick}
@@ -484,88 +390,139 @@ function PersonalArea() {
       </section>
 
       {error && (
-        <div
-          role="alert"
-          style={{
-            ...cardStyle,
-            marginBottom: '24px',
-            border: '1px solid #fecaca',
-            backgroundColor: '#fef2f2',
-            color: '#b91c1c',
-            fontWeight: 800,
-          }}
-        >
+        <div className="personal-area__state personal-area__state--error" role="alert">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div style={{ ...cardStyle, color: '#475569', fontWeight: 800 }}>
-          טוען את האזור האישי...
-        </div>
+        <div className="personal-area__state">טוען את האזור האישי...</div>
       ) : (
         <>
-          <section style={sectionStyle}>
-            <h2 style={{ margin: '0 0 16px', color: '#1a1a2e', fontSize: '24px' }}>
-              הלוח האישי שלי
-            </h2>
-
-            <div style={{ ...cardStyle, marginBottom: '20px', borderInlineStart: '4px solid #008080' }}>
-              <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>הפעילות הקרובה</p>
-              {nextActivity ? (
-                <>
-                  <h3 style={{ margin: '8px 0 0', color: '#1a1a2e', fontSize: '22px' }}>
-                    {nextActivity.title}
-                  </h3>
-                  <p style={{ margin: '7px 0 0', color: '#475569' }}>
-                    {formatDate(nextActivity.start)}
-                  </p>
-                </>
-              ) : (
-                <p style={{ margin: '8px 0 0', color: '#64748b' }}>
-                  אין פעילויות רשומות
-                </p>
-              )}
-            </div>
-
-            {!activityEvents.length && (
-              <div style={{ ...cardStyle, color: '#64748b', textAlign: 'center', fontWeight: 800 }}>
-                אין פעילויות רשומות
+          <section className="personal-area__dashboard" aria-label="לוח אישי והודעות">
+            <div className="personal-area__panel personal-area__panel--calendar">
+              <div className="personal-area__panel-header">
+                <div>
+                  <p>הלוח שלי</p>
+                  <h2>הלו"ז האישי</h2>
+                </div>
+                {nextActivity && (
+                  <span className="personal-area__next-pill">
+                    הפעילות הקרובה: {formatDate(nextActivity.start)}
+                  </span>
+                )}
               </div>
-            )}
-            <div style={{ marginTop: activityEvents.length ? 0 : '20px' }}>
+
+              {!activityEvents.length && (
+                <div className="personal-area__empty-state">אין פעילויות רשומות כרגע.</div>
+              )}
+
               <PersonalCalendar activityEvents={activityEvents} />
             </div>
+
+            <aside className="personal-area__sidebar" aria-label="עדכונים אישיים">
+              <section className="personal-area__panel personal-area__panel--messages">
+                <div className="personal-area__panel-header">
+                  <div>
+                    <p>עדכונים</p>
+                    <h2>הודעות</h2>
+                  </div>
+                </div>
+
+                {announcementsError && (
+                  <div className="personal-area__inline-state personal-area__inline-state--error">
+                    {announcementsError}
+                  </div>
+                )}
+
+                {announcementsLoading && (
+                  <div className="personal-area__inline-state">טוען הודעות...</div>
+                )}
+
+                {!announcementsLoading && !announcementsError && announcements.length === 0 && (
+                  <div className="personal-area__inline-state">
+                    אין הודעות חדשות כרגע.
+                  </div>
+                )}
+
+                {!announcementsLoading && announcements.length > 0 && (
+                  <div className="personal-area__message-list">
+                    {announcements.map((announcement) => (
+                      <article className="personal-area__message-item" key={announcement.id}>
+                        <div>
+                          <h3>{announcement.title}</h3>
+                          {formatAnnouncementDate(announcement.createdAt) && (
+                            <span>{formatAnnouncementDate(announcement.createdAt)}</span>
+                          )}
+                        </div>
+                        <p>{announcement.content || announcement.message || ''}</p>
+                      </article>
+                    ))}
+                  </div>
+                )}
+
+                <Link className="personal-area__soft-link" to="/announcements">
+                  כל ההודעות
+                </Link>
+              </section>
+
+              <section className="personal-area__panel personal-area__panel--activities">
+                <div className="personal-area__panel-header">
+                  <div>
+                    <p>הפעילויות שלי</p>
+                    <h2>פעילויות קרובות</h2>
+                  </div>
+                </div>
+
+                {upcomingActivities.length ? (
+                  <div className="personal-area__activity-list">
+                    {upcomingActivities.map((activity) => (
+                      <article className="personal-area__activity-item" key={activity.id}>
+                        <div>
+                          <h3>{activity.title}</h3>
+                          <p>
+                            {formatDate(activity.start)}
+                            {formatTime(activity.start) ? ` · ${formatTime(activity.start)}` : ''}
+                          </p>
+                        </div>
+                        {activity.activityId && (
+                          <Link to={`/activities/${activity.activityId}`}>פרטים נוספים</Link>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="personal-area__inline-state">
+                    אין פעילויות קרובות כרגע.
+                  </div>
+                )}
+              </section>
+            </aside>
           </section>
 
-          <section style={sectionStyle}>
-            <h2 style={{ margin: '0 0 16px', color: '#1a1a2e', fontSize: '24px' }}>
-              סיכום תשלומים חודשי
-            </h2>
+          <section className="personal-area__panel personal-area__payments" aria-label="סיכום תשלומים חודשי">
+            <div className="personal-area__panel-header">
+              <div>
+                <p>תשלומים</p>
+                <h2>סיכום תשלומים חודשי</h2>
+              </div>
+            </div>
 
             {currentMonthPaidActivities.length ? (
               <div className="personal-area__payment-grid">
-                <div style={{ ...cardStyle, borderInlineStart: '4px solid #008080' }}>
-                  <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>
-                    סה״כ לתשלום החודש
-                  </p>
-                  <p style={{ margin: '8px 0 0', color: '#008080', fontSize: '32px', fontWeight: 900 }}>
-                    {formatPrice(monthlyTotal)}
-                  </p>
+                <div className="personal-area__metric-card">
+                  <p>סה"כ לתשלום החודש</p>
+                  <strong>{formatPrice(monthlyTotal)}</strong>
                 </div>
 
-                <div style={{ ...cardStyle, borderInlineStart: '4px solid #5B6FE6' }}>
-                  <p style={{ margin: 0, color: '#64748b', fontWeight: 800 }}>
-                    מספר פעילויות בתשלום
-                  </p>
-                  <p style={{ margin: '8px 0 0', color: '#5B6FE6', fontSize: '32px', fontWeight: 900 }}>
-                    {currentMonthPaidActivities.length}
-                  </p>
+                <div className="personal-area__metric-card personal-area__metric-card--accent">
+                  <p>מספר פעילויות בתשלום</p>
+                  <strong>{currentMonthPaidActivities.length}</strong>
                 </div>
               </div>
             ) : (
-              <div style={{ ...cardStyle, color: '#64748b', textAlign: 'center', fontWeight: 800 }}>
-                לא נמצאו תשלומים לחודש הנוכחי
+              <div className="personal-area__inline-state">
+                לא נמצאו תשלומים לחודש הנוכחי.
               </div>
             )}
           </section>

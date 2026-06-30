@@ -1,0 +1,417 @@
+.personal-area {
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding: 34px 20px 64px;
+  color: #3f342f;
+}
+
+.personal-area *,
+.personal-area *::before,
+.personal-area *::after {
+  box-sizing: border-box;
+}
+
+.personal-area__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.personal-area__header p,
+.personal-area__panel-header p,
+.personal-area__metric-card p {
+  margin: 0;
+  color: #977665;
+  font-weight: 700;
+}
+
+.personal-area__header h1 {
+  margin: 6px 0 0;
+  color: #2b211c;
+  font-size: clamp(2.25rem, 4vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.personal-area__profile-card,
+.personal-area__panel,
+.personal-area__state {
+  border: 1px solid rgba(130, 77, 63, 0.14);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(90, 51, 39, 0.09);
+}
+
+.personal-area__profile-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 24px;
+  padding: 22px;
+}
+
+.personal-area__avatar-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 112px;
+  height: 112px;
+}
+
+.personal-area__avatar {
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  overflow: hidden;
+  border: 4px solid #fffaf4;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgb(98, 144, 134), #0f2240);
+  box-shadow: 0 12px 28px rgba(15, 34, 64, 0.16);
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.personal-area__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.personal-area__camera-button {
+  position: absolute;
+  inset-inline-end: 2px;
+  bottom: 3px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #0f2240;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(15, 34, 64, 0.18);
+  transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.personal-area__camera-button:hover:not(:disabled),
+.personal-area__camera-button:focus-visible:not(:disabled) {
+  background: rgb(98, 144, 134);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(98, 144, 134, 0.22);
+}
+
+.personal-area__camera-button:disabled,
+.personal-area__profile-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.personal-area__profile-content {
+  min-width: 0;
+}
+
+.personal-area__profile-content p {
+  margin: 0;
+  color: #5f514b;
+  font-weight: 650;
+}
+
+.personal-area__profile-content h2 {
+  margin: 7px 0 3px;
+  color: #2b211c;
+  font-size: clamp(1.75rem, 3vw, 2.3rem);
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.personal-area__profile-action,
+.personal-area__soft-link,
+.personal-area__activity-item a {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(98, 144, 134, 0.24);
+  border-radius: 999px;
+  background: rgba(248, 245, 240, 0.92);
+  color: #0f2240;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.personal-area__profile-action {
+  margin-top: 14px;
+  padding: 9px 16px;
+}
+
+.personal-area__soft-link {
+  width: fit-content;
+  margin-top: 16px;
+  padding: 9px 15px;
+}
+
+.personal-area__activity-item a {
+  flex: 0 0 auto;
+  padding: 8px 13px;
+  font-size: 0.95rem;
+}
+
+.personal-area__profile-action:hover:not(:disabled),
+.personal-area__profile-action:focus-visible:not(:disabled),
+.personal-area__soft-link:hover,
+.personal-area__soft-link:focus-visible,
+.personal-area__activity-item a:hover,
+.personal-area__activity-item a:focus-visible {
+  background: rgb(98, 144, 134);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(98, 144, 134, 0.18);
+  transform: translateY(-1px);
+}
+
+.personal-area__upload-status {
+  margin: 10px 0 0;
+  font-weight: 700;
+}
+
+.personal-area__upload-status--error {
+  color: #b91c1c;
+}
+
+.personal-area__upload-status--success {
+  color: #15803d;
+}
+
+.personal-area__dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.82fr);
+  gap: 24px;
+  align-items: start;
+  direction: ltr;
+}
+
+.personal-area__dashboard > * {
+  direction: rtl;
+}
+
+.personal-area__panel {
+  padding: 22px;
+}
+
+.personal-area__panel--calendar {
+  grid-column: 1;
+}
+
+.personal-area__sidebar {
+  display: grid;
+  grid-column: 2;
+  gap: 20px;
+}
+
+.personal-area__panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.personal-area__panel-header h2 {
+  margin: 5px 0 0;
+  color: #2b211c;
+  font-size: clamp(1.45rem, 2vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.personal-area__next-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border-radius: 999px;
+  background: #f3eee8;
+  color: #5f514b;
+  padding: 6px 12px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.personal-area__state,
+.personal-area__empty-state,
+.personal-area__inline-state {
+  border-radius: 16px;
+  background: #f3eee8;
+  color: #5f514b;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.personal-area__state {
+  padding: 18px 20px;
+}
+
+.personal-area__state--error,
+.personal-area__inline-state--error {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.personal-area__empty-state,
+.personal-area__inline-state {
+  padding: 14px 16px;
+}
+
+.personal-area__empty-state {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.personal-area__message-list,
+.personal-area__activity-list {
+  display: grid;
+  gap: 12px;
+}
+
+.personal-area__message-item,
+.personal-area__activity-item {
+  border: 1px solid rgba(130, 77, 63, 0.1);
+  border-radius: 18px;
+  background: #fffaf7;
+  padding: 14px 15px;
+}
+
+.personal-area__message-item div,
+.personal-area__activity-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.personal-area__message-item h3,
+.personal-area__activity-item h3 {
+  margin: 0;
+  color: #2b211c;
+  font-size: 1.08rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.personal-area__message-item span {
+  flex: 0 0 auto;
+  color: #977665;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.personal-area__message-item p,
+.personal-area__activity-item p {
+  margin: 7px 0 0;
+  color: #5f514b;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.personal-area__message-item p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.personal-area__payments {
+  margin-top: 24px;
+}
+
+.personal-area__payment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.personal-area__metric-card {
+  border: 1px solid rgba(98, 144, 134, 0.14);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fffaf7 0%, #ffffff 100%);
+  padding: 18px;
+}
+
+.personal-area__metric-card strong {
+  display: block;
+  margin-top: 8px;
+  color: rgb(98, 144, 134);
+  font-size: clamp(1.9rem, 4vw, 2.35rem);
+  line-height: 1;
+}
+
+.personal-area__metric-card--accent strong {
+  color: #0f2240;
+}
+
+.personal-area__panel--calendar .personal-calendar {
+  height: min(74vh, 720px);
+  min-height: 620px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (max-width: 1080px) {
+  .personal-area__dashboard {
+    grid-template-columns: 1fr;
+    direction: rtl;
+  }
+
+  .personal-area__panel--calendar,
+  .personal-area__sidebar {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .personal-area {
+    padding: 24px 14px 46px;
+  }
+
+  .personal-area__profile-card,
+  .personal-area__panel {
+    border-radius: 20px;
+    padding: 18px;
+  }
+
+  .personal-area__profile-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .personal-area__panel-header,
+  .personal-area__message-item div,
+  .personal-area__activity-item {
+    display: grid;
+  }
+
+  .personal-area__next-pill,
+  .personal-area__soft-link,
+  .personal-area__activity-item a {
+    width: 100%;
+  }
+
+  .personal-area__payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .personal-area__panel--calendar .personal-calendar {
+    min-height: 660px;
+  }
+}
