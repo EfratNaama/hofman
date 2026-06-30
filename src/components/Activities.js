@@ -901,18 +901,21 @@ function Activities() {
                       marginTop: '18px',
                     }}
                   >
+                    <Info label="קטגוריה" value={getActivityCategoryLabel(activity) || '-'} />
+                    <Info label="מיקום" value={activity.location || '-'} />
                     {isOneTimeActivity(activity) ? (
-                      <Info label="תאריך" value={activityDate ? formatActivityDate(activityDate) : '-'} />
+                      <>
+                        <Info label="תאריך" value={activityDate ? formatActivityDate(activityDate) : '-'} />
+                        <Info label="שעה" value={activity.time || '-'} />
+                      </>
                     ) : (
                       <>
                         <Info label="מתאריך" value={getRecurringStartDate(activity) ? formatActivityDate(getRecurringStartDate(activity)) : '-'} />
                         <Info label="עד תאריך" value={getRecurringEndDate(activity) ? formatActivityDate(getRecurringEndDate(activity)) : '-'} />
                         <Info label="ימים" value={getRecurringDays(activity).join(', ') || noDayLabel} />
+                        <Info label="שעה" value={activity.time || '-'} />
                       </>
                     )}
-                    <Info label="שעה" value={activity.time || '-'} />
-                    <Info label="קטגוריה" value={getActivityCategoryLabel(activity) || '-'} />
-                    <Info label="מיקום" value={activity.location || '-'} />
                     <Info label="מחיר" value={formatPrice(activity)} />
                     <Info label="משתתפים רשומים" value={registeredCount} />
                     <Info label="מקומות פנויים" value={availableSpots} />
