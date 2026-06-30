@@ -163,20 +163,6 @@ function ActivityDetails() {
           </a>
         )}
 
-        <dl className="grid gap-4 md:grid-cols-2">
-          <DetailItem label="קטגוריה" value={categoryLabel} />
-          <DetailItem label="מיקום" value={activity.location} />
-          <DetailItem label="יום בשבוע" value={activity.dayOfWeek} />
-          <DetailItem label="תאריך" value={formatActivityDate(activity.activityDate)} />
-          <DetailItem label="שעה" value={activity.time} />
-          <DetailItem label="מכסת משתתפים" value={activity.maxParticipants} />
-          <DetailItem label="משתתפים רשומים" value={displayedRegisteredCount} />
-          <DetailItem label="מקומות פנויים" value={displayedAvailableSpots} />
-          <DetailItem label="סטטוס" value={activity.isActive ? 'פעילה' : 'לא פעילה'} />
-          <DetailItem label="תשלום" value={paymentLabel} />
-          <DetailItem label="קישור לתשלום" value={activity.paymentLink || '-'} />
-        </dl>
-
         {hasLecturerDetails && (
           <section className="activity-lecturer-card" aria-labelledby="activity-lecturer-title">
             {lecturerImage && (
@@ -195,6 +181,20 @@ function ActivityDetails() {
             </div>
           </section>
         )}
+
+        <dl className="grid gap-4 md:grid-cols-2">
+          <DetailItem label="קטגוריה" value={categoryLabel} />
+          <DetailItem label="מיקום" value={activity.location} />
+          <DetailItem label="יום בשבוע" value={activity.dayOfWeek} />
+          <DetailItem label="תאריך" value={formatActivityDate(activity.activityDate)} />
+          <DetailItem label="שעה" value={activity.time} />
+          <DetailItem label="מכסת משתתפים" value={activity.maxParticipants} />
+          <DetailItem label="משתתפים רשומים" value={displayedRegisteredCount} />
+          <DetailItem label="מקומות פנויים" value={displayedAvailableSpots} />
+          <DetailItem label="סטטוס" value={activity.isActive ? 'פעילה' : 'לא פעילה'} />
+          <DetailItem label="תשלום" value={paymentLabel} />
+          <DetailItem label="קישור לתשלום" value={activity.paymentLink || '-'} />
+        </dl>
       </div>
     </section>
   );
