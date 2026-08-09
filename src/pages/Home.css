@@ -628,6 +628,10 @@
 }
 
 @media (max-width: 760px) {
+  .home-features-strip {
+    display: none;
+  }
+
   .home-gallery-carousel {
     height: clamp(240px, 54vw, 340px);
   }

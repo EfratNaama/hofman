@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { subscribeUnreadAnnouncementsCount } from '../services/announcementService';
@@ -9,6 +10,7 @@ function Navbar() {
   const { authLoading, currentUser, isAdmin, signOutUser } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(currentUser));
   const [unreadAnnouncementsCount, setUnreadAnnouncementsCount] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setIsLoggedIn(Boolean(currentUser));
@@ -26,6 +28,29 @@ function Navbar() {
       () => setUnreadAnnouncementsCount(0)
     );
   }, [currentUser?.uid]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const mobileMediaQuery = window.matchMedia('(max-width: 760px)');
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    const handleBreakpointChange = (event) => {
+      if (!event.matches) setIsMobileMenuOpen(false);
+    };
+
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleKeyDown);
+    mobileMediaQuery.addEventListener('change', handleBreakpointChange);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+      mobileMediaQuery.removeEventListener('change', handleBreakpointChange);
+    };
+  }, [isMobileMenuOpen]);
 
   const navLinkStyle = ({ isActive }) => ({
     display: 'inline-flex',
@@ -64,6 +89,7 @@ function Navbar() {
     try {
       await signOutUser?.();
       setIsLoggedIn(false);
+      setIsMobileMenuOpen(false);
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -75,6 +101,52 @@ function Navbar() {
     flexDirection: 'row-reverse',
     gap: '6px',
   });
+
+  const renderNavigationItems = () => (
+    <>
+      <NavLink end to="/" className="navbar-link" style={navLinkStyle}>דף הבית</NavLink>
+
+      {!authLoading && isLoggedIn && (
+        <>
+          {isAdmin ? (
+            <>
+              <NavLink to="/admin-dashboard" className="navbar-link" style={navLinkStyle}>לוח בקרה</NavLink>
+              <NavLink to="/admin/activities" className="navbar-link" style={navLinkStyle}>ניהול פעילויות</NavLink>
+              <NavLink to="/users" className="navbar-link" style={navLinkStyle}>משתמשים</NavLink>
+              <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>גלריה</NavLink>
+              <NavLink to="/admin/announcements" className="navbar-link" style={navLinkStyle}>ניהול הודעות</NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/activities" className="navbar-link" style={navLinkStyle}>פעילויות</NavLink>
+              <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>גלריה</NavLink>
+              <NavLink
+                to="/announcements"
+                className="navbar-link"
+                style={messagesLinkStyle}
+                aria-label={unreadAnnouncementsCount > 0 ? `יש ${unreadAnnouncementsCount} הודעות חדשות` : 'הודעות'}
+              >
+                הודעות
+                {unreadAnnouncementsCount > 0 && (
+                  <span className="navbar-notification-badge">
+                    {unreadAnnouncementsCount > 99 ? '99+' : unreadAnnouncementsCount}
+                  </span>
+                )}
+              </NavLink>
+            </>
+          )}
+          <button type="button" className="navbar-link" style={authButtonStyle} onClick={handleLogout}>התנתקות</button>
+          {!isAdmin && (
+            <NavLink to="/personal-area" className="navbar-link navbar-link--personal-area" style={navLinkStyle}>אזור אישי</NavLink>
+          )}
+        </>
+      )}
+
+      {!authLoading && !isLoggedIn && (
+        <NavLink to="/login" className="navbar-link" style={navLinkStyle}>כניסה</NavLink>
+      )}
+    </>
+  );
 
   return (
     <nav
@@ -90,6 +162,7 @@ function Navbar() {
       }}
     >
       <div
+        className="navbar-inner"
         style={{
           width: '100%',
           margin: '0 auto',
@@ -102,16 +175,22 @@ function Navbar() {
           flexWrap: 'wrap',
         }}
       >
+        <button
+          type="button"
+          className="navbar-menu-button"
+          aria-label={isMobileMenuOpen ? 'סגירת תפריט' : 'פתיחת תפריט'}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-navigation-drawer"
+          onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+        >
+          <Menu aria-hidden="true" />
+        </button>
+
         <NavLink
           end
           to="/"
           aria-label="בית הופמן"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            flexShrink: 0,
-            textDecoration: 'none',
-          }}
+          style={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}
         >
           <img
             src={hoffmanLogo}
@@ -128,97 +207,32 @@ function Navbar() {
           />
         </NavLink>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
-          <NavLink end to="/" className="navbar-link" style={navLinkStyle}>
-            דף הבית
-          </NavLink>
-
-          {!authLoading && isLoggedIn && (
-            <>
-              {isAdmin ? (
-                <>
-                  <NavLink to="/admin-dashboard" className="navbar-link" style={navLinkStyle}>
-                    לוח בקרה
-                  </NavLink>
-                  <NavLink to="/admin/activities" className="navbar-link" style={navLinkStyle}>
-                    ניהול פעילויות
-                  </NavLink>
-                  <NavLink to="/users" className="navbar-link" style={navLinkStyle}>
-                    משתמשים
-                  </NavLink>
-                  <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>
-                    גלריה
-                  </NavLink>
-                  <NavLink to="/admin/announcements" className="navbar-link" style={navLinkStyle}>
-                    ניהול הודעות
-                  </NavLink>
-                </>
-              ) : (
-                <>
-                  <NavLink to="/activities" className="navbar-link" style={navLinkStyle}>
-                    פעילויות
-                  </NavLink>
-                  <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>
-                    גלריה
-                  </NavLink>
-                  <NavLink
-                    to="/announcements"
-                    className="navbar-link"
-                    style={messagesLinkStyle}
-                    aria-label={
-                      unreadAnnouncementsCount > 0
-                        ? `יש ${unreadAnnouncementsCount} הודעות חדשות`
-                        : 'הודעות'
-                    }
-                  >
-                    הודעות
-                    {unreadAnnouncementsCount > 0 && (
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          minWidth: '20px',
-                          height: '20px',
-                          padding: '0 5px',
-                          flexShrink: 0,
-                          borderRadius: '999px',
-                          backgroundColor: '#dc2626',
-                          color: '#ffffff',
-                          border: '2px solid #ffffff',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          lineHeight: '16px',
-                          textAlign: 'center',
-                          pointerEvents: 'none',
-                        }}
-                      >
-                        {unreadAnnouncementsCount > 99 ? '99+' : unreadAnnouncementsCount}
-                      </span>
-                    )}
-                  </NavLink>
-                </>
-              )}
-              <button type="button" className="navbar-link" style={authButtonStyle} onClick={handleLogout}>
-                התנתקות
-              </button>
-              {!isAdmin && (
-                  <NavLink to="/personal-area" className="navbar-link navbar-link--personal-area" style={navLinkStyle}>
-                    אזור אישי
-                  </NavLink>
-              )}
-            </>
-          )}
-
-          {!authLoading && !isLoggedIn && (
-            <>
-              <NavLink to="/login" className="navbar-link" style={navLinkStyle}>
-                כניסה
-              </NavLink>
-            </>
-          )}
+        <div className="navbar-desktop-links" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
+          {renderNavigationItems()}
         </div>
       </div>
+
+      <div
+        className={`navbar-drawer-overlay${isMobileMenuOpen ? ' is-open' : ''}`}
+        aria-hidden="true"
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+      <aside
+        id="mobile-navigation-drawer"
+        className={`navbar-drawer${isMobileMenuOpen ? ' is-open' : ''}`}
+        aria-label="תפריט ניווט"
+        aria-hidden={!isMobileMenuOpen}
+      >
+        <div className="navbar-drawer-header">
+          <span>תפריט</span>
+          <button type="button" className="navbar-drawer-close" aria-label="סגירת תפריט" onClick={() => setIsMobileMenuOpen(false)}>
+            <X aria-hidden="true" />
+          </button>
+        </div>
+        <div className="navbar-drawer-links" onClick={() => setIsMobileMenuOpen(false)}>
+          {renderNavigationItems()}
+        </div>
+      </aside>
     </nav>
   );
 }
