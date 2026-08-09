@@ -102,8 +102,12 @@ function Navbar() {
     gap: '6px',
   });
 
-  const renderNavigationItems = () => (
+  const renderNavigationItems = ({ mobile = false } = {}) => (
     <>
+      {mobile && !authLoading && isLoggedIn && !isAdmin && (
+        <NavLink to="/personal-area" className="navbar-link navbar-link--personal-area" style={navLinkStyle}>אזור אישי</NavLink>
+      )}
+
       <NavLink end to="/" className="navbar-link" style={navLinkStyle}>דף הבית</NavLink>
 
       {!authLoading && isLoggedIn && (
@@ -122,7 +126,7 @@ function Navbar() {
               <NavLink to="/gallery" className="navbar-link" style={navLinkStyle}>גלריה</NavLink>
               <NavLink
                 to="/announcements"
-                className="navbar-link"
+                className="navbar-link navbar-link--messages"
                 style={messagesLinkStyle}
                 aria-label={unreadAnnouncementsCount > 0 ? `יש ${unreadAnnouncementsCount} הודעות חדשות` : 'הודעות'}
               >
@@ -136,7 +140,7 @@ function Navbar() {
             </>
           )}
           <button type="button" className="navbar-link" style={authButtonStyle} onClick={handleLogout}>התנתקות</button>
-          {!isAdmin && (
+          {!isAdmin && !mobile && (
             <NavLink to="/personal-area" className="navbar-link navbar-link--personal-area" style={navLinkStyle}>אזור אישי</NavLink>
           )}
         </>
@@ -230,7 +234,7 @@ function Navbar() {
           </button>
         </div>
         <div className="navbar-drawer-links" onClick={() => setIsMobileMenuOpen(false)}>
-          {renderNavigationItems()}
+          {renderNavigationItems({ mobile: true })}
         </div>
       </aside>
     </nav>

@@ -236,8 +236,12 @@ button:focus-visible {
     text-align: right;
   }
 
-  .navbar-drawer-links .navbar-link:hover,
-  .navbar-drawer-links .navbar-link:focus-visible {
+  .navbar-drawer-links .navbar-link--messages {
+    flex-direction: row !important;
+  }
+
+  .navbar-drawer-links .navbar-link:not(.navbar-link--personal-area):hover,
+  .navbar-drawer-links .navbar-link:not(.navbar-link--personal-area):focus-visible {
     background-color: #f8fafc !important;
   }
 
