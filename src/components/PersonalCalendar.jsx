@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import { format, getDay, parse, startOfWeek } from 'date-fns';
@@ -92,6 +92,16 @@ function PersonalCalendar({ activityEvents }) {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState(Views.WEEK);
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 720px)').matches);
+  const calendarView = isMobile && currentView === Views.WEEK ? Views.DAY : currentView;
+
+  useEffect(() => {
+    const mobileMediaQuery = window.matchMedia('(max-width: 720px)');
+    const handleBreakpointChange = (event) => setIsMobile(event.matches);
+
+    mobileMediaQuery.addEventListener('change', handleBreakpointChange);
+    return () => mobileMediaQuery.removeEventListener('change', handleBreakpointChange);
+  }, []);
 
   const holidays = useMemo(() => {
     const { start, end } = getVisibleRange(currentDate, currentView);
@@ -141,6 +151,9 @@ function PersonalCalendar({ activityEvents }) {
     week: {
       header: WeekHeader,
     },
+    day: {
+      header: WeekHeader,
+    },
   }), [navigate]);
 
   const eventPropGetter = (event) => {
@@ -159,13 +172,13 @@ function PersonalCalendar({ activityEvents }) {
   };
 
   return (
-    <div className="personal-calendar" dir="rtl">
+    <div className={`personal-calendar${currentView === Views.WEEK ? ' personal-calendar--week-mode' : ''}`} dir="rtl">
       <Calendar
         localizer={localizer}
         culture="he-IL"
         date={currentDate}
-        view={currentView}
-        views={[Views.WEEK, Views.MONTH]}
+        view={calendarView}
+        views={[Views.DAY, Views.WEEK, Views.MONTH]}
         defaultView={Views.WEEK}
         events={events}
         startAccessor="start"
@@ -178,7 +191,7 @@ function PersonalCalendar({ activityEvents }) {
         components={components}
         eventPropGetter={eventPropGetter}
         onNavigate={setCurrentDate}
-        onView={setCurrentView}
+        onView={(view) => setCurrentView(view === Views.DAY ? Views.WEEK : view)}
         onSelectEvent={(event) => {
           if (event.type === 'activity') {
             navigate(`/activities/${event.activityId}`);

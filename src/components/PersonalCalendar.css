@@ -31,6 +31,10 @@
   color: #fff;
 }
 
+.personal-calendar .rbc-toolbar .rbc-btn-group:last-child button:first-child {
+  display: none;
+}
+
 .personal-calendar .rbc-header {
   min-height: 60px;
   padding: 7px 4px;
@@ -115,17 +119,73 @@
 
 @media (max-width: 720px) {
   .personal-calendar {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     height: 660px;
-    padding: 10px;
-    overflow-x: auto;
+    padding: 0;
   }
 
   .personal-calendar .rbc-calendar {
-    min-width: 720px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .personal-calendar .rbc-toolbar {
+    width: 100%;
+    min-width: 0;
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .personal-calendar .rbc-toolbar-label {
+    width: 100%;
+    padding-inline: 0;
+  }
+
+  .personal-calendar .rbc-btn-group {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .personal-calendar .rbc-toolbar .rbc-btn-group:last-child {
+    order: -1;
+  }
+
+  .personal-calendar .rbc-btn-group button {
+    min-width: 0;
+    padding: 0.4rem 0.5rem;
+    flex: 1 1 0;
+  }
+
+  .personal-calendar--week-mode .rbc-toolbar .rbc-btn-group:last-child button:nth-child(2) {
+    border-color: #008080;
+    background: #008080;
+    color: #fff;
+  }
+
+  .personal-calendar .rbc-header {
+    min-width: 0;
+    padding-inline: 2px;
+  }
+
+  .personal-calendar__date-header small,
+  .personal-calendar__week-header small {
+    font-size: 0.62rem;
+  }
+
+  .personal-calendar .rbc-time-header .rbc-header {
+    min-height: 48px;
+  }
+
+  .personal-calendar .rbc-event.personal-calendar__event {
+    padding: 5px 7px;
+  }
+
+  .personal-calendar__event-content > span {
+    font-size: 0.82rem;
   }
 }

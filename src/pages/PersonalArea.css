@@ -381,7 +381,25 @@
 
 @media (max-width: 720px) {
   .personal-area {
+    width: 100%;
+    max-width: 100%;
     padding: 24px 14px 46px;
+  }
+
+  .personal-area__dashboard,
+  .personal-area__sidebar,
+  .personal-area__profile-card,
+  .personal-area__profile-content,
+  .personal-area__panel,
+  .personal-area__payments,
+  .personal-area__message-list,
+  .personal-area__activity-list,
+  .personal-area__message-item,
+  .personal-area__activity-item,
+  .personal-area__metric-card {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .personal-area__profile-card,
@@ -393,6 +411,13 @@
   .personal-area__profile-card {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .personal-area__profile-content,
+  .personal-area__message-item,
+  .personal-area__activity-item,
+  .personal-area__metric-card {
+    overflow-wrap: anywhere;
   }
 
   .personal-area__panel-header,
@@ -412,6 +437,19 @@
   }
 
   .personal-area__panel--calendar .personal-calendar {
+    width: 100%;
+    max-width: 100%;
     min-height: 660px;
+  }
+}
+
+@media (max-width: 390px) {
+  .personal-area {
+    padding-inline: 10px;
+  }
+
+  .personal-area__profile-card,
+  .personal-area__panel {
+    padding: 14px;
   }
 }
