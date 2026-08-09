@@ -145,7 +145,39 @@
   box-shadow: none;
 }
 
+.activity-details-grid > .activity-details-grid__item--payment-link {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  grid-column: 1 / -1 !important;
+  justify-self: stretch;
+}
+
+.activity-details-grid__item--payment-link dd {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (min-width: 769px) {
+  .activity-details-grid > .activity-details-grid__item--payment-link {
+    width: auto;
+    max-width: 100%;
+    grid-column: auto !important;
+  }
+}
+
 @media (max-width: 768px) {
+  .activity-details-grid {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .activity-lecturer-card {
     align-items: flex-start;
     flex-direction: column;

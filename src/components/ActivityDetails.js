@@ -344,7 +344,11 @@ function ActivityDetails() {
           <DetailItem label="מקומות פנויים" value={displayedAvailableSpots} />
           <DetailItem label="סטטוס" value={activity.isActive ? 'פעילה' : 'לא פעילה'} />
           <DetailItem label="תשלום" value={paymentLabel} />
-          <DetailItem label="קישור לתשלום" value={activity.paymentLink || '-'} />
+          <DetailItem
+            className="activity-details-grid__item--payment-link"
+            label="קישור לתשלום"
+            value={activity.paymentLink || '-'}
+          />
         </dl>
 
         {canRegister && (
