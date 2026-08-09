@@ -180,13 +180,16 @@ function FeatureIcon({ type }) {
 function Home() {
   const { authLoading, currentUser, isAdmin } = useAuth();
   const activitiesCarouselRef = useRef(null);
+  const partnersCarouselRef = useRef(null);
   const galleryCarouselRef = useRef(null);
   const [carouselScrollable, setCarouselScrollable] = useState({
     activities: false,
+    partners: false,
     gallery: false,
   });
   const [carouselPaused, setCarouselPaused] = useState({
     activities: false,
+    partners: false,
     gallery: false,
   });
   const [galleryActiveIndex, setGalleryActiveIndex] = useState(0);
@@ -291,6 +294,9 @@ function Home() {
         activities: activitiesCarouselRef.current
           ? activitiesCarouselRef.current.scrollWidth > activitiesCarouselRef.current.clientWidth + 1
           : false,
+        partners: partnersCarouselRef.current
+          ? partnersCarouselRef.current.scrollWidth > partnersCarouselRef.current.clientWidth + 1
+          : false,
         gallery: galleryCarouselRef.current
           ? galleryCarouselRef.current.scrollWidth > galleryCarouselRef.current.clientWidth + 1
           : false,
@@ -316,6 +322,10 @@ function Home() {
         autoScrollCarousel(activitiesCarouselRef);
       }
 
+      if (carouselScrollable.partners && !carouselPaused.partners) {
+        autoScrollCarousel(partnersCarouselRef);
+      }
+
       if (homeGalleryImages.length > 1 && !carouselPaused.gallery) {
         moveGalleryCarousel('right');
       }
@@ -326,6 +336,7 @@ function Home() {
     autoScrollCarousel,
     carouselPaused,
     carouselScrollable.activities,
+    carouselScrollable.partners,
     homeGalleryImages.length,
     moveGalleryCarousel,
   ]);
@@ -396,12 +407,40 @@ function Home() {
       <section className="home-partners" aria-labelledby="home-partners-title">
         <div className="home-partners__inner">
           <h2 id="home-partners-title">השותפים שלנו</h2>
-          <div className="home-partners__grid">
-            {partnerLogos.map((partner) => (
-              <div className="home-partners__card" key={partner.alt}>
-                <img src={partner.src} alt={partner.alt} />
-              </div>
-            ))}
+          <div
+            className="home-carousel home-partners__carousel"
+            onMouseEnter={() => setCarouselPause('partners', true)}
+            onMouseLeave={() => setCarouselPause('partners', false)}
+            onFocus={() => setCarouselPause('partners', true)}
+            onBlur={() => setCarouselPause('partners', false)}
+          >
+            {carouselScrollable.partners && (
+              <button
+                className="home-carousel__arrow home-carousel__arrow--right"
+                type="button"
+                aria-label="גלול ימינה"
+                onClick={() => scrollCarousel(partnersCarouselRef, 'right')}
+              >
+                <span aria-hidden="true">&rsaquo;</span>
+              </button>
+            )}
+            <div className="home-partners__grid" ref={partnersCarouselRef}>
+              {partnerLogos.map((partner) => (
+                <div className="home-partners__card" key={partner.alt}>
+                  <img src={partner.src} alt={partner.alt} />
+                </div>
+              ))}
+            </div>
+            {carouselScrollable.partners && (
+              <button
+                className="home-carousel__arrow home-carousel__arrow--left"
+                type="button"
+                aria-label="גלול שמאלה"
+                onClick={() => scrollCarousel(partnersCarouselRef, 'left')}
+              >
+                <span aria-hidden="true">&lsaquo;</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
