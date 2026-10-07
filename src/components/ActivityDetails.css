@@ -52,24 +52,41 @@
 
 .activity-details-grid {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  direction: rtl;
 }
 
-.activity-details-grid__item--type {
-  grid-column: 1 / span 1;
+.activity-details-grid__item {
+  min-width: 0;
+  padding: 10px 14px;
+  text-align: right;
 }
 
-.activity-details-grid__item--category {
-  grid-column: 2 / span 1;
+.activity-details-grid__label {
+  color: #64748b;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
-.activity-details-grid__item--date {
-  grid-column: 1 / span 1;
+.activity-details-grid__value {
+  min-width: 0;
+  margin-top: 4px;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.activity-details-grid__item--end-date {
-  grid-column: 2 / span 1;
+.activity-details-grid__link {
+  color: #047857;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .activity-details-registration {
@@ -145,37 +162,15 @@
   box-shadow: none;
 }
 
-.activity-details-grid > .activity-details-grid__item--payment-link {
-  width: 100%;
-  min-width: 0;
-  max-width: none;
-  box-sizing: border-box;
-  grid-column: 1 / -1 !important;
-  justify-self: stretch;
-}
-
-.activity-details-grid__item--payment-link dd {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-@media (min-width: 769px) {
-  .activity-details-grid > .activity-details-grid__item--payment-link {
-    width: auto;
-    max-width: 100%;
-    grid-column: auto !important;
+@media (max-width: 900px) {
+  .activity-details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .activity-details-grid {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .activity-lecturer-card {
