@@ -6,7 +6,12 @@ import { useAuth } from '../context/AuthContext';
 import useHomeData from '../hooks/useHomeData';
 import { useActivities } from '../hooks/useActivities';
 import useGallery from '../hooks/useGallery';
-import { isActivityRegistrationClosed } from '../utils/activityRegistrationUtils';
+import {
+  getActivityDate,
+  isActivityRegistrationClosed,
+  isOneTimeActivity,
+} from '../utils/activityRegistrationUtils';
+import { getActivityDaysOfWeek } from '../utils/activityDateUtils';
 import leoHoffmanImage from '../logo/LeoHoffman.jpg';
 import beitHoffmanHeroImage from '../logo/BeitHoffman.png';
 import partnerLogo60Plus from '../logo/60+.png';
@@ -107,6 +112,81 @@ function getActivityTitle(activity) {
 function getActivityDescription(activity) {
   return activity.description || activity.location || 'פרטים נוספים יפורסמו בקרוב.';
 }
+
+const featuredWeekdayFormatter = new Intl.DateTimeFormat('he-IL', { weekday: 'long' });
+
+// Short "when" label for the featured cards: "יום חמישי 10.12 · 18:00" or "כל יום שלישי · 08:00".
+function getActivityWhenLabel(activity) {
+  const time = String(activity.time || '').trim();
+  let dayPart = '';
+
+  if (isOneTimeActivity(activity)) {
+    const date = getActivityDate(activity);
+    if (date) {
+      dayPart = `${featuredWeekdayFormatter.format(date)} ${date.getDate()}.${date.getMonth() + 1}`;
+    }
+  } else {
+    const days = getActivityDaysOfWeek(activity);
+    if (days.length) dayPart = `כל יום ${days.join(', ')}`;
+  }
+
+  return [dayPart, time].filter(Boolean).join(' · ');
+}
+
+/*
+ * Styles for the "פעילויות נבחרות" cards only, scoped under .hf so Home.css
+ * does not need to change. The carousel scrolling still uses
+ * .home-featured-activities__grid from Home.css.
+ */
+const FEATURED_STYLES = `
+.hf-footer { display: flex; justify-content: center; margin-top: 8px; }
+.hf-all {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px;
+  color: #2b211c; font-size: 1.1rem; font-weight: 700;
+  text-decoration: underline; text-underline-offset: 5px;
+}
+.hf-all:hover { color: #000; }
+.hf-all:focus-visible, .hf-card:focus-visible { outline: 4px solid rgba(212,163,115,.45); outline-offset: 3px; }
+
+.hf-card {
+  flex: 0 0 280px; max-width: 280px; display: flex; flex-direction: column; overflow: hidden;
+  border-radius: 22px; background: #f4eae3; border: 1px solid #eadbd0; color: #2b211c;
+  text-decoration: none; scroll-snap-align: start;
+  box-shadow: 0 10px 26px rgba(90,51,39,.08);
+  transition: translate .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease;
+}
+a.hf-card:hover { translate: 0 -6px; box-shadow: 0 20px 40px rgba(90,51,39,.16); color: #2b211c; }
+.hf-media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
+.hf-media img {
+  width: 100%; height: 100%; display: block; object-fit: cover;
+  transition: transform .6s cubic-bezier(.2,.7,.2,1);
+}
+a.hf-card:hover .hf-media img { transform: scale(1.06); }
+.hf-media .home-featured-activity-card__media { width: 100%; height: 100%; }
+.hf-when {
+  position: absolute; top: 12px; right: 12px; max-width: calc(100% - 24px);
+  padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.94); color: #6e3a2e;
+  font-size: 0.85rem; font-weight: 800; box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hf-body { display: flex; flex: 1; flex-direction: column; gap: 6px; padding: 16px 18px 18px; }
+.hf-card-title { margin: 0; font-size: 1.4rem; font-weight: 800; line-height: 1.2; color: #2b211c; }
+.hf-desc {
+  margin: 0; color: #5c4a40; font-size: 1rem; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.hf-more {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 8px;
+  color: #a84f3d; font-size: 1rem; font-weight: 700;
+}
+.hf-more svg { transition: transform .25s ease; }
+a.hf-card:hover .hf-more svg { transform: translateX(-4px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hf-card, .hf-media img, .hf-more svg { transition: none; }
+  a.hf-card:hover { translate: none; }
+}
+`;
 
 function getGalleryImageSource(image) {
   return image.imageBase64 || image.imageUrl || image.url || '';
@@ -244,6 +324,7 @@ function Home() {
             imageUrl: getActivityImageUrl(activity),
             mediaClass: featuredActivityItems[index % FEATURED_ACTIVITIES_LIMIT].mediaClass,
             detailsPath: `/activities/${activity.id}`,
+            whenLabel: getActivityWhenLabel(activity),
           }));
 
   const scrollToContactInfo = (event) => {
@@ -464,8 +545,10 @@ function Home() {
       </section>
 
       <section className="home-featured-activities" aria-labelledby="home-featured-activities-title">
+        <style>{FEATURED_STYLES}</style>
         <div className="home-featured-activities__inner">
           <h2 id="home-featured-activities-title">פעילויות נבחרות</h2>
+
           <div
             className="home-carousel"
             onMouseEnter={() => setCarouselPause('activities', true)}
@@ -477,54 +560,73 @@ function Home() {
               <button
                 className="home-carousel__arrow home-carousel__arrow--right"
                 type="button"
-                aria-label="גלול ימינה"
+                aria-label="הפעילויות הקודמות"
                 onClick={() => scrollCarousel(activitiesCarouselRef, 'right')}
               >
                 <span aria-hidden="true">&rsaquo;</span>
               </button>
             )}
             <div className="home-featured-activities__grid" ref={activitiesCarouselRef}>
-            {homeFeaturedActivityItems.map((activity) => (
-              <article className="home-featured-activity-card" key={activity.id}>
-                <div
-                  className={`home-featured-activity-card__media home-featured-activity-card__media--${activity.mediaClass}`}
-                  style={
-                    activity.imageUrl
-                      ? {
-                          backgroundImage: `url(${activity.imageUrl})`,
-                          backgroundPosition: 'center',
-                          backgroundSize: 'cover',
-                        }
-                      : undefined
-                  }
-                  role="img"
-                  aria-label={`תמונה עבור ${activity.title}`}
-                />
-                <div className="home-featured-activity-card__body">
-                  <h3>{activity.title}</h3>
-                  <p>{activity.description}</p>
-                  {activity.detailsPath && (
-                    <Link
-                      className="home-featured-activity-card__button"
-                      to={currentUser ? activity.detailsPath : '/login'}
-                    >
-                      פרטים נוספים
-                    </Link>
-                  )}
-                </div>
-              </article>
-            ))}
+              {homeFeaturedActivityItems.map((activity) => {
+                const cardContent = (
+                  <>
+                    <div className="hf-media">
+                      {activity.imageUrl ? (
+                        <img src={activity.imageUrl} alt="" loading="lazy" />
+                      ) : (
+                        <div
+                          className={`home-featured-activity-card__media home-featured-activity-card__media--${activity.mediaClass}`}
+                          aria-hidden="true"
+                        />
+                      )}
+                      {activity.whenLabel && <span className="hf-when">{activity.whenLabel}</span>}
+                    </div>
+                    <div className="hf-body">
+                      <h3 className="hf-card-title">{activity.title}</h3>
+                      {activity.description && <p className="hf-desc">{activity.description}</p>}
+                      {activity.detailsPath && (
+                        <span className="hf-more">
+                          לפרטים והרשמה
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M15 6l-6 6 6 6" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
+                  </>
+                );
+
+                return activity.detailsPath ? (
+                  <Link
+                    className="hf-card"
+                    key={activity.id}
+                    to={currentUser ? activity.detailsPath : '/login'}
+                  >
+                    {cardContent}
+                  </Link>
+                ) : (
+                  <article className="hf-card" key={activity.id}>
+                    {cardContent}
+                  </article>
+                );
+              })}
             </div>
             {carouselScrollable.activities && (
               <button
                 className="home-carousel__arrow home-carousel__arrow--left"
                 type="button"
-                aria-label="גלול שמאלה"
+                aria-label="הפעילויות הבאות"
                 onClick={() => scrollCarousel(activitiesCarouselRef, 'left')}
               >
                 <span aria-hidden="true">&lsaquo;</span>
               </button>
             )}
+          </div>
+
+          <div className="hf-footer">
+            <Link className="hf-all" to={currentUser ? '/activities' : '/login'}>
+              לכל הפעילויות
+            </Link>
           </div>
         </div>
       </section>
