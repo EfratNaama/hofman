@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ConfirmDialog } from './ActivityDetails';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, Clock, CreditCard, ImageIcon, MapPin, Plus, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -348,6 +349,8 @@ function Activities() {
   const [filters, setFilters] = useState(initialFilters);
   const [activitiesView, setActivitiesView] = useState('catalog');
   const [savingPaymentIds, setSavingPaymentIds] = useState(new Set());
+  const [pendingRemoval, setPendingRemoval] = useState(null);
+  const removalInProgress = useRef(false);
   const [registrationError, setRegistrationError] = useState('');
   const [registrationMessage, setRegistrationMessage] = useState('');
   const [registeringActivityId, setRegisteringActivityId] = useState('');
@@ -687,6 +690,7 @@ function Activities() {
   };
 
   const handleRemoveRegistration = async (activity, registration) => {
+    if (removalInProgress.current) return;
     setRegistrationError('');
     setRegistrationMessage('');
 
@@ -695,8 +699,7 @@ function Activities() {
       return;
     }
 
-    const confirmed = window.confirm('האם להסיר את המשתמש מהרישום לפעילות?');
-    if (!confirmed) return;
+    removalInProgress.current = true;
 
     setRemovingRegistrationId(registration.id);
 
@@ -724,6 +727,8 @@ function Activities() {
       setRegistrationError('שגיאה בהסרת המשתמש מהרישום לפעילות. נסו שוב');
     } finally {
       setRemovingRegistrationId('');
+      removalInProgress.current = false;
+      setPendingRemoval(null);
     }
   };
 
@@ -1151,7 +1156,7 @@ function Activities() {
                                             className="act-table__remove"
                                             type="button"
                                             disabled={removingRegistrationId === adminRegistration.id}
-                                            onClick={() => handleRemoveRegistration(activity, adminRegistration)}
+                                            onClick={() => setPendingRemoval({ activity, registration: adminRegistration })}
                                             aria-label={`הסר את ${fullName} מהרישום לפעילות`}
                                           >
                                             {removingRegistrationId === adminRegistration.id ? 'מסיר...' : 'הסרה'}
@@ -1177,6 +1182,16 @@ function Activities() {
           <WeeklySchedule activitiesByScheduleDay={activitiesByScheduleDay} />
         )}
       </div>
+      {pendingRemoval && (
+        <ConfirmDialog
+          title="אישור הסרה"
+          text="האם להסיר את המשתמש מהרישום לפעילות?"
+          confirmLabel="אישור הסרה"
+          busy={Boolean(removingRegistrationId)}
+          onConfirm={() => handleRemoveRegistration(pendingRemoval.activity, pendingRemoval.registration)}
+          onCancel={() => { if (!removalInProgress.current) setPendingRemoval(null); }}
+        />
+      )}
     </main>
   );
 }

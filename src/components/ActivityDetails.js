@@ -253,7 +253,7 @@ const CONFIRM_STYLES = `
 @media (prefers-reduced-motion: reduce) { .ucd, .ucd-panel { animation: none; } }
 `;
 
-function ConfirmDialog({ title, text, confirmLabel, busy, onConfirm, onCancel }) {
+export function ConfirmDialog({ title, text, confirmLabel, busy, onConfirm, onCancel }) {
   const cancelRef = useRef(null);
 
   useEffect(() => {
