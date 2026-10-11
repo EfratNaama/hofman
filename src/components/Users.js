@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Eye,
@@ -19,7 +19,6 @@ import './Users.css';
 
 const roleLabels = {
   admin: 'מנהל',
-  manager: 'מנהל מערכת',
   resident: 'משתמש',
   volunteer: 'מתנדב',
 };
@@ -40,7 +39,7 @@ const formatStatus = (status) => statusLabels[status] || status || '-';
 const formatPaymentStatus = (status) => paymentStatusLabels[status] || status || '-';
 const missingActivityLabel = 'הפעילות לא נמצאה';
 
-const isManagerRole = (role) => ['admin', 'manager', 'מנהל'].includes(String(role || '').toLowerCase());
+const isManagerRole = (role) => ['admin', 'מנהל'].includes(String(role || '').toLowerCase());
 
 const getUniqueValues = (values) => (
   Array.from(new Set(values.filter(Boolean)))
@@ -237,6 +236,71 @@ const PAGE_STYLES = `
 }
 `;
 
+/*
+ * Styled confirmation dialog (replaces the browser's window.confirm).
+ * Scoped under .ucd. Escape or a click outside cancels; focus starts on "ביטול".
+ */
+const CONFIRM_STYLES = `
+.ucd { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(43,33,28,.5); font-size: 1rem; animation: ucd-fade .18s ease both; }
+.ucd * { font-size: inherit; box-sizing: border-box; }
+.ucd-panel {
+  width: 100%; max-width: 420px; padding: 28px 26px 22px; border-radius: 24px; background: #fff; color: #2b211c;
+  text-align: center; box-shadow: 0 30px 60px rgba(43,33,28,.3); animation: ucd-pop .25s cubic-bezier(.2,.7,.2,1) both;
+}
+.ucd-icon { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fdf0ee; color: #b42318; box-shadow: 0 0 0 8px #fef7f6; }
+.ucd-title { margin: 0; font-size: 1.35rem; font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; }
+.ucd-text { margin: 8px 0 0; color: #6b5a50; line-height: 1.6; }
+.ucd-actions { display: flex; gap: 10px; margin-top: 22px; }
+.ucd-btn { flex: 1; min-height: 50px; border-radius: 14px; border: 1px solid transparent; font: inherit; font-size: 1rem; font-weight: 800; cursor: pointer; transition: background-color .15s ease, border-color .15s ease; }
+.ucd-btn--danger { background: #b42318; color: #fff; }
+.ucd-btn--danger:hover:not(:disabled) { background: #93190f; }
+.ucd-btn--cancel { background: #fff; border-color: #e3d7cc; color: #2b211c; }
+.ucd-btn--cancel:hover { border-color: #c9b6a8; }
+.ucd-btn:disabled { opacity: .65; cursor: wait; }
+.ucd-btn:focus-visible { outline: 3px solid #d4a373; outline-offset: 2px; }
+@keyframes ucd-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ucd-pop { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ucd, .ucd-panel { animation: none; } }
+`;
+
+function ConfirmDialog({ title, text, confirmLabel, busy, onConfirm, onCancel }) {
+  const cancelRef = useRef(null);
+
+  useEffect(() => {
+    cancelRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onCancel();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onCancel]);
+
+  return (
+    <div
+      className="ucd"
+      dir="rtl"
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !busy) onCancel();
+      }}
+    >
+      <style>{CONFIRM_STYLES}</style>
+      <div className="ucd-panel" role="alertdialog" aria-modal="true" aria-labelledby="ucd-title" aria-describedby="ucd-text">
+        <span className="ucd-icon" aria-hidden="true"><Trash2 size={28} /></span>
+        <h2 id="ucd-title" className="ucd-title">{title}</h2>
+        <p id="ucd-text" className="ucd-text">{text}</p>
+        <div className="ucd-actions">
+          <button className="ucd-btn ucd-btn--danger" type="button" disabled={busy} onClick={onConfirm}>
+            {busy ? 'מוחק...' : confirmLabel}
+          </button>
+          <button ref={cancelRef} className="ucd-btn ucd-btn--cancel" type="button" disabled={busy} onClick={onCancel}>
+            ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Users() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -248,6 +312,7 @@ function Users() {
   const [activitiesError, setActivitiesError] = useState('');
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [userToDelete, setUserToDelete] = useState(null);
 
   useEffect(() => {
     async function loadUsers() {
@@ -305,9 +370,11 @@ function Users() {
     });
   }, [users, search, roleFilter]);
 
-  const handleDelete = async (userId) => {
-    const confirmed = window.confirm('למחוק את המשתמש? לא ניתן לבטל פעולה זו.');
-    if (!confirmed) return;
+  const closeDeleteDialog = useCallback(() => setUserToDelete(null), []);
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    const userId = userToDelete.id;
 
     setDeletingUserId(userId);
     setError('');
@@ -315,8 +382,10 @@ function Users() {
     try {
       await deleteUser(userId);
       setUsers((currentUsers) => currentUsers.filter((user) => user.id !== userId));
+      setUserToDelete(null);
     } catch (err) {
       setError('לא ניתן למחוק את המשתמש. נסו שוב.');
+      setUserToDelete(null);
     } finally {
       setDeletingUserId('');
     }
@@ -485,7 +554,7 @@ function Users() {
                           className="aus-btn aus-btn--danger"
                           type="button"
                           disabled={deletingUserId === user.id}
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => setUserToDelete(user)}
                           aria-label={`מחיקת ${user.fullName || 'המשתמש'}`}
                         >
                           <Trash2 size={15} aria-hidden="true" />
@@ -573,6 +642,17 @@ function Users() {
             )}
           </div>
         </div>
+      )}
+
+      {userToDelete && (
+        <ConfirmDialog
+          title={`למחוק את ${userToDelete.fullName || userToDelete.email || 'המשתמש'}?`}
+          text="המשתמש יימחק לצמיתות, ולא יהיה אפשר לשחזר אותו."
+          confirmLabel="כן, למחוק"
+          busy={deletingUserId === userToDelete.id}
+          onConfirm={confirmDelete}
+          onCancel={closeDeleteDialog}
+        />
       )}
     </section>
   );
