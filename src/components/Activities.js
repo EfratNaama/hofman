@@ -9,6 +9,7 @@ import {
   getUserActivityRegistrations,
   registerForActivity,
   removeActivityRegistration,
+  markActivityRegistrationPaid,
 } from '../services/activityRegistrationsService';
 import './Activities.css';
 import { getUsers } from '../services/usersService';
@@ -346,6 +347,7 @@ function Activities() {
   const [userRegistrations, setUserRegistrations] = useState([]);
   const [filters, setFilters] = useState(initialFilters);
   const [activitiesView, setActivitiesView] = useState('catalog');
+  const [savingPaymentIds, setSavingPaymentIds] = useState(new Set());
   const [registrationError, setRegistrationError] = useState('');
   const [registrationMessage, setRegistrationMessage] = useState('');
   const [registeringActivityId, setRegisteringActivityId] = useState('');
@@ -660,6 +662,30 @@ function Activities() {
     }
   };
 
+  const handleMarkPaid = async (activityId, registration) => {
+    if (!canCreateActivity || registration.paymentStatus === 'paid' || savingPaymentIds.has(registration.id)) return;
+    setRegistrationError('');
+    setSavingPaymentIds((ids) => new Set(ids).add(registration.id));
+    try {
+      await markActivityRegistrationPaid(registration.id);
+      setAdminRegistrationsByActivity((current) => ({
+        ...current,
+        [activityId]: (current[activityId] || []).map((item) =>
+          item.id === registration.id ? { ...item, paymentStatus: 'paid' } : item
+        ),
+      }));
+    } catch (error) {
+      console.error('Failed to update registration payment', error);
+      setRegistrationError('לא ניתן לעדכן את התשלום כרגע. נסו שוב.');
+    } finally {
+      setSavingPaymentIds((ids) => {
+        const next = new Set(ids);
+        next.delete(registration.id);
+        return next;
+      });
+    }
+  };
+
   const handleRemoveRegistration = async (activity, registration) => {
     setRegistrationError('');
     setRegistrationMessage('');
@@ -927,6 +953,9 @@ function Activities() {
                     ? 'registered'
                     : 'available';
 
+              const showPaidRegistration = registerState === 'registered'
+                && registration?.paymentStatus === 'paid';
+
               return (
                 <article key={activity.id} className="act-card">
                   <div className="act-card__media">
@@ -1018,7 +1047,7 @@ function Activities() {
                       {canRegister && (
                         <button
                           type="button"
-                          className="act-btn act-register"
+                          className={`act-btn act-register${showPaidRegistration ? ' act-register--paid' : ''}`}
                           data-state={registerState}
                           disabled={
                             registrationUnavailable ||
@@ -1034,7 +1063,9 @@ function Activities() {
                               ? 'הפעילות מלאה'
                               : registeringActivityId === activity.id
                                 ? 'נרשם...'
-                                : registrationPresentation.label}
+                                : showPaidRegistration
+                                  ? 'שולם'
+                                  : registrationPresentation.label}
                         </button>
                       )}
 
@@ -1095,19 +1126,26 @@ function Activities() {
                                       registeredUser?.email ||
                                       adminRegistration.userEmail ||
                                       '-';
-                                    const paymentStatus =
-                                      adminRegistration.paymentStatus === 'paid'
-                                        ? 'שולם'
-                                        : adminRegistration.paymentStatus === 'pending'
-                                          ? 'ממתין'
-                                          : 'לא צוין';
+                                    const isPaid = adminRegistration.paymentStatus === 'paid';
+                                    const paymentStatus = isPaid ? 'שולם' : 'ממתין';
 
                                     return (
                                       <tr key={adminRegistration.id}>
                                         <td className="act-table__name">{fullName}</td>
                                         <td>{email}</td>
                                         <td>{formatActivityDate(adminRegistration.registeredAt)}</td>
-                                        <td>{paymentStatus}</td>
+                                        <td>
+                                          <button
+                                            type="button"
+                                            className={`act-payment act-payment--${isPaid ? 'paid' : 'pending'}`}
+                                            disabled={isPaid || savingPaymentIds.has(adminRegistration.id)}
+                                            aria-busy={savingPaymentIds.has(adminRegistration.id)}
+                                            aria-label={`${paymentStatus}: ${fullName}`}
+                                            onClick={() => handleMarkPaid(activity.id, adminRegistration)}
+                                          >
+                                            {paymentStatus}
+                                          </button>
+                                        </td>
                                         <td>
                                           <button
                                             className="act-table__remove"

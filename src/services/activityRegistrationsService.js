@@ -7,6 +7,8 @@ import {
   getCountFromServer,
   query,
   serverTimestamp,
+  onSnapshot,
+  updateDoc,
   setDoc,
   where,
 } from 'firebase/firestore';
@@ -32,6 +34,10 @@ export async function getUserActivityRegistrations(userId) {
 
 export async function getUserAllRegistrations(userId) {
   const registrations = await getUserActivityRegistrations(userId);
+  return hydrateRegistrations(registrations);
+}
+
+async function hydrateRegistrations(registrations) {
 
   const registrationsWithActivities = await Promise.all(
     registrations.map(async (registration) => {
@@ -170,4 +176,30 @@ export async function removeActivityRegistration(activityId, registrationId) {
 
   await deleteDoc(registrationRef);
   return { alreadyRemoved: false };
+}
+
+// Firestore rules restrict this field to active administrators.
+export async function markActivityRegistrationPaid(registrationId) {
+  await updateDoc(doc(db, REGISTRATIONS_COLLECTION, registrationId), {
+    paymentStatus: 'paid',
+  });
+}
+
+export function subscribeUserAllRegistrations(userId, onChange, onError) {
+  let active = true;
+  let version = 0;
+  const unsubscribe = onSnapshot(
+    query(collection(db, REGISTRATIONS_COLLECTION), where('userId', '==', userId)),
+    async (snapshot) => {
+      const currentVersion = ++version;
+      try {
+        const registrations = await hydrateRegistrations(snapshot.docs.map(normalizeRegistration));
+        if (active && currentVersion === version) onChange(registrations);
+      } catch (error) {
+        if (active && currentVersion === version) onError(error);
+      }
+    },
+    onError
+  );
+  return () => { active = false; unsubscribe(); };
 }

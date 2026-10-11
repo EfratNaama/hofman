@@ -48,8 +48,18 @@ service cloud.firestore {
       allow list: if isLoggedIn();
       allow create: if isLoggedIn()
         && request.resource.data.userId == request.auth.uid
-        && registrationId == request.auth.uid + '_' + request.resource.data.activityId;
-      allow update, delete: if isAdmin()
+        && registrationId == request.auth.uid + '_' + request.resource.data.activityId
+        && request.resource.data.get('paymentStatus', 'pending') == 'pending';
+      allow update: if (
+          isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus'])
+          && request.resource.data.paymentStatus in ['pending', 'paid']
+        ) || (
+          isLoggedIn()
+          && resource.data.userId == request.auth.uid
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentStatus', 'userId', 'activityId'])
+        );
+      allow delete: if isAdmin()
         || (isLoggedIn() && resource.data.userId == request.auth.uid);
     }
 

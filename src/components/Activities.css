@@ -34,3 +34,27 @@
   cursor: not-allowed;
   opacity: 0.68;
 }
+
+.act .act-payment {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid #e5cc9c;
+  border-radius: 999px;
+  background: #fff4db;
+  color: #80551c;
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.act .act-payment--paid { background: #e1ece8; border-color: #c3d8d1; color: #2c4d44; cursor: default; }
+.act .act-payment--pending:hover:not(:disabled) { background: #f7e7c2; }
+.act .act-payment:focus-visible { outline: 2px solid #3f6b5f; outline-offset: 2px; }
+.act .act-payment[aria-busy="true"] { opacity: .65; cursor: wait; }
+
+.act .act-register.act-register--paid {
+  background: var(--act-teal);
+  color: #fff;
+}

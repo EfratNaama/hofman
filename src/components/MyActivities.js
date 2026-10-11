@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { cancelActivityRegistration, getUserAllRegistrations } from '../services/activityRegistrationsService';
+import { cancelActivityRegistration, subscribeUserAllRegistrations } from '../services/activityRegistrationsService';
 import { formatActivityDate } from '../utils/activityDateUtils';
 import LogoLoader from './LogoLoader';
 
@@ -14,51 +14,30 @@ function MyActivities() {
   const [cancelingActivityId, setCancelingActivityId] = useState('');
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadMyActivities() {
-      if (!currentUser) {
-        setRegistrations([]);
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      setError('');
-      setSuccessMessage('');
-
-      try {
-        const registrationsData = await getUserAllRegistrations(currentUser.uid);
-        if (isMounted) {
-          setRegistrations(
-            registrationsData.map(({ registration, activity }) => ({
-              ...registration,
-              activityTitle: activity.title || registration.activityTitle,
-              activityDate: activity.activityDate || registration.activityDate,
-              date: activity.date || registration.date,
-              time: activity.time || registration.time,
-              location: activity.location || registration.location,
-              description: activity.description || registration.description,
-            }))
-          );
-        }
-      } catch (err) {
-        console.error('Failed to load registered activities', err);
-        if (isMounted) {
-          setError('לא ניתן לטעון את הפעילויות שלך כרגע. נסו שוב מאוחר יותר.');
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
+    setRegistrations([]);
+    if (!currentUser) {
+      setIsLoading(false);
+      return;
     }
-
-    loadMyActivities();
-
-    return () => {
-      isMounted = false;
-    };
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
+    return subscribeUserAllRegistrations(currentUser.uid, (data) => {
+      setRegistrations(data.map(({ registration, activity }) => ({
+        ...registration,
+        activityTitle: activity.title || registration.activityTitle,
+        activityDate: activity.activityDate || registration.activityDate,
+        date: activity.date || registration.date,
+        time: activity.time || registration.time,
+        location: activity.location || registration.location,
+        description: activity.description || registration.description,
+      })));
+      setIsLoading(false);
+    }, (err) => {
+      console.error('Failed to load registered activities', err);
+      setError('לא ניתן לטעון את הפעילויות שלך כרגע. נסו שוב מאוחר יותר.');
+      setIsLoading(false);
+    });
   }, [currentUser]);
 
   const handleCancelRegistration = async (registration) => {
@@ -127,6 +106,9 @@ function MyActivities() {
           {registrations.map((registration) => (
             <article key={registration.id} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="text-2xl font-black text-slate-900">{registration.activityTitle}</h2>
+              <span className={`mt-2 inline-block rounded-full px-3 py-1 text-sm font-bold ${registration.paymentStatus === 'paid' ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-800'}`}>
+                תשלום: {registration.paymentStatus === 'paid' ? 'שולם' : 'ממתין'}
+              </span>
               <dl className="mt-5 grid gap-3 sm:grid-cols-3">
                 <Info label="תאריך" value={formatActivityDate(registration.activityDate || registration.date)} />
                 <Info label="שעה" value={registration.time} />
