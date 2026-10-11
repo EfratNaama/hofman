@@ -122,6 +122,121 @@ function buildFormState(initialValues) {
   };
 }
 
+/*
+ * Form styles, scoped under .aaf. Used by "יצירת פעילות" and "עריכת פעילות".
+ * Sizes are in rem so the site's accessibility font scale still applies.
+ */
+const FORM_STYLES = `
+.aaf * { font-size: inherit; box-sizing: border-box; }
+.aaf { display: flex; flex-direction: column; gap: 16px; font-size: 1rem; color: #2b211c; text-align: right; }
+.aaf-section { padding: 22px 24px; background: #fff; border: 1px solid #ece3da; border-radius: 22px; }
+.aaf-section__head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+.aaf-step { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f6eee8; color: #a84f3d; font-weight: 800; }
+.aaf-section__title { margin: 0; font-size: 1.2rem; font-weight: 800; line-height: 1.3; }
+.aaf-section__sub { margin: 2px 0 0; font-size: 0.875rem; color: #6b5a50; }
+.aaf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.aaf-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 16px; }
+.aaf-span-2 { grid-column: 1 / -1; }
+.aaf-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-size: 0.95rem; font-weight: 700; }
+.aaf-label { padding: 0; font-size: 0.95rem; font-weight: 700; }
+.aaf-req { color: #a84f3d; }
+.aaf-opt { font-weight: 400; color: #8a7b70; font-size: 0.85rem; }
+.aaf-input {
+  width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid #e3d7cc; border-radius: 12px;
+  background: #fbf8f4; color: #2b211c; font: inherit; font-size: 1rem; font-weight: 400;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.aaf-input--lg { min-height: 54px; font-size: 1.15rem; font-weight: 600; }
+.aaf-input:focus { outline: 2px solid #3f6b5f; outline-offset: 1px; border-color: #3f6b5f; background: #fff; }
+.aaf-textarea { min-height: 120px; padding: 12px 14px; line-height: 1.6; resize: vertical; }
+.aaf-textarea--sm { min-height: 90px; }
+.aaf-ltr { direction: ltr; text-align: right; }
+select.aaf-input { cursor: pointer; }
+
+.aaf-seg { display: inline-flex; padding: 4px; margin: 0; border: 0; border-radius: 14px; background: #f3ede6; }
+.aaf-seg__opt { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 10px; font-weight: 700; color: #5c4a40; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.aaf-seg__opt input, .aaf-day input, .aaf-switch input, .aaf-drop input, .aaf-avatar input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.aaf-seg__opt.is-on { background: #fff; color: #2b211c; box-shadow: 0 2px 6px rgba(60,40,25,.1); }
+.aaf-seg__opt:focus-within, .aaf-day:focus-within, .aaf-drop:focus-within, .aaf-avatar:focus-within { outline: 3px solid #d4a373; outline-offset: 2px; }
+
+.aaf-days { margin: 18px 0 0; padding: 0; border: 0; }
+.aaf-days__row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.aaf-day {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 64px; min-height: 44px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid #e3d7cc; background: #fff; font-weight: 700; cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.aaf-day:hover { border-color: #3f6b5f; }
+.aaf-day.is-on { background: #2c4d44; border-color: #2c4d44; color: #fff; }
+
+.aaf-media { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.aaf-media__preview { aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; background: #f3ede6; display: flex; align-items: center; justify-content: center; }
+.aaf-media__preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aaf-media__empty { color: #8a7b70; font-weight: 600; }
+.aaf-media__controls { display: flex; flex-direction: column; gap: 12px; }
+.aaf-drop {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 96px; padding: 12px; border: 2px dashed #d9cec2; border-radius: 16px; background: #fbf8f4; text-align: center; cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.aaf-drop:hover { border-color: #3f6b5f; background: #f2f8f6; }
+.aaf-drop__title { font-weight: 800; overflow-wrap: anywhere; }
+.aaf-drop__hint { font-size: 0.85rem; color: #6b5a50; }
+
+.aaf-lecturer { display: flex; gap: 18px; align-items: flex-start; }
+.aaf-avatar {
+  position: relative; width: 104px; height: 104px; flex: 0 0 auto; border-radius: 50%; overflow: hidden; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; background: #f3ede6; border: 2px dashed #d9cec2;
+}
+.aaf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.aaf-avatar__plus { font-size: 2rem; color: #a84f3d; font-weight: 300; }
+.aaf-avatar__label { position: absolute; bottom: 0; inset-inline: 0; padding: 2px 0 6px; background: rgba(43,33,28,.55); color: #fff; font-size: 0.75rem; font-weight: 700; text-align: center; }
+.aaf-lecturer__fields { flex: 1; }
+
+.aaf-spots { display: flex; flex-direction: column; justify-content: center; padding: 8px 16px; border-radius: 14px; background: #e6efec; }
+.aaf-spots__label { font-size: 0.85rem; font-weight: 700; color: #2c4d44; }
+.aaf-spots__value { font-size: 1.8rem; font-weight: 800; line-height: 1.1; color: #2c4d44; }
+
+.aaf-switches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.aaf-switch { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: 14px; background: #fbf8f4; border: 1px solid #f0e8df; cursor: pointer; }
+.aaf-switch__title { display: block; font-weight: 800; }
+.aaf-switch__hint { display: block; font-size: 0.82rem; color: #6b5a50; }
+.aaf-switch__track { position: relative; width: 48px; height: 28px; flex: 0 0 auto; border-radius: 999px; background: #d6ccc3; transition: background-color .2s ease; }
+.aaf-switch__thumb { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s ease; }
+.aaf-switch input:checked + .aaf-switch__track { background: #00846f; }
+.aaf-switch input:checked + .aaf-switch__track .aaf-switch__thumb { transform: translateX(-20px); }
+.aaf-switch input:focus-visible + .aaf-switch__track { outline: 3px solid #d4a373; outline-offset: 2px; }
+.aaf-pay { margin-top: 14px; padding: 14px; border-radius: 14px; background: #fdf6ea; border: 1px solid #f1e0be; }
+
+.aaf-error { padding: 12px 16px; border-radius: 12px; background: #fdf0ee; border: 1px solid #f1c4bf; color: #b42318; font-weight: 600; }
+.aaf-inline-error { margin: 6px 0 0; color: #b42318; font-size: 0.9rem; font-weight: 600; }
+.aaf-actions {
+  position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 0;
+  background: linear-gradient(to top, #f6f2ec 70%, rgba(246,242,236,0));
+}
+.aaf-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 28px;
+  border-radius: 14px; border: 1px solid transparent; font: inherit; font-size: 1.05rem; font-weight: 800; text-decoration: none; cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.aaf-btn--primary { background: #a84f3d; color: #fff; box-shadow: 0 10px 22px rgba(168,79,61,.22); }
+.aaf-btn--primary:hover:not(:disabled) { background: #93422f; color: #fff; }
+.aaf-btn--ghost { background: #fff; border-color: #e3d7cc; color: #2b211c; }
+.aaf-btn--ghost:hover { border-color: #c9b6a8; color: #2b211c; }
+.aaf-btn:disabled { opacity: .65; cursor: wait; }
+.aaf a:focus-visible, .aaf button:focus-visible { outline: 3px solid #d4a373; outline-offset: 2px; }
+
+@media (max-width: 720px) {
+  .aaf-grid, .aaf-grid--3, .aaf-media, .aaf-switches { grid-template-columns: 1fr; }
+  .aaf-section { padding: 18px; }
+  .aaf-lecturer { flex-direction: column; }
+  .aaf-btn { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aaf-switch__track, .aaf-switch__thumb { transition: none; }
+}
+`;
+
 function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSubmit }) {
   const [formData, setFormData] = useState(buildFormState(initialValues));
   const [validationError, setValidationError] = useState('');
@@ -438,384 +553,267 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
   };
 
   return (
-    <form className="space-y-6 text-right" dir="rtl" onSubmit={handleSubmit}>
-      {validationError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-lg font-semibold text-red-700" role="alert">
-          {validationError}
-        </div>
-      )}
+    <form className="aaf" dir="rtl" onSubmit={handleSubmit} noValidate>
+      <style>{FORM_STYLES}</style>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">שם הפעילות</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="title"
-            type="text"
-            value={formData.title}
-            onChange={handleChange}
-          />
-        </label>
+      {validationError && <div className="aaf-error" role="alert">{validationError}</div>}
 
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">קטגוריה</span>
-          <select
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-          >
-            <option value="">בחרו קטגוריה</option>
-            {mainCategoryOptions.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </label>
+      {/* 1. details */}
+      <section className="aaf-section" aria-labelledby="aaf-s1">
+        <header className="aaf-section__head">
+          <span className="aaf-step" aria-hidden="true">1</span>
+          <div>
+            <h2 id="aaf-s1" className="aaf-section__title">פרטי הפעילות</h2>
+            <p className="aaf-section__sub">שם, תיאור וקטגוריה, כפי שיופיעו באתר</p>
+          </div>
+        </header>
 
-        {selectedCategoryGroup && (
-          <label className="block">
-            <span className="mb-2 block text-lg font-bold text-slate-800">תת קטגוריה</span>
-            <select
-              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-              name="subCategory"
-              value={formData.subCategory}
-              onChange={handleChange}
-            >
-              <option value="">בחרו תת קטגוריה</option>
-              {formData.subCategory && !hasListedSubCategory && (
-                <option value={formData.subCategory}>{formData.subCategory}</option>
-              )}
-              {selectedCategoryGroup.subCategories.map((subCategory) => (
-                <option key={subCategory} value={subCategory}>
-                  {subCategory}
-                </option>
+        <div className="aaf-grid">
+          <label className="aaf-field aaf-span-2">
+            <span>שם הפעילות <span className="aaf-req">*</span></span>
+            <input className="aaf-input aaf-input--lg" name="title" type="text" value={formData.title} onChange={handleChange} placeholder="לדוגמה: סדנת ציור" />
+          </label>
+
+          <label className="aaf-field aaf-span-2">
+            <span>תיאור <span className="aaf-req">*</span></span>
+            <textarea className="aaf-input aaf-textarea" name="description" value={formData.description} onChange={handleChange} placeholder="מה עושים, למי זה מתאים ומה כדאי להביא" />
+          </label>
+
+          <label className="aaf-field">
+            <span>קטגוריה <span className="aaf-req">*</span></span>
+            <select className="aaf-input" name="category" value={formData.category} onChange={handleChange}>
+              <option value="">בחרו קטגוריה</option>
+              {mainCategoryOptions.map((category) => (
+                <option key={category} value={category}>{category}</option>
               ))}
             </select>
           </label>
-        )}
 
-        {formData.category === otherCategory && (
-          <label className="block">
-            <span className="mb-2 block text-lg font-bold text-slate-800">קטגוריה מותאמת</span>
-            <input
-              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-              name="customCategory"
-              type="text"
-              value={formData.customCategory}
-              onChange={handleChange}
-            />
+          {selectedCategoryGroup && (
+            <label className="aaf-field">
+              <span>תת קטגוריה <span className="aaf-req">*</span></span>
+              <select className="aaf-input" name="subCategory" value={formData.subCategory} onChange={handleChange}>
+                <option value="">בחרו תת קטגוריה</option>
+                {formData.subCategory && !hasListedSubCategory && (
+                  <option value={formData.subCategory}>{formData.subCategory}</option>
+                )}
+                {selectedCategoryGroup.subCategories.map((subCategory) => (
+                  <option key={subCategory} value={subCategory}>{subCategory}</option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {formData.category === otherCategory && (
+            <label className="aaf-field">
+              <span>קטגוריה מותאמת <span className="aaf-req">*</span></span>
+              <input className="aaf-input" name="customCategory" type="text" value={formData.customCategory} onChange={handleChange} />
+            </label>
+          )}
+
+          <label className="aaf-field">
+            <span>מקום <span className="aaf-req">*</span></span>
+            <input className="aaf-input" name="location" type="text" value={formData.location} onChange={handleChange} placeholder="לדוגמה: בית הופמן" />
           </label>
-        )}
 
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">סוג פעילות</span>
-          <select
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-          >
-            {typeOptions.map((typeOption) => (
-              <option key={typeOption} value={typeOption}>
-                {typeOption}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="aaf-field">
+            <span>קישור לקבוצת וואטסאפ <span className="aaf-opt">(לא חובה)</span></span>
+            <input className="aaf-input aaf-ltr" name="whatsappLink" type="url" value={formData.whatsappLink} placeholder="https://chat.whatsapp.com/..." onChange={handleChange} />
+          </label>
+        </div>
+      </section>
 
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">מקום</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="location"
-            type="text"
-            value={formData.location}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">קישור לוואטסאפ (אופציונלי)</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="whatsappLink"
-            type="url"
-            value={formData.whatsappLink}
-            placeholder="https://chat.whatsapp.com/... או https://wa.me/..."
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="block lg:col-span-2">
-          <span className="mb-2 block text-lg font-bold text-slate-800">תיאור</span>
-          <textarea
-            className="min-h-36 w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">קישור לתמונה (אופציונלי)</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="imageUrl"
-            type="text"
-            value={formData.imageUrl}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">העלאת תמונה מהמחשב (אופציונלי)</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            type="file"
-            accept="image/*"
-            onChange={handleImageFileChange}
-          />
-          {isReadingImage && (
-            <p className="mt-2 text-base font-semibold text-slate-500">טוען תמונה...</p>
-          )}
-          {selectedImageFile && !isReadingImage && (
-            <p className="mt-2 text-base font-semibold text-slate-500">{selectedImageFile.name}</p>
-          )}
-          {imageUploadError && (
-            <p className="mt-2 text-base font-semibold text-red-700">{imageUploadError}</p>
-          )}
-        </label>
-
-        {imagePreviewUrl && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 lg:col-span-2">
-            <img
-              src={imagePreviewUrl}
-              alt="Activity preview"
-              style={{
-                display: 'block',
-                width: '100%',
-                maxHeight: '260px',
-                objectFit: 'contain',
-                borderRadius: '10px',
-                backgroundColor: '#ffffff',
-              }}
-            />
+      {/* 2. when */}
+      <section className="aaf-section" aria-labelledby="aaf-s2">
+        <header className="aaf-section__head">
+          <span className="aaf-step" aria-hidden="true">2</span>
+          <div>
+            <h2 id="aaf-s2" className="aaf-section__title">מתי</h2>
+            <p className="aaf-section__sub">פעילות קבועה חוזרת כל שבוע. חד־פעמית מתקיימת בתאריך אחד</p>
           </div>
-        )}
+        </header>
 
-        <fieldset className="activity-form-lecturer lg:col-span-2">
-          <legend>פרטי מרצה / מדריך</legend>
-
-          <div className="activity-form-lecturer__grid">
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">שם המרצה</span>
-              <input
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                name="name"
-                type="text"
-                value={formData.lecturer?.name || ''}
-                onChange={handleLecturerChange}
-              />
+        <fieldset className="aaf-seg" aria-label="סוג פעילות">
+          {typeOptions.map((typeOption) => (
+            <label key={typeOption} className={`aaf-seg__opt${formData.type === typeOption ? ' is-on' : ''}`}>
+              <input type="radio" name="type" value={typeOption} checked={formData.type === typeOption} onChange={handleChange} />
+              {typeOption === 'קבוע' ? 'פעילות קבועה' : 'פעילות חד־פעמית'}
             </label>
-
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">תמונת המרצה</span>
-              <input
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                type="file"
-                accept="image/*"
-                onChange={handleLecturerImageFileChange}
-              />
-              {selectedLecturerImageFile && !isReadingImage && (
-                <p className="mt-2 text-base font-semibold text-slate-500">{selectedLecturerImageFile.name}</p>
-              )}
-              {lecturerImageUploadError && (
-                <p className="mt-2 text-base font-semibold text-red-700">{lecturerImageUploadError}</p>
-              )}
-            </label>
-
-            <label className="block activity-form-lecturer__description">
-              <span className="mb-2 block text-lg font-bold text-slate-800">פרטים על המרצה</span>
-              <textarea
-                className="min-h-36 w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                name="description"
-                value={formData.lecturer?.description || ''}
-                onChange={handleLecturerChange}
-              />
-            </label>
-
-            {lecturerImagePreviewUrl && (
-              <div className="activity-form-lecturer__preview">
-                <img src={lecturerImagePreviewUrl} alt="תצוגה מקדימה של המרצה" />
-              </div>
-            )}
-          </div>
+          ))}
         </fieldset>
 
-        {isOneTime ? (
-          <label className="block">
-            <span className="mb-2 block text-lg font-bold text-slate-800">תאריך פעילות</span>
-            <input
-              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-              name="date"
-              type="date"
-              value={formData.date}
-              onChange={handleChange}
-            />
+        <div className="aaf-grid aaf-grid--3">
+          {isOneTime ? (
+            <label className="aaf-field">
+              <span>תאריך <span className="aaf-req">*</span></span>
+              <input className="aaf-input" name="date" type="date" value={formData.date} onChange={handleChange} />
+            </label>
+          ) : (
+            <>
+              <label className="aaf-field">
+                <span>מתאריך <span className="aaf-req">*</span></span>
+                <input className="aaf-input" name="startDate" type="date" value={formData.startDate} onChange={handleChange} />
+              </label>
+              <label className="aaf-field">
+                <span>עד תאריך <span className="aaf-req">*</span></span>
+                <input className="aaf-input" name="endDate" type="date" value={formData.endDate} onChange={handleChange} />
+              </label>
+            </>
+          )}
+          <label className="aaf-field">
+            <span>שעה <span className="aaf-req">*</span></span>
+            <input className="aaf-input" name="time" type="time" value={formData.time} onChange={handleChange} />
           </label>
-        ) : (
-          <>
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">תאריך התחלה</span>
-              <input
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                name="startDate"
-                type="date"
-                value={formData.startDate}
-                onChange={handleChange}
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">תאריך סיום</span>
-              <input
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                name="endDate"
-                type="date"
-                value={formData.endDate}
-                onChange={handleChange}
-              />
-            </label>
-
-            <fieldset className="rounded-lg border border-slate-200 bg-slate-50 p-5 lg:col-span-2">
-              <legend className="px-2 text-lg font-bold text-slate-800">ימים בשבוע</legend>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {dayOptions.map((day) => (
-                  <label
-                    key={day}
-                    className="flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-lg font-bold text-slate-800"
-                  >
-                    <input
-                      className="h-6 w-6 rounded border-slate-300 text-sky-800 focus:ring-sky-700"
-                      type="checkbox"
-                      checked={formData.daysOfWeek.includes(day)}
-                      onChange={() => handleWeekdayChange(day)}
-                    />
-                    {day}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          </>
-        )}
-
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">שעה</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            name="time"
-            type="time"
-            value={formData.time}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">מכסת משתתפים</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            min="1"
-            name="maxParticipants"
-            type="number"
-            value={formData.maxParticipants}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-lg font-bold text-slate-800">משתתפים רשומים</span>
-          <input
-            className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-            min="0"
-            name="currentParticipants"
-            type="number"
-            value={formData.currentParticipants}
-            onChange={handleChange}
-          />
-        </label>
-
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-4">
-          <p className="text-base font-bold text-slate-500">מקומות פנויים</p>
-          <p className="mt-1 text-3xl font-black text-slate-900">{Number.isFinite(availableSpots) ? availableSpots : 0}</p>
         </div>
 
-        <div className="grid gap-4 rounded-lg border border-slate-200 bg-white px-5 py-4">
-          <label className="flex items-center gap-3 text-lg font-bold text-slate-800">
-            <input
-              className="h-6 w-6 rounded border-slate-300 text-sky-800 focus:ring-sky-700"
-              checked={formData.isActive}
-              name="isActive"
-              type="checkbox"
-              onChange={handleChange}
-            />
-            פעילות פעילה
+        {!isOneTime && (
+          <fieldset className="aaf-days">
+            <legend className="aaf-label">ימים בשבוע <span className="aaf-req">*</span></legend>
+            <div className="aaf-days__row">
+              {dayOptions.map((day) => {
+                const isOn = formData.daysOfWeek.includes(day);
+                return (
+                  <label key={day} className={`aaf-day${isOn ? ' is-on' : ''}`}>
+                    <input type="checkbox" checked={isOn} onChange={() => handleWeekdayChange(day)} />
+                    {day}
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        )}
+      </section>
+
+      {/* 3. image */}
+      <section className="aaf-section" aria-labelledby="aaf-s3">
+        <header className="aaf-section__head">
+          <span className="aaf-step" aria-hidden="true">3</span>
+          <div>
+            <h2 id="aaf-s3" className="aaf-section__title">תמונה</h2>
+            <p className="aaf-section__sub">תמונה לרוחב נראית הכי טוב בכרטיס הפעילות</p>
+          </div>
+        </header>
+
+        <div className="aaf-media">
+          <div className="aaf-media__preview">
+            {imagePreviewUrl ? (
+              <img src={imagePreviewUrl} alt="תצוגה מקדימה של תמונת הפעילות" />
+            ) : (
+              <span className="aaf-media__empty">אין תמונה עדיין</span>
+            )}
+          </div>
+          <div className="aaf-media__controls">
+            <label className="aaf-drop">
+              <input type="file" accept="image/*" onChange={handleImageFileChange} />
+              <span className="aaf-drop__title">{selectedImageFile ? selectedImageFile.name : 'העלאת תמונה מהמחשב'}</span>
+              <span className="aaf-drop__hint">{isReadingImage ? 'טוען תמונה...' : 'לחצו לבחירת קובץ'}</span>
+            </label>
+            {imageUploadError && <p className="aaf-inline-error">{imageUploadError}</p>}
+            <label className="aaf-field">
+              <span>או קישור לתמונה <span className="aaf-opt">(לא חובה)</span></span>
+              <input className="aaf-input aaf-ltr" name="imageUrl" type="text" value={formData.imageUrl} onChange={handleChange} placeholder="https://..." />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. lecturer */}
+      <section className="aaf-section" aria-labelledby="aaf-s4">
+        <header className="aaf-section__head">
+          <span className="aaf-step" aria-hidden="true">4</span>
+          <div>
+            <h2 id="aaf-s4" className="aaf-section__title">מרצה / מדריך <span className="aaf-opt">(לא חובה)</span></h2>
+            <p className="aaf-section__sub">יופיע בעמוד הפעילות מעל פרטי הפעילות</p>
+          </div>
+        </header>
+
+        <div className="aaf-lecturer">
+          <label className="aaf-avatar" title="בחירת תמונת מרצה">
+            <input type="file" accept="image/*" onChange={handleLecturerImageFileChange} />
+            {lecturerImagePreviewUrl ? (
+              <img src={lecturerImagePreviewUrl} alt="תצוגה מקדימה של המרצה" />
+            ) : (
+              <span className="aaf-avatar__plus" aria-hidden="true">+</span>
+            )}
+            <span className="aaf-avatar__label">תמונה</span>
           </label>
-          <label className="flex items-center gap-3 text-lg font-bold text-slate-800">
-            <input
-              className="h-6 w-6 rounded border-slate-300 text-sky-800 focus:ring-sky-700"
-              checked={formData.requiresPayment}
-              name="requiresPayment"
-              type="checkbox"
-              onChange={handleChange}
-            />
-            נדרש תשלום? {formData.requiresPayment ? 'כן' : 'לא'}
+          <div className="aaf-grid aaf-lecturer__fields">
+            <label className="aaf-field aaf-span-2">
+              <span>שם המרצה</span>
+              <input className="aaf-input" name="name" type="text" value={formData.lecturer?.name || ''} onChange={handleLecturerChange} />
+            </label>
+            <label className="aaf-field aaf-span-2">
+              <span>כמה מילים על המרצה</span>
+              <textarea className="aaf-input aaf-textarea aaf-textarea--sm" name="description" value={formData.lecturer?.description || ''} onChange={handleLecturerChange} />
+            </label>
+          </div>
+        </div>
+        {lecturerImageUploadError && <p className="aaf-inline-error">{lecturerImageUploadError}</p>}
+      </section>
+
+      {/* 5. registration & payment */}
+      <section className="aaf-section" aria-labelledby="aaf-s5">
+        <header className="aaf-section__head">
+          <span className="aaf-step" aria-hidden="true">5</span>
+          <div>
+            <h2 id="aaf-s5" className="aaf-section__title">הרשמה ותשלום</h2>
+            <p className="aaf-section__sub">מכסת משתתפים, מצב הפעילות ותשלום</p>
+          </div>
+        </header>
+
+        <div className="aaf-grid aaf-grid--3">
+          <label className="aaf-field">
+            <span>מכסת משתתפים <span className="aaf-req">*</span></span>
+            <input className="aaf-input" min="1" name="maxParticipants" type="number" value={formData.maxParticipants} onChange={handleChange} />
+          </label>
+          <label className="aaf-field">
+            <span>משתתפים רשומים</span>
+            <input className="aaf-input" min="0" name="currentParticipants" type="number" value={formData.currentParticipants} onChange={handleChange} />
+          </label>
+          <div className="aaf-spots" aria-live="polite">
+            <span className="aaf-spots__label">מקומות פנויים</span>
+            <span className="aaf-spots__value">{Number.isFinite(availableSpots) ? availableSpots : 0}</span>
+          </div>
+        </div>
+
+        <div className="aaf-switches">
+          <label className="aaf-switch">
+            <span>
+              <span className="aaf-switch__title">הפעילות פעילה</span>
+              <span className="aaf-switch__hint">{formData.isActive ? 'מוצגת באתר ופתוחה להרשמה' : 'מוסתרת מהאתר'}</span>
+            </span>
+            <input checked={formData.isActive} name="isActive" type="checkbox" onChange={handleChange} />
+            <span className="aaf-switch__track" aria-hidden="true"><span className="aaf-switch__thumb" /></span>
+          </label>
+          <label className="aaf-switch">
+            <span>
+              <span className="aaf-switch__title">נדרש תשלום</span>
+              <span className="aaf-switch__hint">{formData.requiresPayment ? 'יש להזין מחיר וקישור לתשלום' : 'הפעילות ללא תשלום'}</span>
+            </span>
+            <input checked={formData.requiresPayment} name="requiresPayment" type="checkbox" onChange={handleChange} />
+            <span className="aaf-switch__track" aria-hidden="true"><span className="aaf-switch__thumb" /></span>
           </label>
         </div>
 
         {formData.requiresPayment && (
-          <>
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">מחיר</span>
-              <input
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                min="0"
-                name="price"
-                type="number"
-                step="0.01"
-                value={formData.price}
-                placeholder="50"
-                onChange={handleChange}
-                required
-              />
+          <div className="aaf-grid aaf-pay">
+            <label className="aaf-field">
+              <span>מחיר (₪) <span className="aaf-req">*</span></span>
+              <input className="aaf-input" min="0" name="price" type="number" step="0.01" value={formData.price} placeholder="50" onChange={handleChange} />
             </label>
-
-            <label className="block">
-              <span className="mb-2 block text-lg font-bold text-slate-800">קישור לתשלום</span>
-              <input
-                className="w-full rounded-lg border border-slate-300 bg-white px-5 py-4 text-lg text-slate-900 shadow-sm focus:border-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-100"
-                name="paymentLink"
-                type="url"
-                value={formData.paymentLink}
-                onChange={handleChange}
-              />
+            <label className="aaf-field">
+              <span>קישור לתשלום <span className="aaf-req">*</span></span>
+              <input className="aaf-input aaf-ltr" name="paymentLink" type="url" value={formData.paymentLink} onChange={handleChange} placeholder="https://..." />
             </label>
-          </>
+          </div>
         )}
-      </div>
+      </section>
 
-      <div className="flex flex-wrap gap-3">
-        <button
-          className="rounded-lg bg-sky-800 px-7 py-4 text-lg font-bold text-white shadow-sm hover:bg-sky-900 disabled:cursor-not-allowed disabled:bg-slate-400"
-          type="submit"
-          disabled={isSubmitting || isReadingImage}
-        >
+      <div className="aaf-actions">
+        <button className="aaf-btn aaf-btn--primary" type="submit" disabled={isSubmitting || isReadingImage}>
           {isSubmitting ? 'שומר...' : submitLabel}
         </button>
-        <Link className="rounded-lg bg-slate-100 px-7 py-4 text-lg font-bold text-slate-700 hover:bg-slate-200" to="/activities">
-          ביטול
-        </Link>
+        <Link className="aaf-btn aaf-btn--ghost" to="/activities">ביטול</Link>
       </div>
     </form>
   );

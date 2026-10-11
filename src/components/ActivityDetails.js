@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowDown, ArrowRight, Calendar, Check, Clock, CreditCard, MapPin, MessageCircle, Users } from 'lucide-react';
+import { ArrowDown, ArrowRight, Calendar, Check, Clock, CreditCard, MapPin, MessageCircle, Trash2, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { deleteActivity, getActivityById } from '../services/activitiesService';
 import {
@@ -226,6 +226,71 @@ const longDateFormatter = new Intl.DateTimeFormat('he-IL', {
   month: 'long',
 });
 
+/*
+ * Styled confirmation dialog (replaces the browser's window.confirm).
+ * Scoped under .ucd. Escape or a click outside cancels; focus starts on "ביטול".
+ */
+const CONFIRM_STYLES = `
+.ucd { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(43,33,28,.5); font-size: 1rem; animation: ucd-fade .18s ease both; }
+.ucd * { font-size: inherit; box-sizing: border-box; }
+.ucd-panel {
+  width: 100%; max-width: 420px; padding: 28px 26px 22px; border-radius: 24px; background: #fff; color: #2b211c;
+  text-align: center; box-shadow: 0 30px 60px rgba(43,33,28,.3); animation: ucd-pop .25s cubic-bezier(.2,.7,.2,1) both;
+}
+.ucd-icon { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fdf0ee; color: #b42318; box-shadow: 0 0 0 8px #fef7f6; }
+.ucd-title { margin: 0; font-size: 1.35rem; font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; }
+.ucd-text { margin: 8px 0 0; color: #6b5a50; line-height: 1.6; }
+.ucd-actions { display: flex; gap: 10px; margin-top: 22px; }
+.ucd-btn { flex: 1; min-height: 50px; border-radius: 14px; border: 1px solid transparent; font: inherit; font-size: 1rem; font-weight: 800; cursor: pointer; transition: background-color .15s ease, border-color .15s ease; }
+.ucd-btn--danger { background: #b42318; color: #fff; }
+.ucd-btn--danger:hover:not(:disabled) { background: #93190f; }
+.ucd-btn--cancel { background: #fff; border-color: #e3d7cc; color: #2b211c; }
+.ucd-btn--cancel:hover { border-color: #c9b6a8; }
+.ucd-btn:disabled { opacity: .65; cursor: wait; }
+.ucd-btn:focus-visible { outline: 3px solid #d4a373; outline-offset: 2px; }
+@keyframes ucd-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ucd-pop { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ucd, .ucd-panel { animation: none; } }
+`;
+
+function ConfirmDialog({ title, text, confirmLabel, busy, onConfirm, onCancel }) {
+  const cancelRef = useRef(null);
+
+  useEffect(() => {
+    cancelRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onCancel();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onCancel]);
+
+  return (
+    <div
+      className="ucd"
+      dir="rtl"
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !busy) onCancel();
+      }}
+    >
+      <style>{CONFIRM_STYLES}</style>
+      <div className="ucd-panel" role="alertdialog" aria-modal="true" aria-labelledby="ucd-title" aria-describedby="ucd-text">
+        <span className="ucd-icon" aria-hidden="true"><Trash2 size={28} /></span>
+        <h2 id="ucd-title" className="ucd-title">{title}</h2>
+        <p id="ucd-text" className="ucd-text">{text}</p>
+        <div className="ucd-actions">
+          <button className="ucd-btn ucd-btn--danger" type="button" disabled={busy} onClick={onConfirm}>
+            {busy ? 'מוחק...' : confirmLabel}
+          </button>
+          <button ref={cancelRef} className="ucd-btn ucd-btn--cancel" type="button" disabled={busy} onClick={onCancel}>
+            ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ActivityDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -243,6 +308,8 @@ function ActivityDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const closeConfirm = useCallback(() => setConfirmOpen(false), []);
 
   useEffect(() => {
     async function loadActivity() {
@@ -298,21 +365,16 @@ function ActivityDetails() {
   }, [currentUser?.uid, id]);
 
   const handleDelete = async () => {
-    const confirmed = window.confirm('האם למחוק את הפעילות? לא ניתן לבטל פעולה זו.');
-    if (!confirmed) {
-      return;
-    }
-
     setIsDeleting(true);
     setError('');
 
     try {
       await deleteActivity(id);
-      window.alert('הפעילות וההרשמות הקשורות נמחקו בהצלחה');
       navigate('/activities');
     } catch (err) {
       setError('לא ניתן למחוק את הפעילות. נסו שוב.');
       setIsDeleting(false);
+      setConfirmOpen(false);
     }
   };
 
@@ -502,7 +564,7 @@ function ActivityDetails() {
                 className="adp-btn-sm adp-btn-sm--delete"
                 type="button"
                 disabled={isDeleting}
-                onClick={handleDelete}
+                onClick={() => setConfirmOpen(true)}
               >
                 {isDeleting ? 'מוחק...' : 'מחיקה'}
               </button>
@@ -726,6 +788,16 @@ function ActivityDetails() {
           </aside>
         </div>
       </div>
+      {confirmOpen && (
+        <ConfirmDialog
+          title={`למחוק את ${activity.title || 'הפעילות'}?`}
+          text="הפעילות וכל ההרשמות אליה יימחקו לצמיתות, ולא יהיה אפשר לשחזר אותן."
+          confirmLabel="כן, למחוק"
+          busy={isDeleting}
+          onConfirm={handleDelete}
+          onCancel={closeConfirm}
+        />
+      )}
     </section>
   );
 }
