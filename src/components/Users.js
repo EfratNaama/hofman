@@ -1,5 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Eye,
+  ListChecks,
+  Pencil,
+  Search,
+  ShieldCheck,
+  Trash2,
+  UserPlus,
+  X,
+} from 'lucide-react';
 import { getActivityById } from '../services/activitiesService';
 import { getUserActivityRegistrations } from '../services/activityRegistrationsService';
 import { deleteUser, getUsers } from '../services/usersService';
@@ -30,6 +40,8 @@ const formatStatus = (status) => statusLabels[status] || status || '-';
 const formatPaymentStatus = (status) => paymentStatusLabels[status] || status || '-';
 const missingActivityLabel = 'הפעילות לא נמצאה';
 
+const isManagerRole = (role) => ['admin', 'manager', 'מנהל'].includes(String(role || '').toLowerCase());
+
 const getUniqueValues = (values) => (
   Array.from(new Set(values.filter(Boolean)))
 );
@@ -50,6 +62,181 @@ const formatPrice = (value) => {
   }).format(Number(value) || 0);
 };
 
+const getInitials = (user) => {
+  const name = String(user.fullName || user.email || '?').trim();
+  const parts = name.split(/\s+/).filter(Boolean);
+  return parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : name.slice(0, 1);
+};
+
+const AVATAR_TONES = [
+  ['#e6efec', '#2c4d44'],
+  ['#f6eee8', '#a84f3d'],
+  ['#eceef8', '#3e4c94'],
+  ['#f6efdf', '#7a5512'],
+];
+
+const avatarTone = (user) => {
+  const key = String(user.id || user.email || '');
+  const sum = Array.from(key).reduce((total, char) => total + char.charCodeAt(0), 0);
+  return AVATAR_TONES[sum % AVATAR_TONES.length];
+};
+
+const ROLE_FILTERS = [
+  { key: 'all', label: 'הכל' },
+  { key: 'managers', label: 'מנהלים' },
+  { key: 'resident', label: 'משתמשים' },
+  { key: 'volunteer', label: 'מתנדבים' },
+];
+
+/*
+ * All styles for this page live here, scoped under .aus, in the same visual
+ * language as the admin dashboard. Sizes are in rem so the site's
+ * accessibility font scale still applies.
+ */
+const PAGE_STYLES = `
+.aus * { font-size: inherit; box-sizing: border-box; }
+.aus {
+  min-height: calc(100vh - 96px); padding: 32px 20px 64px; background: #f6f2ec; color: #2b211c;
+  font-size: 1rem; line-height: 1.5; text-align: right;
+}
+.aus-shell { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.aus a:focus-visible, .aus button:focus-visible, .aus input:focus-visible,
+.aus-modal a:focus-visible, .aus-modal button:focus-visible { outline: 3px solid #d4a373; outline-offset: 2px; }
+.aus-in { animation: aus-in .55s cubic-bezier(.2,.7,.2,1) both; }
+
+.aus-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.aus-title { margin: 0; font-size: clamp(1.8rem, 3vw, 2.2rem); font-weight: 800; line-height: 1.15; color: #2b211c; }
+.aus-subtitle { margin: 4px 0 0; color: #6b5a50; }
+.aus-add {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: 14px;
+  background: #a84f3d; color: #fff; font-weight: 800; text-decoration: none;
+  box-shadow: 0 10px 22px rgba(168,79,61,.22); transition: background-color .15s ease, translate .2s ease;
+}
+.aus-add:hover { background: #93422f; color: #fff; translate: 0 -2px; }
+
+/* stats */
+.aus-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.aus-stat { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: #fff; border: 1px solid #ece3da; border-radius: 18px; }
+.aus-stat__icon { width: 46px; height: 46px; flex: 0 0 auto; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.aus-stat__label { margin: 0; font-size: 0.9rem; font-weight: 600; color: #6b5a50; }
+.aus-stat__value { margin: 0; font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+.aus-tone--teal { background: #e6efec; color: #2c4d44; }
+.aus-tone--terra { background: #f6eee8; color: #a84f3d; }
+.aus-tone--blue { background: #eceef8; color: #3e4c94; }
+.aus-tone--gold { background: #f6efdf; color: #7a5512; }
+
+/* toolbar */
+.aus-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px; background: #fff; border: 1px solid #ece3da; border-radius: 18px;
+}
+.aus-search { position: relative; flex: 1 1 280px; display: flex; align-items: center; }
+.aus-search svg { position: absolute; right: 14px; color: #6b5a50; pointer-events: none; }
+.aus-search input {
+  width: 100%; height: 46px; padding: 0 44px 0 14px; border: 1px solid #e3d7cc; border-radius: 12px;
+  background: #fbf8f4; color: #2b211c; font-size: 1rem;
+}
+.aus-search input:focus { outline: 2px solid #3f6b5f; outline-offset: 1px; border-color: #3f6b5f; background: #fff; }
+.aus-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.aus-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid #e3d7cc; background: #fff; color: #2b211c; font-size: 0.92rem; font-weight: 700; cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.aus-chip:hover { border-color: #3f6b5f; }
+.aus-chip[aria-pressed="true"] { background: #2c4d44; border-color: #2c4d44; color: #fff; }
+.aus-chip__count { font-size: 0.8rem; opacity: .75; }
+
+.aus-alert { padding: 12px 16px; border-radius: 12px; background: #fdf0ee; border: 1px solid #f1c4bf; color: #b42318; font-weight: 600; }
+.aus-empty { padding: 32px 20px; border-radius: 18px; background: #fff; border: 1px dashed #e3d7cc; color: #6b5a50; text-align: center; }
+.aus-empty__title { margin: 0 0 4px; font-size: 1.15rem; font-weight: 800; color: #2b211c; }
+
+/* user cards */
+.aus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+.aus-card {
+  display: flex; flex-direction: column; gap: 14px; padding: 18px; background: #fff;
+  border: 1px solid #ece3da; border-radius: 20px;
+  animation: aus-in .45s cubic-bezier(.2,.7,.2,1) both;
+  transition: box-shadow .25s ease, border-color .25s ease, translate .25s ease;
+}
+.aus-card:hover { border-color: #dccbbe; box-shadow: 0 14px 30px rgba(90,51,39,.09); translate: 0 -3px; }
+.aus-card.is-inactive { background: #fcfaf8; }
+.aus-card__top { display: flex; align-items: center; gap: 14px; }
+.aus-avatar {
+  position: relative; width: 52px; height: 52px; flex: 0 0 auto; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 800;
+}
+.aus-avatar__dot { position: absolute; bottom: 1px; left: 1px; width: 13px; height: 13px; border-radius: 50%; border: 2px solid #fff; }
+.aus-card__who { flex: 1; min-width: 0; }
+.aus-card__name { margin: 0; font-size: 1.15rem; font-weight: 800; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aus-card__email { margin: 0; font-size: 0.9rem; color: #6b5a50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; direction: ltr; text-align: right; }
+.aus-card__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.aus-tag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+.aus-tag--role { background: #f3ede6; color: #5c4a40; }
+.aus-tag--manager { background: #eceef8; color: #3e4c94; }
+.aus-tag--active { background: #e6efec; color: #2c4d44; }
+.aus-tag--inactive { background: #efebe6; color: #5c524c; }
+.aus-card__actions { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 12px; border-top: 1px solid #f3ede6; }
+.aus-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 12px;
+  border-radius: 10px; border: 1px solid #e3d7cc; background: #fbf8f4; color: #2b211c;
+  font-size: 0.88rem; font-weight: 700; text-decoration: none; cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.aus-btn:hover { background: #fff; border-color: #c9b6a8; color: #2b211c; }
+.aus-btn--teal { background: #e6efec; border-color: #d3e4dd; color: #2c4d44; }
+.aus-btn--teal:hover { background: #d9e9e3; color: #2c4d44; }
+.aus-btn--danger { margin-inline-start: auto; background: #fff; border-color: #f1c4bf; color: #b42318; }
+.aus-btn--danger:hover:not(:disabled) { background: #fdf0ee; color: #b42318; }
+.aus-btn:disabled { opacity: .6; cursor: wait; }
+
+/* modal */
+.aus-modal {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(43,33,28,.45); animation: aus-fade .2s ease both; font-size: 1rem;
+}
+.aus-modal * { font-size: inherit; box-sizing: border-box; }
+.aus-modal__panel {
+  width: 100%; max-width: 760px; max-height: 90vh; overflow-y: auto; padding: 24px;
+  border-radius: 22px; background: #f6f2ec; color: #2b211c; text-align: right;
+  box-shadow: 0 30px 60px rgba(43,33,28,.25); animation: aus-in .3s cubic-bezier(.2,.7,.2,1) both;
+}
+.aus-modal__head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.aus-modal__eyebrow { margin: 0; font-size: 0.9rem; font-weight: 700; color: #a84f3d; }
+.aus-modal__title { margin: 0; font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+.aus-modal__close {
+  margin-inline-start: auto; width: 44px; height: 44px; border-radius: 50%; border: 1px solid #e3d7cc;
+  background: #fff; color: #2b211c; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.aus-modal__close:hover { border-color: #c9b6a8; }
+.aus-reg-list { display: flex; flex-direction: column; gap: 10px; }
+.aus-reg {
+  padding: 16px 18px; border-radius: 16px; background: #fff; border: 1px solid #ece3da;
+  border-inline-start: 4px solid #00846f;
+}
+.aus-reg__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.aus-reg__title { margin: 0; font-size: 1.1rem; font-weight: 800; }
+.aus-reg__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px 16px; margin: 0; }
+.aus-reg__grid dt { font-size: 0.8rem; font-weight: 600; color: #6b5a50; }
+.aus-reg__grid dd { margin: 0; font-size: 0.98rem; font-weight: 700; }
+.aus-pay { padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+.aus-pay--paid { background: #e3f1e8; color: #1f6b3a; }
+.aus-pay--pending { background: #fdf6ea; color: #7a5512; }
+.aus-pay--other { background: #f3ede6; color: #5c524c; }
+
+@keyframes aus-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes aus-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 600px) {
+  .aus-toolbar { padding: 12px; }
+  .aus-modal__panel { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aus-in, .aus-card, .aus-modal, .aus-modal__panel { animation: none; }
+  .aus-card, .aus-add { transition: none; }
+  .aus-card:hover, .aus-add:hover { translate: none; }
+}
+`;
+
 function Users() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +246,8 @@ function Users() {
   const [selectedUserActivities, setSelectedUserActivities] = useState([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [activitiesError, setActivitiesError] = useState('');
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
 
   useEffect(() => {
     async function loadUsers() {
@@ -75,9 +264,46 @@ function Users() {
       }
     }
 
-
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    if (!selectedUser) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedUser(null);
+        setSelectedUserActivities([]);
+        setActivitiesError('');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedUser]);
+
+  const counts = useMemo(() => ({
+    all: users.length,
+    managers: users.filter((user) => isManagerRole(user.role)).length,
+    resident: users.filter((user) => user.role === 'resident').length,
+    volunteer: users.filter((user) => user.role === 'volunteer').length,
+    active: users.filter((user) => user.status === 'active').length,
+  }), [users]);
+
+  const visibleUsers = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase('he');
+    return users.filter((user) => {
+      const matchesRole =
+        roleFilter === 'all' ||
+        (roleFilter === 'managers' ? isManagerRole(user.role) : user.role === roleFilter);
+      const matchesSearch =
+        !query ||
+        [user.fullName, user.email, user.phone]
+          .filter(Boolean)
+          .join(' ')
+          .toLocaleLowerCase('he')
+          .includes(query);
+      return matchesRole && matchesSearch;
+    });
+  }, [users, search, roleFilter]);
 
   const handleDelete = async (userId) => {
     const confirmed = window.confirm('למחוק את המשתמש? לא ניתן לבטל פעולה זו.');
@@ -143,196 +369,206 @@ function Users() {
     }
   };
 
-  const closeActivitiesModal = () => {
+  function closeActivitiesModal() {
     setSelectedUser(null);
     setSelectedUserActivities([]);
     setActivitiesError('');
-  };
+  }
 
   return (
-    <section className="admin-users-page" dir="rtl">
-      <div className="admin-users-page__shell">
-      <div className="admin-users-page__header">
-        <div>
-          <p className="admin-users-page__eyebrow">ניהול מערכת</p>
-          <h2 className="admin-users-page__title">משתמשים</h2>
-        </div>
+    <section className="aus" dir="rtl">
+      <style>{PAGE_STYLES}</style>
+      <div className="aus-shell">
+        <header className="aus-header aus-in">
+          <div>
+            <h1 className="aus-title">משתמשים</h1>
+            <p className="aus-subtitle">כל מי שרשום לאתר: משתתפים, מתנדבים ומנהלים</p>
+          </div>
+          <Link className="aus-add" to="/users/new">
+            <UserPlus size={18} aria-hidden="true" />
+            הוספת משתמש
+          </Link>
+        </header>
 
-        <Link
-          className="admin-users-page__add-link"
-          to="/users/new"
-        >
-          הוספת משתמש
-        </Link>
-      </div>
+        {error && <div className="aus-alert" role="alert">{error}</div>}
 
-      {error && (
-        <div className="admin-users-page__notice admin-users-page__notice--error">
-          {error}
-        </div>
-      )}
+        {isLoading && <LogoLoader label="טוען משתמשים..." />}
 
-      {isLoading && <LogoLoader label="טוען משתמשים..." />}
+        {!isLoading && !error && users.length === 0 && (
+          <div className="aus-empty">
+            <p className="aus-empty__title">לא נמצאו משתמשים.</p>
+            <p style={{ margin: 0 }}>צרו את פרופיל המשתמש הראשון כדי להתחיל לנהל גישה.</p>
+          </div>
+        )}
 
-      {!isLoading && !error && users.length === 0 && (
-        <div className="admin-users-page__empty">
-          <p className="text-base font-semibold text-slate-800">לא נמצאו משתמשים.</p>
-          <p className="mt-2 text-sm text-slate-600">
-            צרו את פרופיל המשתמש הראשון כדי להתחיל לנהל גישה.
-          </p>
-        </div>
-      )}
+        {!isLoading && users.length > 0 && (
+          <>
+            <div className="aus-toolbar aus-in" style={{ animationDelay: '.1s' }}>
+              <label className="aus-search">
+                <Search size={18} aria-hidden="true" />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="חיפוש לפי שם, אימייל או טלפון"
+                  aria-label="חיפוש משתמש"
+                />
+              </label>
+              <div className="aus-chips" role="group" aria-label="סינון לפי תפקיד">
+                {ROLE_FILTERS.map((filter) => (
+                  <button
+                    key={filter.key}
+                    type="button"
+                    className="aus-chip"
+                    aria-pressed={roleFilter === filter.key}
+                    onClick={() => setRoleFilter(filter.key)}
+                  >
+                    {filter.label}
+                    <span className="aus-chip__count">{counts[filter.key]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {!isLoading && users.length > 0 && (
-        <div className="admin-users-page__table-card">
-        <div className="admin-users-page__table-scroll">
-          <table className="admin-users-page__table">
-            <thead>
-              <tr>
-                <th>שם מלא</th>
-                <th>אימייל</th>
-                <th>תפקיד</th>
-                <th>סטטוס</th>
-                <th>פעולות</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="admin-users-page__name">
-                    {user.fullName || '-'}
-                  </td>
-                  <td>{user.email || '-'}</td>
-                  <td>{formatRole(user.role)}</td>
-                  <td>
-                    <span
-                      className={
-                        user.status === 'active'
-                          ? 'admin-users-page__status admin-users-page__status--active'
-                          : 'admin-users-page__status admin-users-page__status--inactive'
-                      }
+            {visibleUsers.length === 0 ? (
+              <div className="aus-empty">
+                <p className="aus-empty__title">אין משתמשים שמתאימים לחיפוש</p>
+                <p style={{ margin: 0 }}>נסו מילה אחרת או בחרו "הכל".</p>
+              </div>
+            ) : (
+              <div className="aus-grid">
+                {visibleUsers.map((user, index) => {
+                  const [toneBg, toneFg] = avatarTone(user);
+                  const isActive = user.status === 'active';
+                  const manager = isManagerRole(user.role);
+                  return (
+                    <article
+                      className={`aus-card${isActive ? '' : ' is-inactive'}`}
+                      key={user.id}
+                      style={{ animationDelay: `${Math.min(index, 12) * 0.03}s` }}
                     >
-                      {formatStatus(user.status)}
-                    </span>
-                  </td>
+                      <div className="aus-card__top">
+                        <span className="aus-avatar" style={{ background: toneBg, color: toneFg }} aria-hidden="true">
+                          {getInitials(user)}
+                          <span className="aus-avatar__dot" style={{ background: isActive ? '#00846f' : '#b9b0a8' }} />
+                        </span>
+                        <div className="aus-card__who">
+                          <h2 className="aus-card__name">{user.fullName || 'ללא שם'}</h2>
+                          <p className="aus-card__email">{user.email || '-'}</p>
+                        </div>
+                      </div>
 
-                  <td>
-                    <div className="admin-users-page__actions">
-                      <Link
-                        className="admin-users-page__action admin-users-page__action--view"
-                        to={`/users/${user.id}`}
-                      >
-                        צפייה
-                      </Link>
+                      <div className="aus-card__tags">
+                        <span className={`aus-tag ${manager ? 'aus-tag--manager' : 'aus-tag--role'}`}>
+                          {manager && <ShieldCheck size={13} aria-hidden="true" />}
+                          {formatRole(user.role)}
+                        </span>
+                        <span className={`aus-tag ${isActive ? 'aus-tag--active' : 'aus-tag--inactive'}`}>
+                          {formatStatus(user.status)}
+                        </span>
+                      </div>
 
-                      <Link
-                        className="admin-users-page__action admin-users-page__action--edit"
-                        to={`/users/${user.id}/edit`}
-                      >
-                        עריכה
-                      </Link>
-
-                      <button
-                        className="admin-users-page__action admin-users-page__action--activities"
-                        type="button"
-                        onClick={() => handleViewActivities(user)}
-                      >
-                        פעילויות
-                      </button>
-
-                      <button
-                        className="admin-users-page__action admin-users-page__action--delete"
-                        type="button"
-                        disabled={deletingUserId === user.id}
-                        onClick={() => handleDelete(user.id)}
-                      >
-                        {deletingUserId === user.id ? 'מוחק...' : 'מחיקה'}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        </div>
-      )}
+                      <div className="aus-card__actions">
+                        <Link className="aus-btn" to={`/users/${user.id}`}>
+                          <Eye size={15} aria-hidden="true" />
+                          צפייה
+                        </Link>
+                        <Link className="aus-btn" to={`/users/${user.id}/edit`}>
+                          <Pencil size={15} aria-hidden="true" />
+                          עריכה
+                        </Link>
+                        <button className="aus-btn aus-btn--teal" type="button" onClick={() => handleViewActivities(user)}>
+                          <ListChecks size={15} aria-hidden="true" />
+                          פעילויות
+                        </button>
+                        <button
+                          className="aus-btn aus-btn--danger"
+                          type="button"
+                          disabled={deletingUserId === user.id}
+                          onClick={() => handleDelete(user.id)}
+                          aria-label={`מחיקת ${user.fullName || 'המשתמש'}`}
+                        >
+                          <Trash2 size={15} aria-hidden="true" />
+                          {deletingUserId === user.id ? 'מוחק...' : 'מחיקה'}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-white p-6 text-right shadow-xl" dir="rtl">
-            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold text-slate-500">פעילויות שנרשם אליהן</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-900">
-                  {selectedUser.fullName || selectedUser.email || 'משתמש'}
-                </h3>
-              </div>
-              <button
-                className="rounded-md bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
-                type="button"
-                onClick={closeActivitiesModal}
+        <div
+          className="aus-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="aus-modal-title"
+          dir="rtl"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeActivitiesModal();
+          }}
+        >
+          <div className="aus-modal__panel">
+            <div className="aus-modal__head">
+              <span
+                className="aus-avatar"
+                style={{ background: avatarTone(selectedUser)[0], color: avatarTone(selectedUser)[1] }}
+                aria-hidden="true"
               >
-                סגירה
+                {getInitials(selectedUser)}
+              </span>
+              <div>
+                <p className="aus-modal__eyebrow">פעילויות שנרשם אליהן</p>
+                <h2 id="aus-modal-title" className="aus-modal__title">
+                  {selectedUser.fullName || selectedUser.email || 'משתמש'}
+                </h2>
+              </div>
+              <button className="aus-modal__close" type="button" onClick={closeActivitiesModal} aria-label="סגירה">
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
             {isLoadingActivities && <LogoLoader label="טוען פעילויות..." />}
 
             {!isLoadingActivities && activitiesError && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {activitiesError}
-              </div>
+              <div className="aus-alert" role="alert">{activitiesError}</div>
             )}
 
             {!isLoadingActivities && !activitiesError && selectedUserActivities.length === 0 && (
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-6 text-center">
-                <p className="text-base font-semibold text-slate-800">
-                  המשתמש לא נרשם לפעילויות עדיין
-                </p>
+              <div className="aus-empty">
+                <p className="aus-empty__title">המשתמש לא נרשם לפעילויות עדיין</p>
               </div>
             )}
 
             {!isLoadingActivities && !activitiesError && selectedUserActivities.length > 0 && (
-              <div className="grid gap-4">
-                {selectedUserActivities.map(({ registration, activity }) => (
-                  <article
-                    key={registration.id}
-                    className="rounded-md border border-slate-200 bg-slate-50 p-4"
-                  >
-                    <h4 className="text-lg font-bold text-slate-900">
-                      {activity?.title || registration.activityTitle || 'פעילות לא נמצאה'}
-                    </h4>
-                    <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <ActivityDetail
-                        label="שם פעילות"
-                        value={activity?.title || registration.activityTitle || 'פעילות לא נמצאה'}
-                      />
-                      <ActivityDetail
-                        label="תאריך"
-                        value={formatActivityDate(activity?.activityDate || activity?.date || registration.activityDate || registration.date)}
-                      />
-                      <ActivityDetail
-                        label="שעה"
-                        value={activity?.time || registration.time}
-                      />
-                      <ActivityDetail
-                        label="מיקום"
-                        value={activity?.location || registration.location}
-                      />
-                      <ActivityDetail
-                        label="מחיר"
-                        value={formatPrice(activity?.price)}
-                      />
-                      <ActivityDetail
-                        label="סטטוס הרשמה / תשלום"
-                        value={formatPaymentStatus(registration.paymentStatus)}
-                      />
-                    </dl>
-                  </article>
-                ))}
+              <div className="aus-reg-list">
+                {selectedUserActivities.map(({ registration, activity }) => {
+                  const payment = registration.paymentStatus;
+                  const payTone = payment === 'paid' ? 'paid' : payment === 'pending' ? 'pending' : 'other';
+                  return (
+                    <article key={registration.id} className="aus-reg">
+                      <div className="aus-reg__head">
+                        <h3 className="aus-reg__title">
+                          {activity?.title || registration.activityTitle || 'פעילות לא נמצאה'}
+                        </h3>
+                        <span className={`aus-pay aus-pay--${payTone}`}>{formatPaymentStatus(payment)}</span>
+                      </div>
+                      <dl className="aus-reg__grid">
+                        <ActivityDetail
+                          label="תאריך"
+                          value={formatActivityDate(activity?.activityDate || activity?.date || registration.activityDate || registration.date)}
+                        />
+                        <ActivityDetail label="שעה" value={activity?.time || registration.time} />
+                        <ActivityDetail label="מיקום" value={activity?.location || registration.location} />
+                        <ActivityDetail label="מחיר" value={formatPrice(activity?.price)} />
+                      </dl>
+                    </article>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -344,9 +580,9 @@ function Users() {
 
 function ActivityDetail({ label, value }) {
   return (
-    <div className="rounded-md bg-white p-3">
-      <dt className="text-sm font-semibold text-slate-500">{label}</dt>
-      <dd className="mt-1 font-semibold text-slate-900">{value || '-'}</dd>
+    <div>
+      <dt>{label}</dt>
+      <dd>{value || '-'}</dd>
     </div>
   );
 }
