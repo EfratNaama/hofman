@@ -970,7 +970,7 @@ function Activities() {
                     {statusLabel && (
                       <span className={`act-status act-status--${statusTone}`}>
                         {statusTone === 'mine' && <Check size={14} aria-hidden="true" />}
-                        {statusLabel}
+                        {statusTone === 'mine' && showPaidRegistration ? 'שולם' : statusLabel}
                       </span>
                     )}
                     <div className="act-card__media-bottom">
