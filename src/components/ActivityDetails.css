@@ -179,3 +179,8 @@
     padding: 20px;
   }
 }
+
+.adp .adp-reg__button.adp-reg__button--paid {
+  background: var(--adp-teal);
+  color: #fff;
+}

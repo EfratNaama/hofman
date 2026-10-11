@@ -533,6 +533,9 @@ function ActivityDetails() {
         ? 'registered'
         : 'available';
 
+  const showPaidRegistration = registrationStateKey === 'registered'
+    && userRegistration?.paymentStatus === 'paid';
+
   const statusOpen = !isInactive && !registrationUnavailable;
   const statusLabel = isInactive
     ? 'הפעילות לא פעילה'
@@ -750,7 +753,7 @@ function ActivityDetails() {
 
               {showRegistrationPanel && canRegister && (
                 <button
-                  className="adp-reg__button"
+                  className={`adp-reg__button${showPaidRegistration ? ' adp-reg__button--paid' : ''}`}
                   type="button"
                   disabled={
                     registrationUnavailable ||
@@ -767,7 +770,9 @@ function ActivityDetails() {
                       ? 'הפעילות מלאה'
                       : registeringActivityId === activity.id
                         ? 'נרשם...'
-                        : registrationPresentation.label === 'הרשמה'
+                        : showPaidRegistration
+                          ? 'שולם'
+                          : registrationPresentation.label === 'הרשמה'
                           ? 'אישור הרשמה'
                           : registrationPresentation.label}
                 </button>

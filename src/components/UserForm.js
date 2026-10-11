@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Save } from 'lucide-react';
+import { Save, User, HeartHandshake, ShieldCheck } from 'lucide-react';
+import './UserForm.css';
+
+const roleOptions = [
+  { value: 'resident', label: 'משתמש', description: 'צפייה והרשמה לפעילויות', Icon: User },
+  { value: 'volunteer', label: 'מתנדב', description: 'השתתפות בפעילות התנדבותית', Icon: HeartHandshake },
+  { value: 'admin', label: 'מנהל', description: 'ניהול משתמשים ופעילויות', Icon: ShieldCheck },
+];
 const statusOptions = ['active', 'inactive'];
 
 const statusLabels = {
@@ -63,7 +70,7 @@ const FORM_STYLES = `
 .auf a:focus-visible, .auf button:focus-visible { outline: 3px solid #d4a373; outline-offset: 2px; }
 `;
 
-function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
+function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel, onSubmit }) {
   const [formData, setFormData] = useState({
     ...initialFormState,
     ...initialValues,
@@ -145,6 +152,19 @@ function UserForm({ initialValues, isSubmitting, submitLabel, onSubmit }) {
       <section className="auf-section" aria-labelledby="auf-access">
         <h2 id="auf-access" className="auf-section__title">תפקיד והרשאות</h2>
         <p className="auf-section__sub">התפקיד קובע מה המשתמש יכול לראות ולעשות באתר</p>
+
+        {isCreating && (
+          <fieldset className="auf-roles" aria-labelledby="auf-access" disabled={isSubmitting}>
+            {roleOptions.map(({ value, label, description, Icon }) => (
+              <label key={value} className={`auf-role${formData.role === value ? ' is-selected' : ''}`}>
+                <input type="radio" name="role" value={value} checked={formData.role === value} onChange={handleChange} />
+                <Icon size={24} aria-hidden="true" />
+                <span className="auf-role__title">{label}</span>
+                <span className="auf-role__description">{description}</span>
+              </label>
+            ))}
+          </fieldset>
+        )}
 
         <div className="auf-row">
           <div className="auf-field">

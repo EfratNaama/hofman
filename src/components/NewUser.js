@@ -66,7 +66,7 @@ function NewUser() {
 
         {error && <div className="aue-error" role="alert">{error}</div>}
 
-        <UserForm isSubmitting={isSubmitting} submitLabel="יצירת משתמש" onSubmit={handleSubmit} />
+        <UserForm isCreating isSubmitting={isSubmitting} submitLabel="יצירת משתמש" onSubmit={handleSubmit} />
       </div>
     </section>
   );
