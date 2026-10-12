@@ -6,6 +6,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Missing status preserves legacy access; explicit inactive always denies it.
+    function isActiveUser() {
+      return isLoggedIn() && (!userDocExists()
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', '') != 'inactive');
+    }
+
     function isOwner(userId) {
       return isLoggedIn() && request.auth.uid == userId;
     }
@@ -22,16 +28,20 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      // Own profile remains readable so inactive sessions can detect revocation.
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
       allow create: if (
           isAdmin()
           && request.resource.data.uid == userId
           && request.resource.data.role in ['resident', 'volunteer', 'admin']
         ) || (isOwner(userId)
-          && request.resource.data.get('role', '') != 'admin');
+          && request.resource.data.get('role', '') == ''
+          && request.resource.data.get('status', '') in ['', 'active']);
       allow update: if isAdmin()
         || (
           isOwner(userId)
+          && isActiveUser()
           && request.resource.data.get('role', '') == resource.data.get('role', '')
           && request.resource.data.get('status', '') == resource.data.get('status', '')
         );
@@ -39,18 +49,18 @@ service cloud.firestore {
     }
 
     match /activities/{activityId} {
-      allow read: if isLoggedIn();
+      allow read: if isActiveUser();
       allow create, update, delete: if isAdmin();
     }
 
     match /activityRegistrations/{registrationId} {
       allow get: if isAdmin()
         || (
-          isLoggedIn()
+          isActiveUser()
           && registrationId.matches(request.auth.uid + '_.*')
         );
-      allow list: if isLoggedIn();
-      allow create: if isLoggedIn()
+      allow list: if isActiveUser();
+      allow create: if isActiveUser()
         && request.resource.data.userId == request.auth.uid
         && registrationId == request.auth.uid + '_' + request.resource.data.activityId
         && request.resource.data.get('paymentStatus', 'pending') == 'pending';
@@ -59,16 +69,16 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus'])
           && request.resource.data.paymentStatus in ['pending', 'paid']
         ) || (
-          isLoggedIn()
+          isActiveUser()
           && resource.data.userId == request.auth.uid
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['paymentStatus', 'userId', 'activityId'])
         );
       allow delete: if isAdmin()
-        || (isLoggedIn() && resource.data.userId == request.auth.uid);
+        || (isActiveUser() && resource.data.userId == request.auth.uid);
     }
 
     match /gallery/{galleryItemId} {
-      allow read: if isLoggedIn();
+      allow read: if isActiveUser();
       allow create, update, delete: if isAdmin();
     }
 

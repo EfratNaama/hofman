@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { CircleAlert, CircleCheck, Eye, EyeOff, Phone } from 'lucide-react';
@@ -125,15 +125,17 @@ function GoogleIcon() {
 }
 
 function withTimeout(promise) {
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Login timeout: operation took too long')), LOGIN_TIMEOUT_MS)
-  );
-  return Promise.race([promise, timeoutPromise]);
+  let timer;
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(Object.assign(new Error('Login timeout: operation took too long'), { code: 'auth/login-timeout' })), LOGIN_TIMEOUT_MS);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
 }
 
 function Login() {
   const navigate = useNavigate();
-  const { signInEmail, signInGoogle } = useAuth();
+  const { signInEmail, signInGoogle, authStatus, currentUser, isSessionAuthorized, cancelSignIn } = useAuth();
+  const [pendingUid, setPendingUid] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -143,11 +145,22 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
 
+  useEffect(() => {
+    if (!pendingUid) return;
+    if (authStatus === 'active' && currentUser?.uid === pendingUid && isSessionAuthorized(pendingUid)) {
+      navigate('/');
+    } else if (authStatus === 'inactive' || authStatus === 'unauthenticated') {
+      setPendingUid(null);
+      setLoading(false);
+    }
+  }, [pendingUid, authStatus, currentUser, isSessionAuthorized, navigate]);
+
   // Shared by the email and Google flows: run the sign-in, then go home.
   const runLogin = async (signIn, label) => {
     setError('');
     setNotice('');
     setLoading(true);
+    setPendingUid(null);
     let keepLoaderUntilRedirect = false;
 
     try {
@@ -167,10 +180,11 @@ function Login() {
       }
 
       keepLoaderUntilRedirect = true;
-      navigate('/');
+      setPendingUid(credential.user.uid);
     } catch (err) {
+      if (err.code === 'auth/login-timeout') void cancelSignIn();
       console.error(`Login ${label} error`, err.code, err.message, err);
-      setError(getFriendlyErrorMessage(err));
+      setError(err.code === 'auth/account-inactive' ? '' : getFriendlyErrorMessage(err));
     } finally {
       if (!keepLoaderUntilRedirect) {
         setLoading(false);
