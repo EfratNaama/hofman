@@ -35,7 +35,7 @@ const SECTION_STYLES = `
   display: grid; grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr)); gap: clamp(24px, 4vw, 44px);
 }
 .hv-title {
-  margin: 0; color: #f5f0e8; font-family: 'Frank Ruhl Libre', serif;
+  margin: 0; color: #f5f0e8; font-family: inherit;
   font-size: clamp(2rem, 3.5vw, 2.6rem); font-weight: 700; line-height: 1.1;
 }
 .hv-lead { margin: 10px 0 0; color: #cfc3b8; font-size: 1.05rem; }

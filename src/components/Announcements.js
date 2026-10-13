@@ -38,7 +38,7 @@ const STYLES = `
 .uan { width: min(100%, 1120px); margin: 0 auto; padding: 36px 20px 64px; color: #2b211c; font-size: 1rem; line-height: 1.6; text-align: right; }
 .uan-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; }
 .uan-eyebrow { margin: 0; font-size: 0.88rem; font-weight: 700; color: #a84f3d; }
-.uan-title { margin: 4px 0 0; font-family: 'Frank Ruhl Libre', serif; font-size: clamp(2.2rem, 5vw, 2.9rem); font-weight: 700; line-height: 1.05; color: #2b211c; }
+.uan-title { margin: 4px 0 0; font-family: inherit; font-size: clamp(2.2rem, 5vw, 2.9rem); font-weight: 700; line-height: 1.05; color: #2b211c; }
 .uan-lead { margin: 8px 0 0; color: #6b5a50; }
 
 .uan-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
@@ -107,7 +107,7 @@ const STYLES = `
 .uan-tape--r { right: 40px; transform: rotate(4deg); }
 .uan-tape--l { left: 40px; transform: rotate(-5deg); }
 .uan-stamp { display: inline-block; margin-bottom: 10px; padding: 3px 12px; border: 2px solid #a84f3d; border-radius: 6px; color: #a84f3d; font-size: 0.85rem; font-weight: 800; letter-spacing: .5px; transform: rotate(-2deg); }
-.uan-note--featured h2 { margin: 0; font-family: 'Frank Ruhl Libre', serif; font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 700; line-height: 1.2; color: #2b211c; overflow-wrap: anywhere; }
+.uan-note--featured h2 { margin: 0; font-family: inherit; font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 700; line-height: 1.2; color: #2b211c; overflow-wrap: anywhere; }
 .uan-note--featured p { margin-top: 12px; font-size: 1.15rem; line-height: 34px; }
 .uan-note--featured .uan-note__meta { margin: 14px 0 0; }
 

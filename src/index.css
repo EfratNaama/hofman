@@ -43,6 +43,7 @@ body * {
   font-family: inherit;
 }
 
+.Toastify .Toastify__toast,
 button,
 input,
 textarea,

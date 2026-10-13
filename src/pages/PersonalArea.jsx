@@ -236,7 +236,7 @@ const PA_STYLES = `
 .pa-cam:hover:not(:disabled) { background: #a84f3d; }
 .pa-cam:disabled { opacity: .7; cursor: wait; }
 .pa-me__text { position: relative; z-index: 1; min-width: 0; }
-.pa-hello { margin: 2px 0 0; font-family: 'Frank Ruhl Libre', serif; font-size: clamp(1.9rem, 3.4vw, 2.5rem); font-weight: 700; line-height: 1.15; color: #2b211c; overflow-wrap: anywhere; }
+.pa-hello { margin: 2px 0 0; font-family: inherit; font-size: clamp(1.9rem, 3.4vw, 2.5rem); font-weight: 700; line-height: 1.15; color: #2b211c; overflow-wrap: anywhere; }
 .pa-mail { margin: 6px 0 0; color: #6b5a50; font-size: 0.95rem; overflow-wrap: anywhere; }
 .pa-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .pa-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 999px; background: #fff; border: 1px solid #ece3da; font: inherit; font-size: 0.9rem; font-weight: 700; color: #5c4a40; text-decoration: none; cursor: pointer; }
