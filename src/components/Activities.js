@@ -45,6 +45,11 @@ const noDayLabel = 'ללא יום מוגדר';
 
 const getRecurringDays = getActivityDaysOfWeek;
 
+const getActivityTypeKey = (value) => {
+  const key = value.normalize('NFC').replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
+  return key === 'אמנות' ? 'אומנות' : key;
+};
+
 const getActivityTypes = (activity) =>
   [activity.category, activity.subCategory, activity.type]
     .map((value) => String(value || '').trim())
@@ -388,8 +393,23 @@ function Activities() {
   );
 
   const availableActivityTypes = useMemo(
-    () => Array.from(new Set(activities.flatMap(getActivityTypes)))
-      .sort((first, second) => first.localeCompare(second, 'he')),
+    () => {
+      const seen = new Set();
+      return Array.from(new Set(activities.flatMap(getActivityTypes)))
+        .map((activityType) => getActivityTypeKey(activityType) === 'אומנות' ? 'אומנות' : activityType)
+        .sort((first, second) => {
+          if (first === second) return 0;
+          if (first === 'אומנות') return -1;
+          if (second === 'אומנות') return 1;
+          return first.localeCompare(second, 'he');
+        })
+        .filter((activityType) => {
+          const key = getActivityTypeKey(activityType);
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    },
     [activities]
   );
 
@@ -411,7 +431,9 @@ function Activities() {
         const matchesSearch = !normalizedSearch || searchableText.includes(normalizedSearch);
         const matchesType =
           filters.activityType === 'all' ||
-          getActivityTypes(activity).includes(filters.activityType);
+          getActivityTypes(activity).some(
+            (activityType) => getActivityTypeKey(activityType) === getActivityTypeKey(filters.activityType)
+          );
         const matchesDate = isInSelectedDateRange(activity, filters.dateRange);
         const matchesRegistration =
           filters.registrationStatus === 'all' ||
