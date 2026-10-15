@@ -24,6 +24,36 @@ const initialFormState = {
   createdAt: '',
 };
 
+const validateField = (name, value) => {
+  const trimmed = value.trim();
+  if (name === 'fullName' && !/\p{L}/u.test(trimmed)) {
+    return 'יש להזין שם מלא תקין';
+  }
+  if (name === 'email') {
+    const parts = trimmed.split('@');
+    const local = parts[0];
+    const domain = parts[1];
+    if (parts.length !== 2 || /\s/u.test(trimmed) ||
+        !/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/i.test(local) ||
+        local.startsWith('.') || local.endsWith('.') || local.includes('..') ||
+        !domain || domain.split('.').length < 2 ||
+        !domain.split('.').every((label) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label))) {
+      return 'יש להזין כתובת אימייל תקינה';
+    }
+  }
+  if (name === 'phone') {
+    // Validate a normalized copy; preserve the user's displayed formatting.
+    const phone = trimmed.replace(/[ -]/g, '').replace(/^\+972/, '0');
+    if (!/^(?:05[0-58]\d{7}|0[23489]\d{7}|07[2-46789]\d{7})$/.test(phone)) {
+      return 'יש להזין מספר טלפון תקין';
+    }
+  }
+  if (name === 'createdAt' && trimmed && Number.isNaN(new Date(trimmed).getTime())) {
+    return 'יש להזין תאריך תקין';
+  }
+  return '';
+};
+
 /*
  * Form styles, scoped under .auf. Used by both "הוספת משתמש" and "עריכת משתמש".
  * Sizes are in rem so the site's accessibility font scale still applies.
@@ -76,6 +106,7 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
     ...initialValues,
   });
   const [validationError, setValidationError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -83,11 +114,26 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
       ...currentData,
       [name]: value,
     }));
+    if (isCreating && fieldErrors[name]) {
+      setFieldErrors((current) => ({ ...current, [name]: validateField(name, value) }));
+    }
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     setValidationError('');
+
+    if (isCreating) {
+      const errors = Object.fromEntries(
+        ['fullName', 'email', 'phone', 'createdAt'].map((name) => [name, validateField(name, formData[name])])
+      );
+      setFieldErrors(errors);
+      const firstInvalid = Object.keys(errors).find((name) => errors[name]);
+      if (firstInvalid) {
+        event.currentTarget.elements.namedItem(firstInvalid).focus();
+        return;
+      }
+    }
 
     if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim()) {
       setValidationError('שם מלא, אימייל וטלפון הם שדות חובה.');
@@ -98,7 +144,7 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
   };
 
   return (
-    <form onSubmit={handleSubmit} className="auf" dir="rtl">
+    <form onSubmit={handleSubmit} className="auf" dir="rtl" noValidate={isCreating}>
       <style>{FORM_STYLES}</style>
 
       {validationError && <div className="auf-error" role="alert">{validationError}</div>}
@@ -112,12 +158,15 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
             <input
               className="auf-input"
               name="fullName"
+              aria-invalid={Boolean(fieldErrors.fullName)}
+              aria-describedby={fieldErrors.fullName ? 'auf-fullName-error' : undefined}
               type="text"
               autoComplete="name"
               value={formData.fullName}
               onChange={handleChange}
               required
             />
+            {fieldErrors.fullName && <span id="auf-fullName-error" className="auf-error" role="alert">{fieldErrors.fullName}</span>}
           </label>
 
           <label className="auf-field">
@@ -125,12 +174,15 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
             <input
               className="auf-input auf-input--ltr"
               name="email"
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? 'auf-email-error' : undefined}
               type="email"
               autoComplete="email"
               value={formData.email}
               onChange={handleChange}
               required
             />
+            {fieldErrors.email && <span id="auf-email-error" className="auf-error" role="alert">{fieldErrors.email}</span>}
           </label>
 
           <label className="auf-field">
@@ -138,6 +190,8 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
             <input
               className="auf-input auf-input--ltr"
               name="phone"
+              aria-invalid={Boolean(fieldErrors.phone)}
+              aria-describedby={fieldErrors.phone ? 'auf-phone-error' : undefined}
               type="tel"
               inputMode="tel"
               autoComplete="tel"
@@ -145,6 +199,7 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
               onChange={handleChange}
               required
             />
+            {fieldErrors.phone && <span id="auf-phone-error" className="auf-error" role="alert">{fieldErrors.phone}</span>}
           </label>
         </div>
       </section>
@@ -191,10 +246,13 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
             <input
               className="auf-input"
               name="createdAt"
+              aria-invalid={Boolean(fieldErrors.createdAt)}
+              aria-describedby={fieldErrors.createdAt ? 'auf-createdAt-error' : undefined}
               type="datetime-local"
               value={formData.createdAt}
               onChange={handleChange}
             />
+            {fieldErrors.createdAt && <span id="auf-createdAt-error" className="auf-error" role="alert">{fieldErrors.createdAt}</span>}
           </label>
         </div>
       </section>
