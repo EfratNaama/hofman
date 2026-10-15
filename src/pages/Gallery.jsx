@@ -225,9 +225,14 @@ function Gallery() {
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState('');
   const [formError, setFormError] = useState('');
+  const [search, setSearch] = useState('');
   const fileInputRef = useRef(null);
 
   const imageCount = images.length;
+  const searchQuery = isGalleryAdmin ? search.trim().toLowerCase() : '';
+  const filteredImages = searchQuery
+    ? images.filter((image) => (image.caption || '').toLowerCase().includes(searchQuery))
+    : images;
   const selectedImage = selectedIndex >= 0 ? images[selectedIndex] : null;
 
   const showNext = () => setSelectedIndex((index) => (index + 1) % imageCount);
@@ -339,6 +344,15 @@ function Gallery() {
               </button>
             </div>
 
+            <input
+              type="search"
+              className="agl-input agl-admin-search"
+              aria-label="חיפוש לפי כיתוב לתמונה"
+              placeholder="חיפוש לפי כיתוב לתמונה..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+
             {uploadOpen && (
               <form id="gallery-upload-form" className="agl-form" onSubmit={handleSubmit}>
                 <label className="agl-field">
@@ -384,6 +398,10 @@ function Gallery() {
 
         {loading ? (
           <LogoLoader label="טוען תמונות..." />
+        ) : searchQuery && filteredImages.length === 0 ? (
+          <div className="agl-empty" role="status">
+            <h2 className="agl-empty__title">לא נמצאו תמונות התואמות לחיפוש</h2>
+          </div>
         ) : imageCount === 0 ? (
           <div className="agl-empty">
             <h2 className="agl-empty__title">אין תמונות בגלריה עדיין</h2>
@@ -399,14 +417,14 @@ function Gallery() {
             </div>
 
             <div className="agl-masonry">
-              {images.map((image, index) => {
+              {filteredImages.map((image, index) => {
                 const createdDate = formatCreatedDate(image.createdAt);
                 return (
                   <article className="agl-tile" key={image.id}>
                     <button
                       type="button"
                       className="agl-tile__open"
-                      onClick={() => setSelectedIndex(index)}
+                      onClick={() => setSelectedIndex(searchQuery ? images.findIndex((original) => original.id === image.id) : index)}
                       aria-label={`פתיחת התמונה: ${image.caption}`}
                     >
                       <img className="agl-tile__img" src={image.imageBase64} alt={image.caption} loading="lazy" />
