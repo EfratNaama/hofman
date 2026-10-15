@@ -27,7 +27,7 @@ test.each([
 test.each(['0501234567', '050-123 4567', '+972 50-1234567', '021234567', '+972-2-1234567', '0771234567'])(
   'accepts Israeli phone %s, legitimate names, email whitespace and an optional empty date', (phone) => {
     const submit = jest.fn();
-    const values = { ...fields, fullName: "שרה O’Neil-כהן", email: ' user+tag@mail.example.co.il ', phone };
+    const values = { ...fields, fullName: "שרה O’Neil-כהן", email: ' user+tag@mail.example.co.il ', phone, createdAt: '' };
     render(<UserForm isCreating initialValues={values} onSubmit={submit} submitLabel="Create" />);
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(submit).toHaveBeenCalledWith({ ...values, createdAt: '' });

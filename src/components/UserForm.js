@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Save, User, HeartHandshake, ShieldCheck } from 'lucide-react';
+import { formatDateTimeInput } from '../utils/dateUtils';
 import './UserForm.css';
 
 const roleOptions = [
@@ -101,10 +102,11 @@ const FORM_STYLES = `
 `;
 
 function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel, onSubmit }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     ...initialFormState,
+    createdAt: isCreating ? formatDateTimeInput(new Date()) : '',
     ...initialValues,
-  });
+  }));
   const [validationError, setValidationError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
