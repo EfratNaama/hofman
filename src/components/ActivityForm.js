@@ -237,7 +237,7 @@ select.aaf-input { cursor: pointer; }
 }
 `;
 
-function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSubmit }) {
+function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSubmit, successMessage }) {
   const [formData, setFormData] = useState(buildFormState(initialValues));
   const [validationError, setValidationError] = useState('');
   const [imageUploadError, setImageUploadError] = useState('');
@@ -810,9 +810,14 @@ function ActivityForm({ initialValues, isSubmitting, resetKey, submitLabel, onSu
       </section>
 
       <div className="aaf-actions">
-        <button className="aaf-btn aaf-btn--primary" type="submit" disabled={isSubmitting || isReadingImage}>
+        <button className="aaf-btn aaf-btn--primary" type="submit" disabled={isSubmitting || isReadingImage || Boolean(successMessage)}>
           {isSubmitting ? 'שומר...' : submitLabel}
         </button>
+        {successMessage && (
+          <div className="aap-alert aap-alert--success aaf-submit-success" role="status">
+            {successMessage}
+          </div>
+        )}
         <Link className="aaf-btn aaf-btn--ghost" to="/activities">ביטול</Link>
       </div>
     </form>

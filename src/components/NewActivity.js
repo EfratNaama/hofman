@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, CalendarPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { createActivity } from '../services/activitiesService';
@@ -35,23 +35,32 @@ const PAGE_STYLES = `
 
 function NewActivity() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const submissionLocked = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [resetKey, setResetKey] = useState(0);
+  useEffect(() => {
+    if (!successMessage) return undefined;
+
+    const timer = setTimeout(() => navigate('/activities'), 2000);
+    return () => clearTimeout(timer);
+  }, [successMessage, navigate]);
 
   const handleSubmit = async (formData) => {
+    if (submissionLocked.current) return;
+    submissionLocked.current = true;
     setIsSubmitting(true);
     setError('');
     setSuccessMessage('');
 
     try {
       await createActivity(formData, currentUser?.uid || currentUser?.email || '');
-      setSuccessMessage('הפעילות נשמרה בהצלחה.');
-      setResetKey((currentKey) => currentKey + 1);
+      setSuccessMessage('הפעילות נוספה בהצלחה');
     } catch (err) {
       console.error('Failed to create activity', err);
       setError('לא ניתן ליצור את הפעילות. בדקו את הפרטים ונסו שוב.');
+      submissionLocked.current = false;
     } finally {
       setIsSubmitting(false);
     }
@@ -75,11 +84,10 @@ function NewActivity() {
         </header>
 
         {error && <div className="aap-alert aap-alert--error" role="alert">{error}</div>}
-        {successMessage && <div className="aap-alert aap-alert--success" role="status">{successMessage}</div>}
 
         <ActivityForm
           isSubmitting={isSubmitting}
-          resetKey={resetKey}
+          successMessage={successMessage}
           submitLabel="יצירת פעילות"
           onSubmit={handleSubmit}
         />
