@@ -101,6 +101,7 @@ function EditUser() {
     role: user.role || 'resident',
     status: user.status || 'active',
     createdAt: formatDateTimeInput(user.createdAt),
+    healthDeclaration: user.healthDeclaration || null,
   };
 
   return (

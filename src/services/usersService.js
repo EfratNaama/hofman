@@ -73,6 +73,7 @@ export async function createUser(userData) {
       role: userData.role,
       status: userData.status,
       createdAt: toFirestoreDate(userData.createdAt),
+      ...(userData.healthDeclaration ? { healthDeclaration: userData.healthDeclaration } : {}),
       updatedAt: serverTimestamp(),
     });
 
@@ -96,6 +97,7 @@ export async function updateUser(userId, userData) {
     email: userData.email?.trim() || '',
     phone: userData.phone?.trim() || '',
     status: userData.status || 'active',
+    ...(userData.healthDeclaration ? { healthDeclaration: userData.healthDeclaration } : {}),
     updatedAt: serverTimestamp(),
   });
 }

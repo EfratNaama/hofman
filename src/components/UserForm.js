@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Save, User, HeartHandshake, ShieldCheck } from 'lucide-react';
 import { formatDateTimeInput } from '../utils/dateUtils';
+import HealthDeclarationSection, {
+  cleanHealthDeclaration,
+  hasHealthDeclaration,
+  healthFieldDomId,
+  normalizeHealthDeclaration,
+  validateHealthDeclaration,
+} from './HealthDeclaration';
 import './UserForm.css';
 
 const roleOptions = [
@@ -106,7 +113,12 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
     ...initialFormState,
     createdAt: isCreating ? formatDateTimeInput(new Date()) : '',
     ...initialValues,
+    healthDeclaration: normalizeHealthDeclaration(initialValues?.healthDeclaration, { withToday: isCreating }),
   }));
+  const [healthErrors, setHealthErrors] = useState({});
+  const [healthChecked, setHealthChecked] = useState(false);
+  // Required for a new user; when editing, only once someone has started filling it (older users may have none).
+  const isHealthRequired = (declaration) => isCreating || hasHealthDeclaration(declaration);
   const [validationError, setValidationError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
@@ -121,20 +133,42 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
     }
   };
 
+  const handleHealthChange = (healthDeclaration) => {
+    setFormData((currentData) => ({ ...currentData, healthDeclaration }));
+    if (healthChecked) {
+      setHealthErrors(isHealthRequired(healthDeclaration) ? validateHealthDeclaration(healthDeclaration) : {});
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     setValidationError('');
 
+    let firstInvalidField = '';
     if (isCreating) {
       const errors = Object.fromEntries(
         ['fullName', 'email', 'phone', 'createdAt'].map((name) => [name, validateField(name, formData[name])])
       );
       setFieldErrors(errors);
-      const firstInvalid = Object.keys(errors).find((name) => errors[name]);
-      if (firstInvalid) {
-        event.currentTarget.elements.namedItem(firstInvalid).focus();
-        return;
-      }
+      firstInvalidField = Object.keys(errors).find((name) => errors[name]) || '';
+    }
+
+    const nextHealthErrors = isHealthRequired(formData.healthDeclaration)
+      ? validateHealthDeclaration(formData.healthDeclaration)
+      : {};
+    setHealthErrors(nextHealthErrors);
+    setHealthChecked(true);
+    const firstHealthError = Object.keys(nextHealthErrors)[0];
+
+    if (firstInvalidField) {
+      event.currentTarget.elements.namedItem(firstInvalidField).focus();
+      return;
+    }
+    if (firstHealthError) {
+      setValidationError('יש להשלים את הצהרת הבריאות לפני השמירה.');
+      // The section may be opening right now; focus after it renders.
+      window.setTimeout(() => document.getElementById(healthFieldDomId(firstHealthError))?.focus(), 0);
+      return;
     }
 
     if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim()) {
@@ -142,7 +176,12 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
       return;
     }
 
-    onSubmit(formData);
+    onSubmit({
+      ...formData,
+      healthDeclaration: hasHealthDeclaration(formData.healthDeclaration)
+        ? cleanHealthDeclaration(formData.healthDeclaration)
+        : null,
+    });
   };
 
   return (
@@ -258,6 +297,13 @@ function UserForm({ isCreating = false, initialValues, isSubmitting, submitLabel
           </label>
         </div>
       </section>
+
+      <HealthDeclarationSection
+        value={formData.healthDeclaration}
+        errors={healthErrors}
+        disabled={isSubmitting}
+        onChange={handleHealthChange}
+      />
 
       <div className="auf-actions">
         <button className="auf-btn auf-btn--primary" type="submit" disabled={isSubmitting}>

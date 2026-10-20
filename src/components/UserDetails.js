@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, CalendarClock, Mail, Pencil, Phone, ShieldCheck, Trash2 } from 'lucide-react';
+import { ArrowRight, CalendarClock, ClipboardList, Mail, Pencil, Phone, ShieldCheck, Trash2, X } from 'lucide-react';
 import { deleteUser, getUserById } from '../services/usersService';
 import { toDate } from '../utils/dateUtils';
 import LogoLoader from './LogoLoader';
+import { hasHealthDeclaration, HealthDeclarationView } from './HealthDeclaration';
 
 const roleLabels = {
   admin: 'מנהל',
@@ -172,6 +173,65 @@ function ConfirmDialog({ title, text, confirmLabel, busy, onConfirm, onCancel })
   );
 }
 
+/* Health declaration popup — read-only, Escape or a click outside closes it. Scoped under .uhd. */
+const HEALTH_DIALOG_STYLES = `
+.uhd { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(43,33,28,.5); font-size: 1rem; }
+.uhd * { font-size: inherit; box-sizing: border-box; }
+.uhd-panel { display: flex; flex-direction: column; width: 100%; max-width: 760px; max-height: calc(100vh - 32px); border-radius: 24px; background: #fbf8f4; color: #2b211c; text-align: right; box-shadow: 0 30px 60px rgba(43,33,28,.3); overflow: hidden; }
+.uhd-head { display: flex; align-items: center; gap: 12px; padding: 18px 22px; background: #fff; border-bottom: 1px solid #ece3da; }
+.uhd-head__icon { flex: none; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #f8e9e4; color: #a84f3d; }
+.uhd-title { margin: 0; font-size: 1.2rem; font-weight: 800; }
+.uhd-sub { margin: 0; font-size: 0.875rem; color: #6b5a50; }
+.uhd-close { margin-inline-start: auto; flex: none; display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 1px solid #e3d7cc; border-radius: 12px; background: #fff; color: #2b211c; cursor: pointer; }
+.uhd-close:hover { background: #f3ede6; }
+.uhd-body { padding: 18px 22px 22px; overflow-y: auto; }
+.uhd-empty { margin: 0; padding: 28px 16px; border-radius: 16px; border: 1px dashed #e3d7cc; background: #fff; text-align: center; color: #5c4a40; font-weight: 600; }
+.uhd-empty a { display: inline-block; margin-top: 10px; color: #a84f3d; font-weight: 800; }
+.uhd button:focus-visible, .uhd a:focus-visible { outline: 3px solid #d4a373; outline-offset: 2px; }
+`;
+
+function HealthDialog({ user, editPath, onClose }) {
+  const closeRef = useRef(null);
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="uhd" dir="rtl" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <style>{HEALTH_DIALOG_STYLES}</style>
+      <div className="uhd-panel" role="dialog" aria-modal="true" aria-labelledby="uhd-title">
+        <div className="uhd-head">
+          <span className="uhd-head__icon" aria-hidden="true"><ClipboardList size={22} /></span>
+          <div>
+            <h2 id="uhd-title" className="uhd-title">הצהרת בריאות</h2>
+            <p className="uhd-sub">{user.fullName || user.email || 'משתמש'}</p>
+          </div>
+          <button ref={closeRef} className="uhd-close" type="button" aria-label="סגירה" onClick={onClose}>
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+        <div className="uhd-body">
+          {hasHealthDeclaration(user.healthDeclaration) ? (
+            <HealthDeclarationView value={user.healthDeclaration} />
+          ) : (
+            <p className="uhd-empty">
+              לא מולאה הצהרת בריאות למשתמש הזה.
+              <br />
+              <Link to={editPath}>למילוי ההצהרה בעריכת המשתמש ←</Link>
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UserDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -180,6 +240,8 @@ function UserDetails() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [healthOpen, setHealthOpen] = useState(false);
+  const closeHealth = useCallback(() => setHealthOpen(false), []);
   const closeConfirm = useCallback(() => setConfirmOpen(false), []);
 
   useEffect(() => {
@@ -265,6 +327,10 @@ function UserDetails() {
             </div>
           </div>
           <div className="aup-hero__actions">
+            <button className="aup-btn aup-btn--ghost" type="button" onClick={() => setHealthOpen(true)}>
+              <ClipboardList size={16} aria-hidden="true" />
+              הצהרת בריאות
+            </button>
             <Link className="aup-btn aup-btn--primary" to={`/users/${id}/edit`}>
               <Pencil size={16} aria-hidden="true" />
               עריכה
@@ -318,6 +384,8 @@ function UserDetails() {
           </section>
         </div>
       </div>
+
+      {healthOpen && <HealthDialog user={user} editPath={`/users/${id}/edit`} onClose={closeHealth} />}
 
       {confirmOpen && (
         <ConfirmDialog
